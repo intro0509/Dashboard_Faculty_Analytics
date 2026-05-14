@@ -519,11 +519,7 @@ async function initDashboard() {
   // 초기 상태: 비정년트랙 필터 비활성화
   document.getElementById('nonTenureFilter').classList.add('disabled');
 
-<<<<<<< HEAD
   await renderAll();
-=======
-  renderAll();
->>>>>>> 8ccffee5f1c0c91b35cb0e2b5a06ce039ea9dc56
   updateFilterSummary();
 }
 
@@ -532,11 +528,7 @@ async function onYearChange() {
   document.getElementById('yearBadge').textContent = currentYear + '학년도';
   // 학년도 변경 시 rawRecords 캐시 초기화 (의학계열 필터 반영)
   delete rawRecordsCache[currentYear];
-<<<<<<< HEAD
   await renderAll();
-=======
-  renderAll();
->>>>>>> 8ccffee5f1c0c91b35cb0e2b5a06ce039ea9dc56
 }
 
 async function setMedical(mode) {
@@ -545,11 +537,7 @@ async function setMedical(mode) {
   document.getElementById('btnInclude').classList.toggle('active', mode === 'include');
   // 의학계열 변경 시 rawRecords 캐시 초기화
   rawRecordsCache = {};
-<<<<<<< HEAD
   await renderAll();
-=======
-  renderAll();
->>>>>>> 8ccffee5f1c0c91b35cb0e2b5a06ce039ea9dc56
 }
 
 // ============ GET FILTERED SUMMARY ============
@@ -564,154 +552,8 @@ function getFilteredData(yearData, filterKey) {
   if (!filterKey) return yearData.base || yearData;
   if (yearData.filters && yearData.filters[filterKey]) {
     return yearData.filters[filterKey];
-<<<<<<< HEAD
-=======
   }
   return yearData.base || yearData;
-}
-
-// 일반 필터 적용 (track + non_tenure 조합 포함)
-function getSummary(year) {
-  const yearData = getYearData(year);
-  if (!yearData) return null;
-  const f = activeFilters;
-  const allDefault = Object.values(f).every(v => v === '전체');
-  if (allDefault) return yearData.base || yearData;
-
-  let filterKey = null;
-  if (f.track !== '전체') {
-    filterKey = (f.track === '비정년트랙' && f.non_tenure !== '전체')
-      ? `track:비정년트랙|non_tenure:${f.non_tenure}`
-      : `track:${f.track}`;
-  } else if (f.rank !== '전체') filterKey = `rank:${f.rank}`;
-  else if (f.gender !== '전체') filterKey = `gender:${f.gender}`;
-  else if (f.age !== '전체') filterKey = `age:${f.age}`;
-  else if (f.tenure !== '전체') filterKey = `tenure:${f.tenure}`;
-
-  return getFilteredData(yearData, filterKey);
-}
-
-// 트랙별 차트 전용: non_tenure 필터 제외 (track까지만 적용)
-function getSummaryForTrack(year) {
-  const yearData = getYearData(year);
-  if (!yearData) return null;
-  const f = activeFilters;
-  const filterKey = f.track !== '전체' ? `track:${f.track}` : null;
-  return getFilteredData(yearData, filterKey);
-}
-
-// 비정년트랙 차트 전용: track:비정년트랙 + non_tenure 조합
-function getSummaryForNonTenure(year) {
-  const yearData = getYearData(year);
-  if (!yearData) return null;
-  const f = activeFilters;
-  let filterKey = null;
-  if (f.non_tenure !== '전체') {
-    filterKey = `track:비정년트랙|non_tenure:${f.non_tenure}`;
-  } else if (f.track === '비정년트랙') {
-    filterKey = `track:비정년트랙`;
->>>>>>> 8ccffee5f1c0c91b35cb0e2b5a06ce039ea9dc56
-  }
-  return getFilteredData(yearData, filterKey);
-}
-
-// ============ 실시간 다중 필터링 ============
-async function loadRawRecords() {
-  if (rawRecordsCache[currentYear]) return rawRecordsCache[currentYear];
-
-  // roster 파일에서 원본 데이터 로딩
-  try {
-    const url = `dashboard_roster_${currentYear}.json?t=${Date.now()}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`roster 파일 없음`);
-    const data = await res.json();
-    const medKey = currentMedical === 'include' ? 'include' : 'exclude';
-    rawRecordsCache[currentYear] = data[medKey].all || [];
-    return rawRecordsCache[currentYear];
-  } catch(e) {
-    console.warn('rawRecords 로딩 실패:', e.message);
-    return null;
-  }
-}
-
-function applyMultiFilter(records) {
-  if (!records) return null;
-  const f = activeFilters;
-  return records.filter(r => {
-    if (f.track !== '전체' && r['트랙구분'] !== f.track) return false;
-    if (f.non_tenure !== '전체' && r['비정년트랙구분'] !== f.non_tenure) return false;
-    if (f.rank !== '전체' && r['직급'] !== f.rank) return false;
-    if (f.gender !== '전체' && r['성별'] !== f.gender) return false;
-    if (f.age !== '전체' && r['연령대'] !== f.age) return false;
-    if (f.tenure !== '전체' && r['재직기간대'] !== f.tenure) return false;
-    return true;
-  });
-}
-
-function calcStatsFromRecords(records) {
-  const AGE_ORDER=['25세-30세','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세'];
-  const TENURE_ORDER=['5년 이하','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
-
-  if (!records || !records.length) return {
-    total:0, tenure_track:0, non_tenure:0, male:0, female:0,
-    prof:0, assoc:0, asst:0,
-    tracks:{정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0},
-    ages:Object.fromEntries(AGE_ORDER.map(a=>[a,0])),
-    tenure_dist:Object.fromEntries(TENURE_ORDER.map(t=>[t,0])),
-    retire:{'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0},
-    colleges:{}
-  };
-
-  const tracks = {정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0};
-  records.forEach(r => {
-    if (r['트랙구분']==='정년트랙') tracks['정년트랙']++;
-    else { const s=r['비정년트랙구분']; if(s && s in tracks) tracks[s]++; }
-  });
-
-  const ages = Object.fromEntries(AGE_ORDER.map(a=>[a,0]));
-  const tdist = Object.fromEntries(TENURE_ORDER.map(t=>[t,0]));
-  const retire = {'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0};
-  const colleges = {};
-
-  const yr = parseInt(currentYear);
-
-  records.forEach(r => {
-    // 연령대
-    if(r['연령대'] in ages) ages[r['연령대']]++;
-    // 재직기간대
-    if(r['재직기간대'] in tdist) tdist[r['재직기간대']]++;
-    // 단과대학
-    const c = r['원소속 상위'] || '기타';
-    colleges[c] = (colleges[c]||0) + 1;
-    // 퇴직예정 구분 - 퇴직예정일(학년도-학기)에서 학년도 추출
-    const retireStr = r['퇴직예정일(학년도-학기)'] || '';
-    const match = retireStr.match(/^(\d{4})학년도/);
-    if (match) {
-      const retireYr = parseInt(match[1]);
-      if (retireYr <= yr) retire['퇴직예정(-)']++;
-      else if (retireYr === yr + 1) retire['퇴직예정(+1)']++;
-      else if (retireYr === yr + 2) retire['퇴직예정(+2)']++;
-    }
-  });
-
-  return {
-    total: records.length,
-    tenure_track: records.filter(r=>r['트랙구분']==='정년트랙').length,
-    non_tenure: records.filter(r=>r['트랙구분']==='비정년트랙').length,
-    male: records.filter(r=>r['성별']==='남자').length,
-    female: records.filter(r=>r['성별']==='여자').length,
-    prof: records.filter(r=>r['직급']==='교수').length,
-    assoc: records.filter(r=>r['직급']==='부교수').length,
-    asst: records.filter(r=>r['직급']==='조교수').length,
-    tracks, ages, tenure_dist:tdist, retire, colleges
-  };
-}
-
-// 다중 필터가 필요한지 체크 (2개 이상 활성화 시 true)
-function needsMultiFilter() {
-  const f = activeFilters;
-  const activeCount = Object.values(f).filter(v => v !== '전체').length;
-  return activeCount >= 2;
 }
 
 // 일반 필터 적용 (track + non_tenure 조합 포함)
@@ -1519,11 +1361,7 @@ function animateBars() {
 }
 
 // ============ ROSTER (교원 명부 - 학년도별 파일 lazy load) ============
-<<<<<<< HEAD
 
-=======
-let rosterCache = {};
->>>>>>> 8ccffee5f1c0c91b35cb0e2b5a06ce039ea9dc56
 
 function getFilterLabel() {
   const f = activeFilters;
