@@ -117,7 +117,7 @@
   .college-table tr:last-child td{border-bottom:none}
   .college-table .num{font-family:'DM Mono',monospace;text-align:right}
   .college-bar-wrap{position:relative;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-  .college-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+  .college-bar{height:100%;background:#ea580c;border-radius:3px;transition:width 1s ease}
 
   /* LOADING */
   .loading{display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:12px}
@@ -132,6 +132,13 @@
   .error-box code{font-family:'DM Mono',monospace;background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px}
 
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  /* 단과대학 커스텀 스크롤바 */
+  .college-scroll{max-height:320px;overflow-y:auto}
+  .college-scroll::-webkit-scrollbar{width:5px}
+  .college-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:3px}
+  .college-scroll::-webkit-scrollbar-thumb{background:#ea580c;border-radius:3px;opacity:.7}
+  .college-scroll::-webkit-scrollbar-thumb:hover{background:#fb923c}
 
   /* FILTER CHIPS */
   .filter-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
@@ -263,8 +270,8 @@
       <div class="card">
         <div class="card-title"><span class="dot c"></span>전임교원 확보율 추이</div>
         <div class="chart-wrap h240"><canvas id="rateChart"></canvas></div>
-        <p style="margin-top:10px;font-size:10px;color:var(--text-muted);line-height:1.6;border-top:1px solid var(--border);padding-top:8px">
-          ※ 전임교원 확보율은 의학계열을 제외하고 산출하며(좌측의 의학과 제외/포함 버튼과 무관), 매 학년도별 4월 1일 고등교육통계조사 기준임
+        <p style="margin-top:10px;font-size:10px;color:var(--accent4);line-height:1.6;border-top:1px solid var(--border);padding-top:8px">
+          ※ 전임교원 확보율은 의학계열을 제외하고 산출하며, 매 학년도별 4월 1일 고등교육통계조사 기준임
         </p>
       </div>
     </div>
@@ -353,10 +360,10 @@
       </div>
     </div>
 
-    <!-- ROW 5: 정년퇴직 예정자 (전체 너비) -->
+    <!-- ROW 5: 정년퇴직 예정자 현황 (전체 너비) -->
     <div style="margin-bottom:14px">
       <div class="card">
-        <div class="card-title"><span class="dot r"></span>정년퇴직 예정자</div>
+        <div class="card-title"><span class="dot r"></span>정년퇴직 예정자 현황</div>
         <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
           <table class="retire-table" id="retireTable"></table>
           <div style="height:160px"><canvas id="retireChart"></canvas></div>
@@ -368,7 +375,7 @@
     <div class="grid-2" style="margin-bottom:14px">
       <div class="card">
         <div class="card-title"><span class="dot"></span>단과대학별 현황</div>
-        <div style="max-height:320px;overflow-y:auto">
+        <div class="college-scroll">
           <table class="college-table" id="collegeTable"></table>
         </div>
       </div>
@@ -407,7 +414,7 @@ Chart.defaults.font.size = 11;
 const GRID = 'rgba(30,45,69,0.8)';
 const TICK = '#475569';
 
-const COLORS = ['#3b82f6','#06b6d4','#10b981','#8b5cf6','#f59e0b','#ef4444','#ec4899','#f97316'];
+const COLORS = ['#7c2d12','#9a3412','#c2410c','#ea580c','#f97316','#fb923c','#fdba74','#fcd34d'];
 
 // ============ LOAD DATA ============
 async function loadData() {
@@ -852,7 +859,7 @@ function renderTrackList(s) {
     'trackDonutChart', 'trackDonutLegend',
     ['정년트랙','강의전담','연구전담','산학협력전담','외국인'],
     ['정년트랙','강의전담','연구전담','산학협력전담','외국인'].map(k=>tracks[k]||0),
-    ['#3b82f6','#06b6d4','#8b5cf6','#f59e0b','#10b981'],
+    ['#c2410c','#ea580c','#fb923c','#fbbf24','#f59e0b'],
     total
   );
   // 비정년트랙 도넛
@@ -867,7 +874,7 @@ function renderNonTenureDonut(s) {
     'nonTenureDonutChart', 'nonTenureDonutLegend',
     ['강의전담','연구전담','산학협력전담','외국인'],
     ['강의전담','연구전담','산학협력전담','외국인'].map(k=>tracks[k]||0),
-    ['#06b6d4','#8b5cf6','#f59e0b','#10b981'],
+    ['#ea580c','#fb923c','#fbbf24','#f59e0b'],
     ntTotal
   );
 }
@@ -876,7 +883,7 @@ function renderNonTenureDonut(s) {
 function renderRankChart(s) {
   const labels = ['교수','부교수','조교수'];
   const values = [s.prof, s.assoc, s.asst];
-  const colors = ['#f59e0b','#3b82f6','#10b981'];
+  const colors = ['#c2410c','#ea580c','#fb923c'];
   const total = s.total || values.reduce((a,b)=>a+b,0);
 
   const ctx = document.getElementById('rankChart').getContext('2d');
@@ -933,7 +940,7 @@ function renderRankChart(s) {
 function renderGenderChart(s) {
   const labels = ['남자','여자'];
   const values = [s.male, s.female];
-  const colors = ['#3b82f6','#f43f5e']; // 파랑 vs 로즈 (명확히 구분)
+  const colors = ['#c2410c','#fbbf24']; // 진한 주황 vs 황금 (명확히 구분)
   const total = s.total || values.reduce((a,b)=>a+b,0);
 
   const ctx = document.getElementById('genderChart').getContext('2d');
@@ -1007,7 +1014,7 @@ function renderRetireChart(s) {
     data:{
       labels:['당해(-)','예정(+1)','예정(+2)'],
       datasets:[{data:[r['퇴직예정(-)']||0,r['퇴직예정(+1)']||0,r['퇴직예정(+2)']||0],
-        backgroundColor:['rgba(239,68,68,.7)','rgba(245,158,11,.7)','rgba(59,130,246,.7)'],
+        backgroundColor:['rgba(194,65,12,.85)','rgba(234,88,12,.85)','rgba(251,191,36,.85)'],
         borderRadius:4,borderWidth:0}]
     },
     options:{responsive:true,maintainAspectRatio:false,
@@ -1086,24 +1093,24 @@ function renderTrendChart() {
         {
           label: '정년트랙',
           data: years.map(y => getBase(y)?.tenure_track || 0),
-          backgroundColor: 'rgba(59,130,246,0.7)',
+          backgroundColor: 'rgba(194,65,12,0.85)',
           borderRadius: 3, borderWidth: 0, stack: 'a'
         },
         {
           label: '비정년트랙',
           data: years.map(y => getBase(y)?.non_tenure || 0),
-          backgroundColor: 'rgba(139,92,246,0.7)',
+          backgroundColor: 'rgba(251,191,36,0.85)',
           borderRadius: 3, borderWidth: 0, stack: 'a'
         },
         {
           type: 'line',
           label: '전체',
           data: years.map(y => getBase(y)?.total || 0),
-          borderColor: '#06b6d4',
+          borderColor: '#fb923c',
           backgroundColor: 'transparent',
           borderWidth: 2,
           pointRadius: 4,
-          pointBackgroundColor: '#06b6d4',
+          pointBackgroundColor: '#fb923c',
           tension: 0.3,
           yAxisID: 'y'
         }
