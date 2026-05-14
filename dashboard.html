@@ -291,7 +291,7 @@ let currentYear = null;
 let currentMedical = 'exclude';
 let charts = {};
 
-const MEDICAL_DEPT = '의과대학';
+// 의학과 제외 기준: 원소속 = '의학과' (임상교원)
 
 // ============ CHART DEFAULTS ============
 Chart.defaults.color = '#64748b';
@@ -372,19 +372,12 @@ function setMedical(mode) {
 function getSummary(year) {
   const base = DB.summary[year];
   if (!base) return null;
-  if (currentMedical === 'include') return base;
-
-  // Exclude 의과대학 from colleges
-  const colleges = {...base.colleges};
-  const medCount = colleges[MEDICAL_DEPT] || 0;
-  delete colleges[MEDICAL_DEPT];
-
-  return {
-    ...base,
-    total: base.total - medCount,
-    colleges,
-    _medExcluded: medCount
-  };
+  // JSON에 include/exclude가 분리되어 있으면 그대로 사용 (의학과=원소속 기준)
+  if (base.include !== undefined && base.exclude !== undefined) {
+    return currentMedical === 'include' ? base.include : base.exclude;
+  }
+  // 구버전 JSON 호환
+  return base;
 }
 
 // ============ RENDER ALL ============
