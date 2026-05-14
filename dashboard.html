@@ -269,7 +269,7 @@
     <div style="margin-bottom:14px">
       <div class="card">
         <div class="card-title"><span class="dot c"></span>전임교원 확보율 추이</div>
-        <div class="chart-wrap h240"><canvas id="rateChart"></canvas></div>
+        <div class="chart-wrap h280"><canvas id="rateChart"></canvas></div>
         <p style="margin-top:10px;font-size:10px;color:var(--accent4);line-height:1.6;border-top:1px solid var(--border);padding-top:8px">
           ※ 전임교원 확보율은 의학계열을 제외하고 산출하며, 매 학년도별 4월 1일 고등교육통계조사 기준임
         </p>
@@ -371,17 +371,13 @@
       </div>
     </div>
 
-    <!-- ROW 6: 단과대학별 현황 | 연도별 인원 추이 -->
-    <div class="grid-2" style="margin-bottom:14px">
+    <!-- ROW 6: 단과대학별 현황 (전체 너비) -->
+    <div style="margin-bottom:14px">
       <div class="card">
         <div class="card-title"><span class="dot"></span>단과대학별 현황</div>
         <div class="college-scroll">
           <table class="college-table" id="collegeTable"></table>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="dot c"></span>연도별 인원 추이</div>
-        <div class="chart-wrap h280"><canvas id="trendChart"></canvas></div>
       </div>
     </div>
 
@@ -602,7 +598,6 @@ function renderAll() {
   renderAgeHisto(s);
   renderTenureHisto(s);
   renderCollegeTable(s);
-  renderTrendChart();
   animateBars();
 
   document.getElementById('footer').textContent =
@@ -719,7 +714,7 @@ function renderRateChart() {
     },
     options: {
       responsive:true, maintainAspectRatio:false,
-      layout: { padding: { top: 24, right: 16 } },
+      layout: { padding: { top: 44, right: 20, left: 8, bottom: 8 } },
       plugins:{
         legend:{display:false},
         tooltip:{
@@ -999,7 +994,7 @@ function renderRetireTable(s) {
   document.getElementById('retireTable').innerHTML = `
     <thead><tr><th>구분</th><th>인원</th><th>해당 학년도</th></tr></thead>
     <tbody>
-      <tr><td><span class="rbadge rb-now">당해(-)</span></td><td style="color:var(--danger);font-weight:600">${r['퇴직예정(-)']||0}명</td><td>${parseInt(currentYear)-1}학년도</td></tr>
+      <tr><td><span class="rbadge rb-now">당해(-)</span></td><td style="color:var(--danger);font-weight:600">${r['퇴직예정(-)']||0}명</td><td>${parseInt(currentYear)}학년도</td></tr>
       <tr><td><span class="rbadge rb-1">예정(+1)</span></td><td style="color:var(--accent4);font-weight:600">${r['퇴직예정(+1)']||0}명</td><td>${parseInt(currentYear)+1}학년도</td></tr>
       <tr><td><span class="rbadge rb-2">예정(+2)</span></td><td style="color:var(--accent);font-weight:600">${r['퇴직예정(+2)']||0}명</td><td>${parseInt(currentYear)+2}학년도</td></tr>
     </tbody>`;
@@ -1058,79 +1053,36 @@ function renderTenureHisto(s) {
 
 // ============ COLLEGE TABLE ============
 function renderCollegeTable(s) {
-  const colleges = s.colleges;
-  const sorted = Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const colleges = s.colleges || {};
+  const total = s.total || 1;
+
+  if (!Object.keys(colleges).length) {
+    document.getElementById('collegeTable').innerHTML =
+      '<tbody><tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">해당 데이터 없음</td></tr></tbody>';
+    return;
+  }
+
+  const sorted = Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
   const max = sorted[0]?.[1] || 1;
   document.getElementById('collegeTable').innerHTML =
-    `<thead><tr><th>단과대학</th><th style="text-align:right">인원</th><th style="width:120px">비율</th></tr></thead>
-    <tbody>${sorted.map(([name,cnt]) => `
-      <tr>
+    `<thead><tr><th>단과대학</th><th style="text-align:right">인원</th><th style="text-align:right">비율</th><th style="width:100px"></th></tr></thead>
+    <tbody>${sorted.map(([name,cnt]) => {
+      const pct = (cnt/total*100).toFixed(1);
+      return `<tr>
         <td>${name}</td>
         <td class="num">${cnt}명</td>
+        <td class="num" style="color:var(--text-muted);font-size:10px">${pct}%</td>
         <td><div class="college-bar-wrap"><div class="college-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td>
-      </tr>`).join('')}
+      </tr>`;
+    }).join('')}
     </tbody>`;
-}
 
-// ============ TREND CHART (multi-year) ============
-function renderTrendChart() {
-  const years = DB.meta.years;
-  const ctx = document.getElementById('trendChart').getContext('2d');
-  if (charts.trend) charts.trend.destroy();
-
-  const getBase = y => {
-    const s = DB.summary[y];
-    if (!s) return null;
-    const medKey = currentMedical === 'include' ? 'include' : 'exclude';
-    return (s[medKey] || s).base || s[medKey] || s;
-  };
-
-  charts.trend = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: years,
-      datasets: [
-        {
-          label: '정년트랙',
-          data: years.map(y => getBase(y)?.tenure_track || 0),
-          backgroundColor: 'rgba(194,65,12,0.85)',
-          borderRadius: 3, borderWidth: 0, stack: 'a'
-        },
-        {
-          label: '비정년트랙',
-          data: years.map(y => getBase(y)?.non_tenure || 0),
-          backgroundColor: 'rgba(251,191,36,0.85)',
-          borderRadius: 3, borderWidth: 0, stack: 'a'
-        },
-        {
-          type: 'line',
-          label: '전체',
-          data: years.map(y => getBase(y)?.total || 0),
-          borderColor: '#fb923c',
-          backgroundColor: 'transparent',
-          borderWidth: 2,
-          pointRadius: 4,
-          pointBackgroundColor: '#fb923c',
-          tension: 0.3,
-          yAxisID: 'y'
-        }
-      ]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      plugins:{
-        legend:{
-          display:true,
-          labels:{color:TICK,font:{size:10},boxWidth:10,padding:10}
-        },
-        tooltip:{backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1}
-      },
-      scales:{
-        x:{grid:{color:GRID},ticks:{color:TICK},stacked:true},
-        y:{grid:{color:GRID},ticks:{color:TICK},stacked:true,min:0}
-      }
-    }
-  });
+  // 바 애니메이션 즉시 실행
+  setTimeout(() => {
+    document.querySelectorAll('.college-bar[data-target]').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 50);
 }
 
 // ============ ANIMATE BARS ============
