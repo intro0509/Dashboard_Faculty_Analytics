@@ -1,0 +1,733 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>전임교원 현황 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+
+  :root {
+    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1e2d45;
+    --accent:#3b82f6; --accent2:#06b6d4; --accent3:#8b5cf6;
+    --accent4:#f59e0b; --accent5:#10b981; --danger:#ef4444;
+    --text:#e2e8f0; --text-muted:#64748b; --text-dim:#94a3b8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+  .container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
+
+  /* HEADER */
+  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
+  .header-left h1{font-size:20px;font-weight:700;background:linear-gradient(135deg,#fff 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+  .header-left p{font-size:11px;color:var(--text-muted);margin-top:3px;font-family:'DM Mono',monospace}
+  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+
+  /* STATUS BAR */
+  .status-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:11px;flex-wrap:wrap}
+  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent5);box-shadow:0 0 6px var(--accent5);animation:pulse 2s infinite}
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+  .status-text{color:var(--text-dim);font-family:'DM Mono',monospace}
+  .status-text strong{color:var(--text)}
+
+  /* CONTROLS */
+  .controls{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
+  .ctrl-group{display:flex;align-items:center;gap:8px}
+  .ctrl-label{font-size:11px;color:var(--text-muted);white-space:nowrap}
+  .btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .btn:hover{border-color:var(--accent);color:var(--text)}
+  .btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
+  .btn.amber.active{background:var(--accent4);border-color:var(--accent4)}
+  select{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;outline:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center}
+
+  /* KPI */
+  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
+  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;animation:fadeUp .5s ease both}
+  .kpi-card:hover{transform:translateY(-2px);border-color:rgba(59,130,246,.4)}
+  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kpi-color,var(--accent))}
+  .kpi-icon{font-size:18px;margin-bottom:8px}
+  .kpi-label{font-size:10px;color:var(--text-muted);text-transform:uppercase;letter-spacing:.8px;margin-bottom:4px}
+  .kpi-value{font-size:30px;font-weight:900;font-family:'DM Mono',monospace;line-height:1;color:var(--text)}
+  .kpi-value small{font-size:13px;font-weight:400;color:var(--text-muted);margin-left:3px}
+  .kpi-sub{font-size:11px;color:var(--text-muted);margin-top:5px}
+  .kpi-delta{font-size:11px;margin-top:3px}
+  .up{color:var(--accent5)} .down{color:var(--danger)} .flat{color:var(--text-muted)}
+
+  /* GRID LAYOUTS */
+  .grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
+  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
+  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+  .grid-full{margin-bottom:14px}
+
+  /* CARD */
+  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;animation:fadeUp .5s ease both}
+  .card-title{font-size:12px;font-weight:600;color:var(--text-dim);margin-bottom:14px;display:flex;align-items:center;gap:8px}
+  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
+  .dot.c{background:var(--accent2)} .dot.p{background:var(--accent3)} .dot.a{background:var(--accent4)} .dot.g{background:var(--accent5)} .dot.r{background:var(--danger)}
+
+  .chart-wrap{position:relative}
+  .h200{height:200px} .h240{height:240px} .h160{height:160px} .h280{height:280px}
+
+  /* TRACK BARS */
+  .track-list{display:flex;flex-direction:column;gap:9px}
+  .track-item{display:flex;flex-direction:column;gap:3px}
+  .track-hdr{display:flex;justify-content:space-between;align-items:center}
+  .track-name{font-size:11px;color:var(--text-dim)}
+  .track-pct{font-size:10px;color:var(--text-muted);font-family:'DM Mono',monospace}
+  .track-count{font-size:12px;font-family:'DM Mono',monospace;font-weight:600}
+  .bar-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
+  .bar-fill{height:100%;border-radius:3px;transition:width 1.2s ease;width:0}
+
+  /* GENDER */
+  .gender-wrap{display:flex;align-items:center;justify-content:center;gap:20px}
+  .gender-legend{display:flex;flex-direction:column;gap:10px}
+  .lg-item{display:flex;align-items:center;gap:8px;font-size:12px;color:var(--text-dim)}
+  .lg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
+  .lg-num{font-family:'DM Mono',monospace;font-weight:700;font-size:14px;color:var(--text);margin-left:4px}
+
+  /* RANK GRID */
+  .rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
+  .rank-cell{padding:10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-align:center}
+  .rank-num{font-size:24px;font-weight:900;font-family:'DM Mono',monospace}
+  .rank-lbl{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+  /* HISTOGRAM */
+  .histo-wrap{display:flex;flex-direction:column;gap:7px}
+  .histo-row{display:grid;grid-template-columns:80px 1fr 36px;align-items:center;gap:8px}
+  .histo-label{font-size:10px;color:var(--text-muted);text-align:right;font-family:'DM Mono',monospace;white-space:nowrap}
+  .histo-count{font-size:11px;font-family:'DM Mono',monospace;color:var(--text-dim)}
+
+  /* RETIRE TABLE */
+  .retire-table{width:100%;border-collapse:collapse;font-size:12px;margin-bottom:14px}
+  .retire-table th{text-align:left;padding:7px 10px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:10px;text-transform:uppercase;letter-spacing:.5px}
+  .retire-table td{padding:9px 10px;border-bottom:1px solid rgba(30,45,69,.6);color:var(--text-dim);font-family:'DM Mono',monospace}
+  .retire-table tr:last-child td{border-bottom:none}
+  .rbadge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:11px;font-family:'Noto Sans KR',sans-serif}
+  .rb-now{background:rgba(239,68,68,.15);color:var(--danger)}
+  .rb-1{background:rgba(245,158,11,.15);color:var(--accent4)}
+  .rb-2{background:rgba(59,130,246,.15);color:var(--accent)}
+
+  /* COLLEGE TABLE */
+  .college-table{width:100%;border-collapse:collapse;font-size:11px}
+  .college-table th{text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:10px}
+  .college-table td{padding:7px 8px;border-bottom:1px solid rgba(30,45,69,.5);color:var(--text-dim)}
+  .college-table tr:last-child td{border-bottom:none}
+  .college-table .num{font-family:'DM Mono',monospace;text-align:right}
+  .college-bar-wrap{position:relative;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
+  .college-bar{height:100%;background:var(--accent);border-radius:3px;transition:width 1s ease}
+
+  /* LOADING */
+  .loading{display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:12px}
+  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
+  @keyframes spin{to{transform:rotate(360deg)}}
+  .load-text{font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace}
+
+  /* ERROR */
+  .error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:20px;text-align:center}
+  .error-box h3{color:var(--danger);font-size:14px;margin-bottom:8px}
+  .error-box p{font-size:12px;color:var(--text-muted);line-height:1.6}
+  .error-box code{font-family:'DM Mono',monospace;background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px}
+
+  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
+
+  footer{text-align:center;font-size:11px;color:var(--text-muted);padding:20px 0 8px;font-family:'DM Mono',monospace}
+
+  @media(max-width:1024px){
+    .kpi-row{grid-template-columns:repeat(2,1fr)}
+    .grid-2-1{grid-template-columns:1fr}
+    .grid-3{grid-template-columns:1fr 1fr}
+  }
+  @media(max-width:640px){
+    .kpi-row{grid-template-columns:1fr 1fr}
+    .grid-3{grid-template-columns:1fr}
+    .grid-2{grid-template-columns:1fr}
+  }
+</style>
+</head>
+<body>
+<div class="container">
+
+  <!-- HEADER -->
+  <header>
+    <div class="header-left">
+      <h1>전임교원 확보율 및 현황 대시보드</h1>
+      <p id="headerMeta">데이터 로딩 중...</p>
+    </div>
+    <div class="header-right">
+      <span id="yearBadge" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;font-family:'DM Mono',monospace">-</span>
+    </div>
+  </header>
+
+  <!-- STATUS -->
+  <div class="status-bar">
+    <div class="status-dot"></div>
+    <span class="status-text">데이터 소스: <strong id="dataSource">dashboard_data.json</strong></span>
+    <span class="status-text" style="margin-left:8px">마지막 업데이트: <strong id="lastUpdate">-</strong></span>
+    <span class="status-text" style="margin-left:auto;color:var(--accent2)">💡 데이터 갱신은 <strong>upload.html</strong> 에서 진행하세요</span>
+  </div>
+
+  <!-- CONTROLS -->
+  <div class="controls">
+    <div class="ctrl-group">
+      <span class="ctrl-label">조회 학년도</span>
+      <select id="yearSelect" onchange="onYearChange()"></select>
+    </div>
+    <div class="ctrl-group">
+      <span class="ctrl-label">의학계열</span>
+      <button class="btn active" id="btnExclude" onclick="setMedical('exclude')">제외</button>
+      <button class="btn" id="btnInclude" onclick="setMedical('include')">포함</button>
+    </div>
+  </div>
+
+  <!-- LOADING STATE -->
+  <div id="loadingState" class="loading">
+    <div class="spinner"></div>
+    <div class="load-text">dashboard_data.json 불러오는 중...</div>
+  </div>
+
+  <!-- DASHBOARD (hidden until loaded) -->
+  <div id="dashboardContent" style="display:none">
+
+    <!-- KPI CARDS -->
+    <div class="kpi-row">
+      <div class="kpi-card" style="--kpi-color:#3b82f6;animation-delay:.05s">
+        <div class="kpi-icon">👥</div>
+        <div class="kpi-label">전임교원 수</div>
+        <div class="kpi-value" id="kpiTotal">-<small>명</small></div>
+        <div class="kpi-sub" id="kpiTrackSub">-</div>
+        <div class="kpi-delta" id="kpiTotalDelta"></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#06b6d4;animation-delay:.10s">
+        <div class="kpi-icon">📊</div>
+        <div class="kpi-label" id="rateLabel">확보율</div>
+        <div class="kpi-value" id="kpiRate">-<small>%</small></div>
+        <div class="kpi-delta" id="kpiRateDelta"></div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#f59e0b;animation-delay:.15s">
+        <div class="kpi-icon">⚠️</div>
+        <div class="kpi-label">정년퇴직 예정</div>
+        <div class="kpi-value" id="kpiRetire">-<small>명</small></div>
+        <div class="kpi-sub" id="kpiRetireSub">-</div>
+      </div>
+      <div class="kpi-card" style="--kpi-color:#10b981;animation-delay:.20s">
+        <div class="kpi-icon">⚖️</div>
+        <div class="kpi-label">여성 비율</div>
+        <div class="kpi-value" id="kpiFemale">-<small>%</small></div>
+        <div class="kpi-sub" id="kpiGenderSub">-</div>
+      </div>
+    </div>
+
+    <!-- ROW 1: Rate Trend + Track -->
+    <div class="grid-2-1">
+      <div class="card">
+        <div class="card-title"><span class="dot c"></span>전임교원 확보율 추이</div>
+        <div class="chart-wrap h240"><canvas id="rateChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot p"></span>트랙별 현황</div>
+        <div class="track-list" id="trackList"></div>
+      </div>
+    </div>
+
+    <!-- ROW 2: Rank + Gender + Retire -->
+    <div class="grid-3">
+      <div class="card">
+        <div class="card-title"><span class="dot a"></span>직급별 현황</div>
+        <div class="rank-grid" id="rankGrid"></div>
+        <div class="chart-wrap h160"><canvas id="rankChart"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot c"></span>성별 현황</div>
+        <div class="gender-wrap">
+          <div class="chart-wrap h160" style="width:155px;flex-shrink:0"><canvas id="genderChart"></canvas></div>
+          <div class="gender-legend" id="genderLegend"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot r"></span>정년퇴직 예정자</div>
+        <table class="retire-table" id="retireTable"></table>
+        <div class="chart-wrap h120" style="height:120px"><canvas id="retireChart"></canvas></div>
+      </div>
+    </div>
+
+    <!-- ROW 3: Age + Tenure -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="dot a"></span>연령대별 분포</div>
+        <div class="histo-wrap" id="ageHisto"></div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot g"></span>재직기간별 분포</div>
+        <div class="histo-wrap" id="tenureHisto"></div>
+      </div>
+    </div>
+
+    <!-- ROW 4: College + Multi-year trend -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-title"><span class="dot"></span>단과대학별 현황</div>
+        <div style="max-height:320px;overflow-y:auto">
+          <table class="college-table" id="collegeTable"></table>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-title"><span class="dot c"></span>연도별 인원 추이</div>
+        <div class="chart-wrap h280"><canvas id="trendChart"></canvas></div>
+      </div>
+    </div>
+
+  </div><!-- /dashboardContent -->
+
+  <footer id="footer">전임교원 현황 대시보드 · JSON 방식</footer>
+</div>
+
+<script>
+// ============ STATE ============
+let DB = null;
+let currentYear = null;
+let currentMedical = 'exclude';
+let charts = {};
+
+const MEDICAL_DEPT = '의과대학';
+
+// ============ CHART DEFAULTS ============
+Chart.defaults.color = '#64748b';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 11;
+const GRID = 'rgba(30,45,69,0.8)';
+const TICK = '#475569';
+
+const COLORS = ['#3b82f6','#06b6d4','#10b981','#8b5cf6','#f59e0b','#ef4444','#ec4899','#f97316'];
+
+// ============ LOAD DATA ============
+async function loadData() {
+  try {
+    const res = await fetch('dashboard_data.json?t=' + Date.now());
+    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    DB = await res.json();
+    initDashboard();
+  } catch(e) {
+    showError(e);
+  }
+}
+
+function showError(e) {
+  document.getElementById('loadingState').innerHTML = `
+    <div class="error-box">
+      <h3>⚠️ 데이터 파일을 찾을 수 없습니다</h3>
+      <p>
+        <code>dashboard_data.json</code> 파일이 같은 폴더에 있어야 합니다.<br><br>
+        <strong>해결 방법:</strong><br>
+        1. <code>upload.html</code>을 열어 엑셀 파일을 업로드하세요<br>
+        2. 생성된 <code>dashboard_data.json</code>을 이 파일과 같은 폴더에 넣으세요<br>
+        3. 서버에 올린 경우 파일 경로를 확인하세요
+      </p>
+      <p style="margin-top:10px;color:var(--danger);font-size:11px">${e.message}</p>
+    </div>`;
+}
+
+// ============ INIT ============
+function initDashboard() {
+  document.getElementById('loadingState').style.display = 'none';
+  document.getElementById('dashboardContent').style.display = 'block';
+
+  // Meta info
+  document.getElementById('lastUpdate').textContent = DB.meta.updated;
+  document.getElementById('dataSource').textContent = DB.meta.source || 'dashboard_data.json';
+
+  // Year selector
+  const sel = document.getElementById('yearSelect');
+  DB.meta.years.slice().reverse().forEach(yr => {
+    const opt = document.createElement('option');
+    opt.value = yr;
+    opt.textContent = yr + '학년도';
+    sel.appendChild(opt);
+  });
+  currentYear = DB.meta.years[DB.meta.years.length - 1];
+  sel.value = currentYear;
+
+  document.getElementById('yearBadge').textContent = currentYear + '학년도';
+  document.getElementById('headerMeta').textContent = `RAWDATA 기반 · ${DB.meta.years.length}개년 데이터`;
+
+  renderAll();
+}
+
+function onYearChange() {
+  currentYear = document.getElementById('yearSelect').value;
+  document.getElementById('yearBadge').textContent = currentYear + '학년도';
+  renderAll();
+}
+
+function setMedical(mode) {
+  currentMedical = mode;
+  document.getElementById('btnExclude').classList.toggle('active', mode === 'exclude');
+  document.getElementById('btnInclude').classList.toggle('active', mode === 'include');
+  renderAll();
+}
+
+// ============ GET FILTERED SUMMARY ============
+function getSummary(year) {
+  const base = DB.summary[year];
+  if (!base) return null;
+  if (currentMedical === 'include') return base;
+
+  // Exclude 의과대학 from colleges
+  const colleges = {...base.colleges};
+  const medCount = colleges[MEDICAL_DEPT] || 0;
+  delete colleges[MEDICAL_DEPT];
+
+  return {
+    ...base,
+    total: base.total - medCount,
+    colleges,
+    _medExcluded: medCount
+  };
+}
+
+// ============ RENDER ALL ============
+function renderAll() {
+  const s = getSummary(currentYear);
+  if (!s) return;
+
+  renderKPI(s);
+  renderRateChart();
+  renderTrackList(s);
+  renderRankChart(s);
+  renderGenderChart(s);
+  renderRetireTable(s);
+  renderRetireChart(s);
+  renderAgeHisto(s);
+  renderTenureHisto(s);
+  renderCollegeTable(s);
+  renderTrendChart();
+  animateBars();
+
+  document.getElementById('footer').textContent =
+    `전임교원 현황 대시보드 · ${currentYear}학년도 기준 · 업데이트: ${DB.meta.updated}`;
+}
+
+// ============ KPI ============
+function renderKPI(s) {
+  // Total
+  document.getElementById('kpiTotal').innerHTML = `${s.total}<small>명</small>`;
+  document.getElementById('kpiTrackSub').innerHTML =
+    `정년트랙 <strong style="color:var(--text)">${s.tenure_track}</strong> · 비정년 <strong style="color:var(--text)">${s.non_tenure}</strong>`;
+
+  // Delta vs prev year
+  const years = DB.meta.years;
+  const idx = years.indexOf(currentYear);
+  if (idx > 0) {
+    const prev = getSummary(years[idx-1]);
+    if (prev) {
+      const diff = s.total - prev.total;
+      const sign = diff > 0 ? '+' : '';
+      const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+      document.getElementById('kpiTotalDelta').innerHTML =
+        `<span class="${cls}">${sign}${diff} vs ${years[idx-1]}년</span>`;
+    }
+  } else {
+    document.getElementById('kpiTotalDelta').innerHTML = '';
+  }
+
+  // Rate
+  const rateKey = currentMedical === 'exclude' ? 'exclude' : 'include';
+  const rateObj = DB.rate[currentYear];
+  const rateVal = rateObj ? (rateObj[rateKey] ?? rateObj.exclude) : null;
+  document.getElementById('rateLabel').textContent = currentMedical === 'exclude' ? '확보율 (의학 제외)' : '확보율 (의학 포함)';
+  document.getElementById('kpiRate').innerHTML = rateVal ? `${rateVal.toFixed(1)}<small>%</small>` : `–<small>%</small>`;
+
+  if (idx > 0) {
+    const prevRateObj = DB.rate[years[idx-1]];
+    const prevRate = prevRateObj ? (prevRateObj[rateKey] ?? prevRateObj.exclude) : null;
+    if (rateVal && prevRate) {
+      const diff = (rateVal - prevRate).toFixed(1);
+      const sign = diff > 0 ? '+' : '';
+      const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
+      document.getElementById('kpiRateDelta').innerHTML =
+        `<span class="${cls}">${sign}${diff}%p vs ${years[idx-1]}년</span>`;
+    }
+  } else {
+    document.getElementById('kpiRateDelta').innerHTML = '';
+  }
+
+  // Retire
+  const retireNow = s.retire['퇴직예정(-)'] || 0;
+  const retire1 = s.retire['퇴직예정(+1)'] || 0;
+  const retire2 = s.retire['퇴직예정(+2)'] || 0;
+  document.getElementById('kpiRetire').innerHTML = `${retireNow}<small>명</small>`;
+  document.getElementById('kpiRetireSub').innerHTML =
+    `차년 <strong style="color:var(--accent4)">${retire1}</strong>명 · +2년 <strong style="color:var(--accent)">${retire2}</strong>명`;
+
+  // Gender
+  const femalePct = s.total > 0 ? (s.female / s.total * 100).toFixed(1) : '–';
+  document.getElementById('kpiFemale').innerHTML = `${femalePct}<small>%</small>`;
+  document.getElementById('kpiGenderSub').innerHTML =
+    `여자 <strong style="color:var(--text)">${s.female}</strong>명 / 남자 <strong style="color:var(--text)">${s.male}</strong>명`;
+}
+
+// ============ RATE CHART ============
+function renderRateChart() {
+  const rateKey = currentMedical === 'exclude' ? 'exclude' : 'include';
+  const allYears = Object.keys(DB.rate).sort();
+  const vals = allYears.map(y => DB.rate[y] ? (DB.rate[y][rateKey] ?? DB.rate[y].exclude ?? null) : null);
+
+  const ctx = document.getElementById('rateChart').getContext('2d');
+  if (charts.rate) charts.rate.destroy();
+
+  const grad = ctx.createLinearGradient(0,0,0,240);
+  grad.addColorStop(0,'rgba(6,182,212,0.25)');
+  grad.addColorStop(1,'rgba(6,182,212,0)');
+
+  const highlightIdx = allYears.indexOf(currentYear);
+
+  charts.rate = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels: allYears,
+      datasets: [{
+        label: '확보율(%)',
+        data: vals,
+        borderColor: '#06b6d4',
+        backgroundColor: grad,
+        borderWidth: 2,
+        pointBackgroundColor: allYears.map((_,i) => i===highlightIdx ? '#fff' : '#06b6d4'),
+        pointBorderColor: allYears.map((_,i) => i===highlightIdx ? '#06b6d4' : 'transparent'),
+        pointBorderWidth: 2,
+        pointRadius: allYears.map((_,i) => i===highlightIdx ? 6 : 4),
+        fill: true, tension: 0.4
+      }]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1,
+          callbacks:{label: c=>` 확보율: ${c.parsed.y?.toFixed(2)}%`}
+        },
+        annotation: {}
+      },
+      scales:{
+        x:{grid:{color:GRID},ticks:{color:TICK}},
+        y:{grid:{color:GRID},ticks:{color:TICK,callback:v=>v+'%'},min:55,max:75}
+      }
+    }
+  });
+}
+
+// ============ TRACK LIST ============
+function renderTrackList(s) {
+  const tracks = s.tracks;
+  const total = s.total;
+  const items = [
+    {name:'정년트랙', key:'정년트랙', color:'var(--accent)'},
+    {name:'강의전담', key:'강의전담', color:'var(--accent2)'},
+    {name:'연구전담', key:'연구전담', color:'var(--accent3)'},
+    {name:'산학협력전담', key:'산학협력전담', color:'var(--accent4)'},
+    {name:'외국인', key:'외국인', color:'var(--accent5)'},
+  ];
+  const max = Math.max(...items.map(i=>tracks[i.key]||0));
+  document.getElementById('trackList').innerHTML = items.map(item => {
+    const cnt = tracks[item.key] || 0;
+    const pct = total > 0 ? (cnt/total*100).toFixed(1) : 0;
+    const barPct = max > 0 ? (cnt/max*100).toFixed(1) : 0;
+    return `<div class="track-item">
+      <div class="track-hdr">
+        <span class="track-name">${item.name}</span>
+        <span class="track-count" style="color:${item.color}">${cnt}명 <span class="track-pct">(${pct}%)</span></span>
+      </div>
+      <div class="bar-bg"><div class="bar-fill" style="background:${item.color}" data-target="${barPct}"></div></div>
+    </div>`;
+  }).join('');
+}
+
+// ============ RANK CHART ============
+function renderRankChart(s) {
+  document.getElementById('rankGrid').innerHTML = `
+    <div class="rank-cell"><div class="rank-num" style="color:var(--accent4)">${s.prof}</div><div class="rank-lbl">교수</div></div>
+    <div class="rank-cell"><div class="rank-num" style="color:var(--accent)">${s.assoc}</div><div class="rank-lbl">부교수</div></div>
+    <div class="rank-cell"><div class="rank-num" style="color:var(--accent5)">${s.asst}</div><div class="rank-lbl">조교수</div></div>`;
+
+  const ctx = document.getElementById('rankChart').getContext('2d');
+  if (charts.rank) charts.rank.destroy();
+  charts.rank = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels:['교수','부교수','조교수'],
+      datasets:[{data:[s.prof,s.assoc,s.asst],backgroundColor:['#f59e0b','#3b82f6','#10b981'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1}}}
+  });
+}
+
+// ============ GENDER CHART ============
+function renderGenderChart(s) {
+  const ctx = document.getElementById('genderChart').getContext('2d');
+  if (charts.gender) charts.gender.destroy();
+  charts.gender = new Chart(ctx, {
+    type: 'doughnut',
+    data: {
+      labels:['남자','여자'],
+      datasets:[{data:[s.male,s.female],backgroundColor:['#3b82f6','#8b5cf6'],borderWidth:0,hoverOffset:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,cutout:'72%',
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1}}}
+  });
+
+  const femalePct = s.total>0 ? (s.female/s.total*100).toFixed(1) : '–';
+  document.getElementById('genderLegend').innerHTML = `
+    <div class="lg-item"><div class="lg-dot" style="background:#3b82f6"></div><span>남자</span><span class="lg-num">${s.male}</span></div>
+    <div class="lg-item"><div class="lg-dot" style="background:#8b5cf6"></div><span>여자</span><span class="lg-num">${s.female}</span></div>
+    <div style="margin-top:8px;font-size:11px;color:var(--text-muted);border-top:1px solid var(--border);padding-top:8px">
+      여성비율<br><span style="font-size:20px;font-weight:900;font-family:'DM Mono',monospace;color:#8b5cf6">${femalePct}%</span>
+    </div>`;
+}
+
+// ============ RETIRE TABLE + CHART ============
+function renderRetireTable(s) {
+  const r = s.retire;
+  document.getElementById('retireTable').innerHTML = `
+    <thead><tr><th>구분</th><th>인원</th><th>해당 학년도</th></tr></thead>
+    <tbody>
+      <tr><td><span class="rbadge rb-now">당해(-)</span></td><td style="color:var(--danger);font-weight:600">${r['퇴직예정(-)']||0}명</td><td>${parseInt(currentYear)-1}학년도</td></tr>
+      <tr><td><span class="rbadge rb-1">예정(+1)</span></td><td style="color:var(--accent4);font-weight:600">${r['퇴직예정(+1)']||0}명</td><td>${parseInt(currentYear)+1}학년도</td></tr>
+      <tr><td><span class="rbadge rb-2">예정(+2)</span></td><td style="color:var(--accent);font-weight:600">${r['퇴직예정(+2)']||0}명</td><td>${parseInt(currentYear)+2}학년도</td></tr>
+    </tbody>`;
+}
+
+function renderRetireChart(s) {
+  const r = s.retire;
+  const ctx = document.getElementById('retireChart').getContext('2d');
+  if (charts.retire) charts.retire.destroy();
+  charts.retire = new Chart(ctx, {
+    type:'bar',
+    data:{
+      labels:['당해(-)','예정(+1)','예정(+2)'],
+      datasets:[{data:[r['퇴직예정(-)']||0,r['퇴직예정(+1)']||0,r['퇴직예정(+2)']||0],
+        backgroundColor:['rgba(239,68,68,.7)','rgba(245,158,11,.7)','rgba(59,130,246,.7)'],
+        borderRadius:4,borderWidth:0}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1}},
+      scales:{
+        x:{grid:{display:false},ticks:{color:TICK,font:{size:10}}},
+        y:{grid:{color:GRID},ticks:{color:TICK,stepSize:10}}
+      }}
+  });
+}
+
+// ============ HISTOGRAMS ============
+function renderHisto(containerId, labels, values, colors) {
+  const max = Math.max(...values);
+  document.getElementById(containerId).innerHTML = labels.map((label, i) => {
+    const pct = max>0 ? (values[i]/max*100).toFixed(1) : 0;
+    return `<div class="histo-row">
+      <div class="histo-label">${label}</div>
+      <div class="bar-bg"><div class="bar-fill" style="background:${colors[i%colors.length]}" data-target="${pct}"></div></div>
+      <div class="histo-count">${values[i]}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderAgeHisto(s) {
+  const ages = s.ages;
+  const labels = Object.keys(ages);
+  const values = Object.values(ages);
+  renderHisto('ageHisto', labels, values, COLORS);
+}
+
+function renderTenureHisto(s) {
+  const t = s.tenure_dist;
+  const labels = Object.keys(t);
+  const values = Object.values(t);
+  renderHisto('tenureHisto', labels, values, COLORS);
+}
+
+// ============ COLLEGE TABLE ============
+function renderCollegeTable(s) {
+  const colleges = s.colleges;
+  const sorted = Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,15);
+  const max = sorted[0]?.[1] || 1;
+  document.getElementById('collegeTable').innerHTML =
+    `<thead><tr><th>단과대학</th><th style="text-align:right">인원</th><th style="width:120px">비율</th></tr></thead>
+    <tbody>${sorted.map(([name,cnt]) => `
+      <tr>
+        <td>${name}</td>
+        <td class="num">${cnt}명</td>
+        <td><div class="college-bar-wrap"><div class="college-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td>
+      </tr>`).join('')}
+    </tbody>`;
+}
+
+// ============ TREND CHART (multi-year) ============
+function renderTrendChart() {
+  const years = DB.meta.years;
+  const ctx = document.getElementById('trendChart').getContext('2d');
+  if (charts.trend) charts.trend.destroy();
+
+  charts.trend = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: years,
+      datasets: [
+        {
+          label: '정년트랙',
+          data: years.map(y => DB.summary[y]?.tenure_track || 0),
+          backgroundColor: 'rgba(59,130,246,0.7)',
+          borderRadius: 3, borderWidth: 0, stack: 'a'
+        },
+        {
+          label: '비정년트랙',
+          data: years.map(y => DB.summary[y]?.non_tenure || 0),
+          backgroundColor: 'rgba(139,92,246,0.7)',
+          borderRadius: 3, borderWidth: 0, stack: 'a'
+        },
+        {
+          type: 'line',
+          label: '전체',
+          data: years.map(y => DB.summary[y]?.total || 0),
+          borderColor: '#06b6d4',
+          backgroundColor: 'transparent',
+          borderWidth: 2,
+          pointRadius: 4,
+          pointBackgroundColor: '#06b6d4',
+          tension: 0.3,
+          yAxisID: 'y'
+        }
+      ]
+    },
+    options: {
+      responsive:true, maintainAspectRatio:false,
+      plugins:{
+        legend:{
+          display:true,
+          labels:{color:TICK,font:{size:10},boxWidth:10,padding:10}
+        },
+        tooltip:{backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1}
+      },
+      scales:{
+        x:{grid:{color:GRID},ticks:{color:TICK},stacked:true},
+        y:{grid:{color:GRID},ticks:{color:TICK},stacked:true,min:0}
+      }
+    }
+  });
+}
+
+// ============ ANIMATE BARS ============
+function animateBars() {
+  setTimeout(() => {
+    document.querySelectorAll('.bar-fill[data-target], .college-bar[data-target]').forEach(el => {
+      el.style.width = el.dataset.target + '%';
+    });
+  }, 100);
+}
+
+// ============ BOOT ============
+loadData();
+</script>
+</body>
+</html>

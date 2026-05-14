@@ -1,0 +1,526 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 업로드 도구 | 전임교원 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#1e2d45;
+    --accent:#3b82f6;--accent2:#06b6d4;--accent5:#10b981;--danger:#ef4444;
+    --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+  .container{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:40px 24px}
+
+  header{text-align:center;margin-bottom:40px}
+  header h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,#fff,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+  header p{font-size:13px;color:var(--text-muted)}
+
+  .step{display:flex;gap:12px;margin-bottom:32px}
+  .step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+  .step-body h3{font-size:14px;font-weight:600;margin-bottom:4px}
+  .step-body p{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+  /* DROP ZONE */
+  .drop-zone{
+    border:2px dashed var(--border);border-radius:16px;padding:48px 32px;
+    text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);
+    position:relative;margin-bottom:24px
+  }
+  .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(59,130,246,.05)}
+  .drop-zone.dragover{transform:scale(1.01)}
+  .drop-icon{font-size:48px;margin-bottom:16px}
+  .drop-title{font-size:16px;font-weight:600;margin-bottom:6px}
+  .drop-sub{font-size:12px;color:var(--text-muted)}
+  .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+  /* FILE INFO */
+  .file-info{display:none;align-items:center;gap:12px;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:16px}
+  .file-info.show{display:flex}
+  .file-icon{font-size:24px}
+  .file-name{font-size:13px;font-weight:600;color:var(--text)}
+  .file-size{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace}
+  .file-remove{margin-left:auto;cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;transition:color .2s}
+  .file-remove:hover{color:var(--danger)}
+
+  /* SHEET PICKER */
+  .sheet-picker{display:none;margin-bottom:20px}
+  .sheet-picker.show{display:block}
+  .sheet-picker h4{font-size:12px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+  .sheet-picker select{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none}
+
+  /* RATE INPUTS */
+  .rate-section{display:none;margin-bottom:24px;background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px}
+  .rate-section.show{display:block}
+  .rate-section h4{font-size:13px;font-weight:600;margin-bottom:4px}
+  .rate-section p{font-size:11px;color:var(--text-muted);margin-bottom:16px}
+  .rate-note{font-size:11px;color:var(--accent2);margin-bottom:14px;padding:10px;background:rgba(6,182,212,.08);border-radius:6px;border-left:3px solid var(--accent2)}
+  .rate-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(160px,1fr));gap:10px}
+  .rate-item{display:flex;flex-direction:column;gap:4px}
+  .rate-item label{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace}
+  .rate-item input{padding:7px 10px;border-radius:6px;border:1px solid var(--border);background:var(--surface2);color:var(--text);font-size:12px;font-family:'DM Mono',monospace;outline:none;transition:border-color .2s}
+  .rate-item input:focus{border-color:var(--accent)}
+  .rate-item input.auto{border-color:rgba(16,185,129,.4);color:var(--accent5)}
+
+  /* PROCESS BTN */
+  .process-btn{
+    width:100%;padding:14px;border-radius:10px;border:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;
+    cursor:pointer;transition:opacity .2s,transform .2s;margin-bottom:16px
+  }
+  .process-btn:hover{opacity:.9;transform:translateY(-1px)}
+  .process-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  /* PROGRESS */
+  .progress{display:none;margin-bottom:20px}
+  .progress.show{display:block}
+  .progress-bar-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .3s ease;width:0}
+  .progress-log{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;line-height:1.8;max-height:120px;overflow-y:auto}
+  .log-ok{color:var(--accent5)} .log-warn{color:var(--accent4)} .log-err{color:var(--danger)}
+
+  /* RESULT */
+  .result{display:none;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:24px;text-align:center;margin-bottom:20px}
+  .result.show{display:block}
+  .result h3{font-size:16px;font-weight:700;color:var(--accent5);margin-bottom:8px}
+  .result p{font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6}
+  .dl-btn{
+    display:inline-block;padding:10px 24px;border-radius:8px;
+    background:var(--accent5);color:#fff;font-size:13px;font-weight:700;
+    text-decoration:none;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;
+    transition:opacity .2s
+  }
+  .dl-btn:hover{opacity:.85}
+
+  /* STATS PREVIEW */
+  .preview{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px}
+  .preview.show{display:block}
+  .preview h4{font-size:12px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+  .pv-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+  .pv-num{font-size:20px;font-weight:900;font-family:'DM Mono',monospace;color:var(--accent2)}
+  .pv-lbl{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+  /* GUIDE */
+  .guide{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:32px}
+  .guide h3{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--accent2)}
+  .guide-list{display:flex;flex-direction:column;gap:8px}
+  .guide-item{display:flex;gap:10px;font-size:12px;color:var(--text-muted);line-height:1.5}
+  .guide-item code{font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--accent)}
+  .guide-tag{font-size:10px;background:rgba(59,130,246,.15);color:var(--accent);padding:1px 6px;border-radius:4px;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📂 데이터 업로드 도구</h1>
+    <p>전임교원 현황표 엑셀 파일을 업로드하면 대시보드용 JSON을 자동 생성합니다</p>
+  </header>
+
+  <!-- STEPS -->
+  <div class="step"><div class="step-num">1</div><div class="step-body"><h3>엑셀 파일 선택</h3><p>RAWDATA 시트가 포함된 .xlsx 또는 .xlsm 파일을 드래그하거나 클릭해서 선택하세요.</p></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><h3>확보율 입력 (선택)</h3><p>PIVOT 시트에 있는 확보율 데이터를 입력하세요. 생략하면 이전 데이터가 유지됩니다.</p></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><h3>JSON 생성 및 서버 업로드</h3><p>생성된 <code style="font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--accent)">dashboard_data.json</code>을 서버의 <code style="font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--accent)">dashboard.html</code>과 같은 폴더에 올리면 즉시 반영됩니다.</p></div></div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls" onchange="handleFile(this.files[0])">
+    <div class="drop-icon">📊</div>
+    <div class="drop-title">엑셀 파일을 여기에 드래그하거나 클릭하세요</div>
+    <div class="drop-sub">.xlsx · .xlsm · .xls 지원</div>
+  </div>
+
+  <!-- FILE INFO -->
+  <div class="file-info" id="fileInfo">
+    <span class="file-icon">📄</span>
+    <div>
+      <div class="file-name" id="fileName">-</div>
+      <div class="file-size" id="fileSize">-</div>
+    </div>
+    <span class="file-remove" onclick="resetFile()">✕</span>
+  </div>
+
+  <!-- SHEET PICKER -->
+  <div class="sheet-picker" id="sheetPicker">
+    <h4>RAWDATA 시트 선택</h4>
+    <select id="sheetSelect" onchange="onSheetChange()">
+      <option value="">시트를 선택하세요</option>
+    </select>
+  </div>
+
+  <!-- RATE INPUTS -->
+  <div class="rate-section" id="rateSection">
+    <h4>📈 전임교원 확보율 입력</h4>
+    <p>PIVOT 시트의 확보율 값을 입력하세요 (의학계열 제외 기준). 비워두면 이전 값이 유지됩니다.</p>
+    <div class="rate-note">💡 자동으로 감지된 값은 초록색으로 표시됩니다. 직접 수정 가능합니다.</div>
+    <div class="rate-grid" id="rateGrid"></div>
+  </div>
+
+  <!-- PROCESS -->
+  <button class="process-btn" id="processBtn" disabled onclick="processFile()">
+    ⚙️ dashboard_data.json 생성
+  </button>
+
+  <!-- PROGRESS -->
+  <div class="progress" id="progress">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-log" id="progressLog"></div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview" id="previewBox">
+    <h4>📋 처리 결과 미리보기</h4>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="resultBox">
+    <h3>✅ JSON 생성 완료!</h3>
+    <p id="resultDesc">-</p>
+    <button class="dl-btn" id="downloadBtn" onclick="downloadJSON()">⬇️ dashboard_data.json 다운로드</button>
+  </div>
+
+  <!-- GUIDE -->
+  <div class="guide">
+    <h3>📌 서버 배포 가이드</h3>
+    <div class="guide-list">
+      <div class="guide-item"><span class="guide-tag">필수</span><span>서버에 <code>dashboard.html</code>, <code>dashboard_data.json</code>, <code>upload.html</code> 세 파일을 같은 폴더에 업로드</span></div>
+      <div class="guide-item"><span class="guide-tag">매년</span><span>새 학년도 데이터가 추가된 엑셀 파일을 이 페이지에서 업로드 → JSON 다운로드 → 서버의 기존 JSON 파일 덮어쓰기</span></div>
+      <div class="guide-item"><span class="guide-tag">확인</span><span>JSON 교체 후 <code>dashboard.html</code>에 접속하면 즉시 새 데이터가 반영됩니다 (새로고침 필요)</span></div>
+      <div class="guide-item"><span class="guide-tag">주의</span><span>엑셀 RAWDATA 시트의 헤더 행(학년도, 교직원번호, 성명...)은 바꾸지 마세요</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let workbook = null;
+let selectedSheet = null;
+let generatedJSON = null;
+let existingRates = {};
+
+// Default rate data from PIVOT sheet
+const DEFAULT_RATES = {
+  '2017':69.57,'2018':68.76,'2019':66.46,'2020':66.46,
+  '2021':68.92,'2022':69.46,'2023':69.70,'2024':67.10,
+  '2025':65.10,'2026':65.14
+};
+
+// ─── DRAG & DROP ───
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+
+// ─── FILE HANDLING ───
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatBytes(file.size);
+  document.getElementById('fileInfo').classList.add('show');
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      populateSheetPicker();
+      // Try to load existing rates from JSON on server
+      loadExistingRates();
+    } catch(err) {
+      alert('파일을 읽을 수 없습니다: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+async function loadExistingRates() {
+  try {
+    const res = await fetch('dashboard_data.json?t=' + Date.now());
+    if (res.ok) {
+      const data = await res.json();
+      existingRates = data.rate || {};
+    }
+  } catch(e) { /* no existing file */ }
+  buildRateInputs();
+}
+
+function populateSheetPicker() {
+  const sel = document.getElementById('sheetSelect');
+  sel.innerHTML = '<option value="">시트를 선택하세요</option>';
+  workbook.SheetNames.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    if (name === 'RAWDATA') opt.selected = true;
+    sel.appendChild(opt);
+  });
+  document.getElementById('sheetPicker').classList.add('show');
+  document.getElementById('rateSection').classList.add('show');
+  onSheetChange();
+}
+
+function onSheetChange() {
+  selectedSheet = document.getElementById('sheetSelect').value;
+  document.getElementById('processBtn').disabled = !selectedSheet;
+}
+
+function buildRateInputs() {
+  // Detect years from RAWDATA
+  const ws = workbook.Sheets[selectedSheet || 'RAWDATA'];
+  const detectedYears = new Set();
+  if (ws) {
+    const json = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null });
+    json.forEach(row => {
+      const yr = row[1]; // col B
+      if (typeof yr === 'number' && yr > 2000 && yr < 2100) detectedYears.add(yr);
+    });
+  }
+
+  // Merge: existing + default + detected
+  const allYears = new Set([
+    ...Object.keys(DEFAULT_RATES).map(Number),
+    ...Object.keys(existingRates).map(Number),
+    ...detectedYears
+  ]);
+  const sorted = [...allYears].sort();
+
+  const grid = document.getElementById('rateGrid');
+  grid.innerHTML = sorted.map(yr => {
+    const existing = existingRates[yr]?.exclude;
+    const def = DEFAULT_RATES[yr];
+    const val = existing ?? def ?? '';
+    const isAuto = val !== '';
+    return `<div class="rate-item">
+      <label>${yr}학년도</label>
+      <input type="number" step="0.01" min="0" max="100"
+        id="rate_${yr}" value="${val}"
+        class="${isAuto ? 'auto' : ''}"
+        placeholder="예) 65.14"
+        oninput="this.classList.remove('auto')">
+    </div>`;
+  }).join('');
+}
+
+// ─── PROCESS ───
+async function processFile() {
+  const btn = document.getElementById('processBtn');
+  btn.disabled = true;
+
+  document.getElementById('progress').classList.add('show');
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('previewBox').classList.remove('show');
+
+  const logs = [];
+  const logEl = document.getElementById('progressLog');
+
+  function log(msg, cls='') {
+    logs.push(msg);
+    logEl.innerHTML += `<div class="${cls}">${msg}</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function setProgress(pct) {
+    document.getElementById('progressBar').style.width = pct + '%';
+  }
+
+  try {
+    log('📂 시트 읽는 중...');
+    setProgress(10);
+
+    const ws = workbook.Sheets[selectedSheet];
+    const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
+
+    // Find header row
+    let headerIdx = -1;
+    let header = [];
+    for (let i = 0; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if (row && (row.includes('학년도') || row.includes('교직원번호'))) {
+        headerIdx = i;
+        header = row.filter(h => h !== null && h !== undefined && h !== '');
+        // Find actual start col
+        const firstNonNull = row.findIndex(h => h !== null && h !== undefined && h !== '');
+        header = row.slice(firstNonNull).filter(h => h !== null && h !== undefined);
+        break;
+      }
+    }
+
+    if (headerIdx < 0) throw new Error('RAWDATA 시트에서 헤더 행(학년도, 교직원번호...)을 찾을 수 없습니다.');
+    log(`✅ 헤더 발견 (행 ${headerIdx+1}): ${header.slice(0,5).join(', ')}...`, 'log-ok');
+    setProgress(20);
+
+    // Parse data rows
+    const records = [];
+    const startCol = rawRows[headerIdx].findIndex(h => h !== null && h !== undefined && h !== '');
+
+    for (let i = headerIdx + 1; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if (!row || row[startCol] === null || row[startCol] === undefined || row[startCol] === '') continue;
+      const rec = {};
+      header.forEach((h, j) => {
+        rec[h] = row[startCol + j] ?? null;
+      });
+      if (rec['학년도'] && String(rec['학년도']).match(/^\d{4}$/)) {
+        records.push(rec);
+      }
+    }
+
+    log(`✅ 총 ${records.length}건 데이터 로드`, 'log-ok');
+    setProgress(40);
+
+    // Get all years
+    const years = [...new Set(records.map(r => String(r['학년도'])))].sort();
+    log(`📅 발견된 학년도: ${years.join(', ')}`, 'log-ok');
+    setProgress(50);
+
+    // Build summary per year
+    const summary = {};
+    years.forEach(yr => {
+      const yrData = records.filter(r => String(r['학년도']) === yr);
+
+      const tracks = { '정년트랙':0,'강의전담':0,'연구전담':0,'산학협력전담':0,'외국인':0 };
+      yrData.forEach(r => {
+        const track = r['트랙구분'];
+        const sub = r['비정년트랙구분'];
+        if (track === '정년트랙') tracks['정년트랙']++;
+        else if (sub && sub in tracks) tracks[sub]++;
+      });
+
+      const ageOrder = ['25세-30세','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세'];
+      const ages = Object.fromEntries(ageOrder.map(a => [a, 0]));
+      yrData.forEach(r => { if (r['연령대'] in ages) ages[r['연령대']]++; });
+
+      const tenureOrder = ['5년 이하','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
+      const tenureDist = Object.fromEntries(tenureOrder.map(t => [t, 0]));
+      yrData.forEach(r => { if (r['재직기간대'] in tenureDist) tenureDist[r['재직기간대']]++; });
+
+      const retire = { '퇴직예정(-)':0, '퇴직예정(+1)':0, '퇴직예정(+2)':0 };
+      yrData.forEach(r => { if (r['퇴직예정자'] in retire) retire[r['퇴직예정자']]++; });
+
+      const colleges = {};
+      yrData.forEach(r => {
+        const c = r['원소속 상위'] || '기타';
+        colleges[c] = (colleges[c]||0) + 1;
+      });
+
+      summary[yr] = {
+        total: yrData.length,
+        tenure_track: yrData.filter(r => r['트랙구분']==='정년트랙').length,
+        non_tenure: yrData.filter(r => r['트랙구분']==='비정년트랙').length,
+        male: yrData.filter(r => r['성별']==='남자').length,
+        female: yrData.filter(r => r['성별']==='여자').length,
+        prof: yrData.filter(r => r['직급']==='교수').length,
+        assoc: yrData.filter(r => r['직급']==='부교수').length,
+        asst: yrData.filter(r => r['직급']==='조교수').length,
+        tracks, ages, tenure_dist: tenureDist, retire, colleges
+      };
+    });
+
+    log(`✅ 연도별 집계 완료 (${years.length}개년)`, 'log-ok');
+    setProgress(70);
+
+    // Collect rate inputs
+    const rateData = {};
+    document.querySelectorAll('[id^="rate_"]').forEach(input => {
+      const yr = input.id.replace('rate_', '');
+      const val = parseFloat(input.value);
+      const existing = existingRates[yr];
+      rateData[yr] = {
+        exclude: isNaN(val) ? (existing?.exclude ?? null) : val,
+        include: existing?.include ?? null
+      };
+    });
+
+    log(`✅ 확보율 데이터: ${Object.keys(rateData).length}개년`, 'log-ok');
+    setProgress(85);
+
+    // Build final JSON
+    const today = new Date().toISOString().slice(0,10);
+    generatedJSON = {
+      meta: {
+        updated: today,
+        source: document.getElementById('fileName').textContent,
+        years: years
+      },
+      rate: rateData,
+      summary: summary
+    };
+
+    log(`✅ JSON 생성 완료 (${formatBytes(JSON.stringify(generatedJSON).length)})`, 'log-ok');
+    setProgress(100);
+
+    // Preview
+    const latestYr = years[years.length-1];
+    const ls = summary[latestYr];
+    document.getElementById('previewGrid').innerHTML = `
+      <div class="pv-card"><div class="pv-num">${latestYr}</div><div class="pv-lbl">최신 학년도</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.total}</div><div class="pv-lbl">전임교원 수</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.tenure_track}</div><div class="pv-lbl">정년트랙</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.non_tenure}</div><div class="pv-lbl">비정년트랙</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.male}</div><div class="pv-lbl">남자</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.female}</div><div class="pv-lbl">여자</div></div>`;
+    document.getElementById('previewBox').classList.add('show');
+
+    // Result
+    document.getElementById('resultDesc').textContent =
+      `${years.length}개 학년도 · ${records.length}건 · 생성일: ${today}`;
+    document.getElementById('resultBox').classList.add('show');
+
+  } catch(e) {
+    log('❌ 오류: ' + e.message, 'log-err');
+    console.error(e);
+  }
+
+  btn.disabled = false;
+}
+
+// ─── DOWNLOAD ───
+function downloadJSON() {
+  if (!generatedJSON) return;
+  const blob = new Blob([JSON.stringify(generatedJSON, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'dashboard_data.json';
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ─── RESET ───
+function resetFile() {
+  workbook = null;
+  selectedSheet = null;
+  generatedJSON = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').classList.remove('show');
+  document.getElementById('sheetPicker').classList.remove('show');
+  document.getElementById('rateSection').classList.remove('show');
+  document.getElementById('progress').classList.remove('show');
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('processBtn').disabled = true;
+  document.getElementById('progressBar').style.width = '0';
+  document.getElementById('progressLog').innerHTML = '';
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+</script>
+</body>
+</html>
