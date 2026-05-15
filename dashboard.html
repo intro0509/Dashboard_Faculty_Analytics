@@ -6,7 +6,7 @@
 <title>전임교원 현황 대시보드</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <style>
-  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;700;900&family=DM+Mono:wght@400;500&display=swap');
+  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
 
   :root {
     --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1e2d45;
@@ -15,7 +15,7 @@
     --text:#e2e8f0; --text-muted:#64748b; --text-dim:#94a3b8;
   }
   *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
+  body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
   body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
 
   .container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
@@ -23,25 +23,25 @@
   /* HEADER */
   header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
   .header-left h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,#fff 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .header-left p{font-size:13px;color:var(--text-muted);margin-top:3px;font-family:'DM Mono',monospace}
+  .header-left p{font-size:13px;color:var(--text-muted);margin-top:3px;font-family:'Pretendard',sans-serif}
   .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
 
   /* STATUS BAR */
   .status-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:13px;flex-wrap:wrap}
   .status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent5);box-shadow:0 0 6px var(--accent5);animation:pulse 2s infinite}
   @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-  .status-text{color:var(--text-dim);font-family:'DM Mono',monospace}
+  .status-text{color:var(--text-dim);font-family:'Pretendard',sans-serif}
   .status-text strong{color:var(--text)}
 
   /* CONTROLS */
   .controls{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
   .ctrl-group{display:flex;align-items:center;gap:8px}
   .ctrl-label{font-size:13px;color:var(--text-muted);white-space:nowrap}
-  .btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
+  .btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
   .btn:hover{border-color:var(--accent);color:var(--text)}
   .btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
   .btn.amber.active{background:var(--accent4);border-color:var(--accent4)}
-  select{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;outline:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;color-scheme:dark}
+  select{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;outline:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;color-scheme:dark}
 
   /* KPI */
   .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
@@ -50,7 +50,7 @@
   .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kpi-color,var(--accent))}
   .kpi-icon{font-size:18px;margin-bottom:8px}
   .kpi-label{font-size:16px;color:var(--text-dim);font-weight:600;letter-spacing:-.3px;margin-bottom:4px}
-  .kpi-value{font-size:36px;font-weight:900;font-family:'DM Mono',monospace;line-height:1;color:var(--text)}
+  .kpi-value{font-size:36px;font-weight:900;font-family:'Pretendard',sans-serif;line-height:1;color:var(--text)}
   .kpi-value small{font-size:15px;font-weight:400;color:var(--text-muted);margin-left:3px}
   .kpi-sub{font-size:13px;color:var(--text-muted);margin-top:5px}
   .kpi-delta{font-size:13px;margin-top:3px}
@@ -76,8 +76,8 @@
   .track-item{display:flex;flex-direction:column;gap:3px}
   .track-hdr{display:flex;justify-content:space-between;align-items:center}
   .track-name{font-size:13px;color:var(--text-dim)}
-  .track-pct{font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace}
-  .track-count{font-size:14px;font-family:'DM Mono',monospace;font-weight:600}
+  .track-pct{font-size:12px;color:var(--text-muted);font-family:'Pretendard',sans-serif}
+  .track-count{font-size:14px;font-family:'Pretendard',sans-serif;font-weight:600}
   .bar-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
   .bar-fill{height:100%;border-radius:3px;transition:width 1.2s ease;width:0}
 
@@ -86,26 +86,26 @@
   .gender-legend{display:flex;flex-direction:column;gap:10px}
   .lg-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim)}
   .lg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-  .lg-num{font-family:'DM Mono',monospace;font-weight:700;font-size:16px;color:var(--text);margin-left:4px}
+  .lg-num{font-family:'Pretendard',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-left:4px}
 
   /* RANK GRID */
   .rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
   .rank-cell{padding:10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-align:center}
-  .rank-num{font-size:24px;font-weight:900;font-family:'DM Mono',monospace}
+  .rank-num{font-size:24px;font-weight:900;font-family:'Pretendard',sans-serif}
   .rank-lbl{font-size:12px;color:var(--text-muted);margin-top:2px}
 
   /* HISTOGRAM */
   .histo-wrap{display:flex;flex-direction:column;gap:7px}
-  .histo-row{display:grid;grid-template-columns:80px 1fr 52px 64px;align-items:center;gap:6px}
-  .histo-label{font-size:12px;color:var(--text-muted);text-align:right;font-family:'DM Mono',monospace;white-space:nowrap}
-  .histo-count{font-size:13px;font-family:'DM Mono',monospace;color:var(--text-dim)}
+  .histo-row{display:grid;grid-template-columns:80px 1fr 56px 60px;align-items:center;gap:6px}
+  .histo-label{font-size:12px;color:var(--text-muted);text-align:right;font-family:'Pretendard',sans-serif;white-space:nowrap}
+  .histo-count{font-size:13px;font-family:'Pretendard',sans-serif;color:var(--text-dim)}
 
   /* RETIRE TABLE */
   .retire-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
   .retire-table th{text-align:left;padding:7px 10px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
-  .retire-table td{padding:9px 10px;border-bottom:1px solid rgba(30,45,69,.6);color:var(--text-dim);font-family:'DM Mono',monospace}
+  .retire-table td{padding:9px 10px;border-bottom:1px solid rgba(30,45,69,.6);color:var(--text-dim);font-family:'Pretendard',sans-serif}
   .retire-table tr:last-child td{border-bottom:none}
-  .rbadge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-family:'Noto Sans KR',sans-serif}
+  .rbadge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-family:'Pretendard',sans-serif}
   .rb-now{background:rgba(239,68,68,.15);color:var(--danger)}
   .rb-1{background:rgba(245,158,11,.15);color:var(--accent4)}
   .rb-2{background:rgba(59,130,246,.15);color:var(--accent)}
@@ -115,7 +115,7 @@
   .college-table th{text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px}
   .college-table td{padding:7px 8px;border-bottom:1px solid rgba(30,45,69,.5);color:var(--text-dim)}
   .college-table tr:last-child td{border-bottom:none}
-  .college-table .num{font-family:'DM Mono',monospace;text-align:right}
+  .college-table .num{font-family:'Pretendard',sans-serif;text-align:right}
   .college-bar-wrap{position:relative;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
   .college-bar{height:100%;background:#ea580c;border-radius:3px;transition:width 1s ease}
 
@@ -123,13 +123,13 @@
   .loading{display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:12px}
   .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
   @keyframes spin{to{transform:rotate(360deg)}}
-  .load-text{font-size:12px;color:var(--text-muted);font-family:'DM Mono',monospace}
+  .load-text{font-size:12px;color:var(--text-muted);font-family:'Pretendard',sans-serif}
 
   /* ERROR */
   .error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:20px;text-align:center}
   .error-box h3{color:var(--danger);font-size:14px;margin-bottom:8px}
   .error-box p{font-size:12px;color:var(--text-muted);line-height:1.6}
-  .error-box code{font-family:'DM Mono',monospace;background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px}
+  .error-box code{font-family:'Pretendard',sans-serif;background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px}
 
   @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
 
@@ -142,7 +142,7 @@
 
   /* FILTER CHIPS */
   .filter-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-  .filter-chip{padding:4px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-size:12px;font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
+  .filter-chip{padding:4px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-size:12px;font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
   .filter-chip:hover{border-color:var(--accent);color:var(--text)}
   .filter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
   .filter-chip.active.amber{background:var(--accent4);border-color:var(--accent4)}
@@ -172,11 +172,11 @@
   .filter-summary{display:flex;align-items:center;gap:6px;padding:7px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;margin-bottom:16px;flex-wrap:wrap;font-size:13px;color:var(--text-dim)}
   .filter-summary .fs-label{color:var(--accent2);font-weight:600;margin-right:2px}
   .filter-summary .fs-tag{background:rgba(59,130,246,.15);color:var(--accent);padding:2px 8px;border-radius:10px}
-  .filter-summary .fs-total{margin-left:auto;font-family:'DM Mono',monospace;font-weight:700;color:var(--text)}
-  .filter-reset{padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:10px;cursor:pointer;transition:all .15s;font-family:'Noto Sans KR',sans-serif}
+  .filter-summary .fs-total{margin-left:auto;font-family:'Pretendard',sans-serif;font-weight:700;color:var(--text)}
+  .filter-reset{padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:10px;cursor:pointer;transition:all .15s;font-family:'Pretendard',sans-serif}
   .filter-reset:hover{border-color:var(--danger);color:var(--danger)}
 
-  footer{text-align:center;font-size:11px;color:var(--text-muted);padding:20px 0 8px;font-family:'DM Mono',monospace}
+  footer{text-align:center;font-size:11px;color:var(--text-muted);padding:20px 0 8px;font-family:'Pretendard',sans-serif}
 
   @media(max-width:1024px){
     .kpi-row{grid-template-columns:repeat(2,1fr)}
@@ -200,7 +200,7 @@
       <p id="headerMeta">데이터 로딩 중...</p>
     </div>
     <div class="header-right">
-      <span id="yearBadge" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;font-family:'DM Mono',monospace">-</span>
+      <span id="yearBadge" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;font-family:'Pretendard',sans-serif">-</span>
     </div>
   </header>
 
@@ -237,7 +237,7 @@
       <select id="yearSelect" onchange="onYearChange()" style="
         padding:3px 28px 3px 10px;border-radius:8px;border:1px solid rgba(59,130,246,.3);
         background:#1a2235;color:#e2e8f0;font-size:13px;
-        font-family:'Noto Sans KR',sans-serif;cursor:pointer;outline:none;appearance:none;
+        font-family:'Pretendard',sans-serif;cursor:pointer;outline:none;appearance:none;
         background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 fill=%22none%22%3E%3Cpath d=%22M1 1l4 4 4-4%22 stroke=%2294a3b8%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3C/svg%3E');
         background-repeat:no-repeat;background-position:right 8px center;font-weight:600;
         color-scheme:dark;
@@ -251,7 +251,7 @@
         <button onclick="openRosterTab()" style="
           padding:4px 12px;border-radius:8px;border:1px solid rgba(234,88,12,.4);
           background:rgba(234,88,12,.1);color:#fb923c;font-size:12px;
-          font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;
+          font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .2s;
           display:flex;align-items:center;gap:5px;white-space:nowrap;
         " onmouseover="this.style.background='rgba(234,88,12,.2)'" onmouseout="this.style.background='rgba(234,88,12,.1)'">
           📋 새 탭으로 보기
@@ -259,7 +259,7 @@
         <button onclick="downloadRosterExcel()" style="
           padding:4px 12px;border-radius:8px;border:1px solid rgba(16,185,129,.4);
           background:rgba(16,185,129,.1);color:#10b981;font-size:12px;
-          font-family:'Noto Sans KR',sans-serif;cursor:pointer;transition:all .2s;
+          font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .2s;
           display:flex;align-items:center;gap:5px;white-space:nowrap;
         " onmouseover="this.style.background='rgba(16,185,129,.2)'" onmouseout="this.style.background='rgba(16,185,129,.1)'">
           ⬇️ 엑셀 다운로드
@@ -433,7 +433,7 @@ let activeFilters = {
 
 // ============ CHART DEFAULTS ============
 Chart.defaults.color = '#64748b';
-Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.family = "'Pretendard', sans-serif";
 Chart.defaults.font.size = 11;
 const GRID = 'rgba(30,45,69,0.8)';
 const TICK = '#475569';
@@ -951,8 +951,8 @@ function renderRateChart() {
 
           const label = val.toFixed(2) + '%';
           ctx.font = isLast
-            ? 'bold 12px "DM Mono", monospace'
-            : '10px "DM Mono", monospace';
+            ? 'bold 12px "Pretendard", sans-serif'
+            : '10px "Pretendard", sans-serif';
           const textW = ctx.measureText(label).width;
           const boxPad = isLast ? 5 : 3;
           const boxH = isLast ? 20 : 16;
@@ -1048,10 +1048,10 @@ function renderDonutChart(canvasId, legendId, labels, values, colors, total) {
         const cx=(left+right)/2, cy=(top+bottom)/2;
         ctx.save();
         ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.font='bold 18px "DM Mono",monospace';
+        ctx.font='bold 18px "Pretendard",sans-serif';
         ctx.fillStyle='#e2e8f0';
         ctx.fillText(totalVal.toLocaleString(), cx, cy-8);
-        ctx.font='10px "Noto Sans KR",sans-serif';
+        ctx.font='10px "Pretendard",sans-serif';
         ctx.fillStyle='#64748b';
         ctx.fillText('명', cx, cy+10);
         ctx.restore();
@@ -1066,8 +1066,8 @@ function renderDonutChart(canvasId, legendId, labels, values, colors, total) {
     return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
       <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
       <span style="color:var(--text-dim);flex:1">${label}</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--text);font-weight:600">${cnt}명</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:12px">(${pct}%)</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600">${cnt}명</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</span>
     </div>`;
   }).join('');
 }
@@ -1171,8 +1171,8 @@ function renderRankChart(s) {
     return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
       <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
       <span style="color:var(--text-dim);flex:1">${label}</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--text);font-weight:600">${cnt}명</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:12px">(${pct}%)</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600">${cnt}명</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</span>
     </div>`;
   }).join('');
 }
@@ -1242,8 +1242,8 @@ function renderGenderChart(s) {
     return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
       <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
       <span style="color:var(--text-dim);flex:1">${label}</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--text);font-weight:600">${cnt}명</span>
-      <span style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:12px">(${pct}%)</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600">${cnt}명</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</span>
     </div>`;
   }).join('');
 }
@@ -1291,8 +1291,8 @@ function renderHisto(containerId, labels, values, colors) {
     return `<div class="histo-row">
       <div class="histo-label">${label}</div>
       <div class="bar-bg"><div class="bar-fill" style="background:${colors[i%colors.length]}" data-target="${barPct}"></div></div>
-      <div class="histo-count" style="white-space:nowrap;text-align:right">${values[i]}명</div>
-      <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap;text-align:right">(${ratePct}%)</div>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600;font-size:13px;white-space:nowrap;text-align:right">${values[i]}명</span>
+      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px;white-space:nowrap;text-align:right">(${ratePct}%)</span>
     </div>`;
   }).join('');
 }
@@ -1330,8 +1330,8 @@ function renderCollegeTable(s) {
       const pct = (cnt/total*100).toFixed(1);
       return `<tr>
         <td>${name}</td>
-        <td class="num" style="font-family:'DM Mono',monospace;color:var(--text);font-weight:600">${cnt}명</td>
-        <td class="num" style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:12px">(${pct}%)</td>
+        <td class="num" style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600;font-size:13px">${cnt}명</td>
+        <td class="num" style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</td>
         <td><div class="college-bar-wrap"><div class="college-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td>
       </tr>`;
     }).join('')}
@@ -1433,7 +1433,7 @@ async function openRosterTab() {
 <meta charset="UTF-8">
 <title>교원 명부 - ${currentYear}학년도 (${filterLabel})</title>
 <style>
-  body{font-family:'Noto Sans KR',sans-serif;background:#0a0e1a;color:#e2e8f0;margin:0;padding:20px}
+  body{font-family:'Pretendard',sans-serif;background:#0a0e1a;color:#e2e8f0;margin:0;padding:20px}
   h2{font-size:16px;font-weight:700;margin-bottom:4px;color:#fff}
   p{font-size:12px;color:#64748b;margin-bottom:16px}
   table{width:100%;border-collapse:collapse;font-size:12px}
