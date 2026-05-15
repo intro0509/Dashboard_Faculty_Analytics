@@ -359,7 +359,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         <div class="histo-wrap" id="tenureHisto"></div>
       </div>
       <div class="card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령대별 분포</div></div>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
 
         <div class="histo-wrap" id="ageHisto"></div>
       </div>
@@ -382,7 +382,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <!-- 히트맵: 연령대 x 재직기간 -->
     <div class="grid-full">
       <div class="card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령대 × 재직기간 분포</div></div>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
         <div id="heatmapWrap"></div>
       </div>
     </div>
@@ -657,84 +657,133 @@ function renderKPI(s) {
 
 // RATE CHART (의학제외/포함 2개 라인)
 function renderRateChart() {
-  const allYrs=Object.keys(DB.rate).sort();
-  const valsExcl=allYrs.map(y=>DB.rate[y]?.exclude??null);
-  const valsIncl=allYrs.map(y=>DB.rate[y]?.include??null);
-  const hasIncl=valsIncl.some(v=>v!==null);
-  const lastIdx=allYrs.length-1;
+  const allYrs = Object.keys(DB.rate).sort();
+  const valsExcl = allYrs.map(y => DB.rate[y]?.exclude ?? null);
+  const valsIncl = allYrs.map(y => DB.rate[y]?.include ?? null);
+  const hasIncl = valsIncl.some(v => v !== null);
+  const lastIdx = allYrs.length - 1;
 
-  const ctx=document.getElementById('rateChart').getContext('2d');
-  if(charts.rate)charts.rate.destroy();
-  const grad=ctx.createLinearGradient(0,0,0,260);
-  grad.addColorStop(0,'rgba(19,101,254,0.1)');grad.addColorStop(1,'rgba(19,101,254,0)');
-  const grad2=ctx.createLinearGradient(0,0,0,260);
-  grad2.addColorStop(0,'rgba(139,92,246,0.08)');grad2.addColorStop(1,'rgba(139,92,246,0)');
+  // 유효값 기준으로 y축 범위 자동 계산
+  const allVals = [...valsExcl, ...valsIncl].filter(v => v !== null);
+  const minVal = allVals.length ? Math.floor(Math.min(...allVals) - 3) : 55;
+  const maxVal = allVals.length ? Math.ceil(Math.max(...allVals) + 5) : 80;
 
-  const datasets=[{
-    label:'의학계열 제외',data:valsExcl,
-    borderColor:'#1365FE',backgroundColor:grad,borderWidth:2,
-    pointBackgroundColor:allYrs.map((_,i)=>i===lastIdx?'#fff':'#1365FE'),
-    pointBorderColor:allYrs.map((_,i)=>i===lastIdx?'#1365FE':'transparent'),
-    pointBorderWidth:2,pointRadius:allYrs.map((_,i)=>i===lastIdx?8:4),
-    fill:true,tension:.4
+  const canvas = document.getElementById('rateChart');
+  const ctx = canvas.getContext('2d');
+  if (charts.rate) charts.rate.destroy();
+
+  const grad = ctx.createLinearGradient(0, 0, 0, 200);
+  grad.addColorStop(0, 'rgba(19,101,254,0.12)');
+  grad.addColorStop(1, 'rgba(19,101,254,0)');
+
+  const datasets = [{
+    label: '의학계열 제외',
+    data: valsExcl,
+    borderColor: '#1365FE',
+    backgroundColor: grad,
+    borderWidth: 2,
+    pointBackgroundColor: '#1365FE',
+    pointBorderColor: '#fff',
+    pointBorderWidth: 2,
+    pointRadius: 4,
+    fill: true,
+    tension: 0.4,
+    spanGaps: true
   }];
-  if(hasIncl){
+
+  if (hasIncl) {
     datasets.push({
-      label:'의학계열 포함',data:valsIncl,
-      borderColor:'#8b5cf6',backgroundColor:grad2,borderWidth:2,
-      borderDash:[5,3],
-      pointBackgroundColor:'#8b5cf6',pointBorderColor:'transparent',
-      pointRadius:3,fill:false,tension:.4
+      label: '의학계열 포함',
+      data: valsIncl,
+      borderColor: '#8b5cf6',
+      backgroundColor: 'transparent',
+      borderWidth: 2,
+      borderDash: [5, 3],
+      pointBackgroundColor: '#8b5cf6',
+      pointBorderColor: '#fff',
+      pointBorderWidth: 2,
+      pointRadius: 4,
+      fill: false,
+      tension: 0.4,
+      spanGaps: true
     });
   }
 
-  charts.rate=new Chart(ctx,{
-    type:'line',data:{labels:allYrs,datasets},
-    options:{
-      responsive:true,maintainAspectRatio:false,
-      layout:{padding:{top:56,right:24,left:8,bottom:8}},
-      plugins:{
-        legend:{
-          display:hasIncl,
-          position:'top',
-          align:'end',
-          labels:{
-            color:'#6b7280',font:{size:11,family:"'Pretendard',sans-serif"},
-            boxWidth:20,boxHeight:2,usePointStyle:false,padding:16
+  charts.rate = new Chart(ctx, {
+    type: 'line',
+    data: { labels: allYrs, datasets },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      layout: { padding: { top: 30, right: 20, left: 8, bottom: 8 } },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'top',
+          align: 'end',
+          labels: {
+            color: '#6b7280',
+            font: { size: 11, family: "'Pretendard',sans-serif" },
+            boxWidth: 24, boxHeight: 2,
+            usePointStyle: false, padding: 16
           }
         },
-        tooltip:{
-          backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,
-          titleColor:'#111',bodyColor:'#6b7280',
-          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%`}
+        tooltip: {
+          backgroundColor: '#fff',
+          borderColor: '#e5eaf5',
+          borderWidth: 1,
+          titleColor: '#111',
+          bodyColor: '#6b7280',
+          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%` }
         }
       },
-      scales:{
-        x:{grid:{color:GRID},ticks:{color:'#9ca3af'}},
-        y:{grid:{color:GRID},ticks:{color:'#9ca3af',callback:v=>v+'%'},min:55,max:80}
+      scales: {
+        x: { grid: { color: GRID }, ticks: { color: '#9ca3af' } },
+        y: {
+          grid: { color: GRID },
+          ticks: { color: '#9ca3af', callback: v => v + '%' },
+          min: minVal,
+          max: maxVal
+        }
       }
     },
-    plugins:[{id:'rl',afterDraw(chart){
-      // 의학제외 라인 마지막 포인트 말풍선
-      const{ctx,data}=chart,ds0=chart.getDatasetMeta(0);
-      const val=data.datasets[0].data[lastIdx];
-      if(val===null||val===undefined)return;
-      const ptArr=ds0.data;
-      if(!ptArr||!ptArr[lastIdx])return;
-      const pt=ptArr[lastIdx],x=pt.x,y=pt.y;
-      if(x===undefined||y===undefined)return;
-      ctx.save();ctx.beginPath();ctx.rect(0,0,chart.width,chart.height);ctx.clip();
-      const label=val.toFixed(2)+'%';
-      ctx.font='bold 12px "Pretendard",sans-serif';
-      const tw=ctx.measureText(label).width,pad=6,bh=22,bw=tw+pad*2;
-      let bx=x-bw/2,by=y-bh-8;
-      if(by<4)by=4;if(bx<4)bx=4;if(bx+bw>chart.width-4)bx=chart.width-4-bw;
-      ctx.fillStyle='#1365FE';
-      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,4);else ctx.rect(bx,by,bw,bh);ctx.fill();
-      if(by+bh<y){ctx.beginPath();ctx.moveTo(x-4,by+bh);ctx.lineTo(x,by+bh+5);ctx.lineTo(x+4,by+bh);ctx.fill();}
-      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
-      ctx.fillText(label,bx+bw/2,by+bh/2);ctx.restore();
-    }}]
+    plugins: [{
+      id: 'rateLabels',
+      afterDatasetsDraw(chart) {
+        const { ctx, data } = chart;
+        data.datasets.forEach((ds, di) => {
+          const meta = chart.getDatasetMeta(di);
+          if (meta.hidden) return;
+          ds.data.forEach((val, i) => {
+            if (val === null || val === undefined) return;
+            const pt = meta.data[i];
+            if (!pt) return;
+            const x = pt.x, y = pt.y;
+            const isLast = (i === lastIdx);
+            if (!isLast) return; // 마지막 포인트만 라벨 표시
+            const label = val.toFixed(2) + '%';
+            const color = di === 0 ? '#1365FE' : '#8b5cf6';
+            ctx.save();
+            ctx.font = 'bold 12px "Pretendard",sans-serif';
+            const tw = ctx.measureText(label).width;
+            const pad = 6, bh = 22, bw = tw + pad * 2;
+            let bx = x - bw / 2, by = y - bh - 10;
+            if (by < 4) by = y + 6;
+            if (bx < 4) bx = 4;
+            if (bx + bw > chart.width - 4) bx = chart.width - 4 - bw;
+            ctx.fillStyle = color;
+            if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 4);
+            else ctx.rect(bx, by, bw, bh);
+            ctx.fill();
+            ctx.fillStyle = '#fff';
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText(label, bx + bw / 2, by + bh / 2);
+            ctx.restore();
+          });
+        });
+      }
+    }]
   });
 }
 
@@ -842,8 +891,8 @@ function renderRetire(s){
         }
       },
       scales:{
-        x:{grid:{color:GRID},ticks:{color:'#9ca3af'},beginAtZero:true},
-        y:{grid:{display:false},ticks:{color:'#374151',font:{size:11}}}
+        x:{grid:{color:GRID},ticks:{display:false},beginAtZero:true},
+        y:{grid:{display:false},ticks:{color:'#374151',font:{size:11}},reverse:true}
       }
     },
     plugins:[{
@@ -892,8 +941,8 @@ function renderHeatmap(s) {
   // 가로=연령대(열), 세로=재직기간(행)
   let html=`<div style="overflow-x:auto"><table class="heatmap-table">
     <thead><tr>
-      <th class="row-header" style="min-width:70px">재직기간 \\ 연령대</th>
-      ${AGE.map(a=>`<th style="min-width:44px;width:44px">${a}</th>`).join('')}
+      <th class="row-header" style="min-width:70px"></th>
+      ${AGE.map(()=>`<th style="min-width:44px;width:44px"></th>`).join('')}
     </tr></thead>
     <tbody>`;
 
@@ -909,6 +958,11 @@ function renderHeatmap(s) {
     });
     html+='</tr>';
   });
+
+  html+=`<tr>
+    <th class="row-header" style="min-width:70px"></th>
+    ${AGE.map(a=>`<th style="min-width:44px;width:44px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${a}</th>`).join('')}
+  </tr>`;
 
   html+='</tbody></table></div>';
 
@@ -927,11 +981,17 @@ function renderCollege(s){
   if(!Object.keys(colleges).length){document.getElementById('collegeTable').innerHTML='<tbody><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">해당 데이터 없음</td></tr></tbody>';return;}
   const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
   const max=sorted[0]?.[1]||1;
-  document.getElementById('collegeTable').innerHTML=`<thead><tr><th>단과대학</th><th style="text-align:right">인원</th><th style="text-align:right">비율</th><th style="width:90px"></th></tr></thead><tbody>${sorted.map(([name,cnt])=>{
+  document.getElementById('collegeTable').innerHTML=`<tbody>${sorted.map(([name,cnt])=>{
     const pct=(cnt/total*100).toFixed(1);
-    return `<tr><td>${name}</td><td class="col-num">${cnt}명</td><td class="col-pct">(${pct}%)</td><td><div class="col-bar-bg"><div class="col-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td></tr>`;
+    const barPct=(cnt/max*100).toFixed(1);
+    return `<tr>
+      <td style="font-size:11px;color:#9ca3af;text-align:right;padding:4px 6px;white-space:nowrap">${name}</td>
+      <td style="padding:4px 4px"><div class="bar-bg"><div class="bar-fill" style="background:#1365FE" data-target="${barPct}"></div></div></td>
+      <td style="font-size:12px;font-weight:700;color:#111827;text-align:right;padding:4px 4px;white-space:nowrap">${cnt}명</td>
+      <td style="font-size:11px;color:#9ca3af;text-align:right;padding:4px 4px;white-space:nowrap">(${pct}%)</td>
+    </tr>`;
   }).join('')}</tbody>`;
-  setTimeout(()=>document.querySelectorAll('.col-bar[data-target]').forEach(el=>{el.style.width=el.dataset.target+'%';}),50);
+
 }
 
 function animateBars(){
