@@ -155,6 +155,15 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 @media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
 @media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
 
+/* HEATMAP */
+.heatmap-table{border-collapse:separate;border-spacing:4px;width:100%}
+.heatmap-table th{font-size:11px;color:#9ca3af;font-weight:500;padding:4px 8px;text-align:center;white-space:nowrap}
+.heatmap-table th.row-header{text-align:right;min-width:80px}
+.heatmap-cell{border-radius:6px;height:44px;text-align:center;vertical-align:middle;font-size:11px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
+.heatmap-cell .cell-cnt{font-size:12px;font-weight:700}
+.heatmap-cell .cell-pct{font-size:10px;opacity:.8}
+
 footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
@@ -403,14 +412,21 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="grid-2">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
-        <div id="retireTable"></div>
-        <div style="position:relative;height:120px;margin-top:12px"><canvas id="retireChart"></canvas></div>
+        <div style="position:relative;height:200px"><canvas id="retireChart"></canvas></div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
         <div class="college-scroll">
           <table class="college-table" id="collegeTable"></table>
         </div>
+      </div>
+    </div>
+
+    <!-- 히트맵: 연령대 x 재직기간 -->
+    <div class="grid-full">
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령대 × 재직기간 분포 히트맵</div></div>
+        <div id="heatmapWrap" style="overflow-x:auto"></div>
       </div>
     </div>
 
@@ -658,6 +674,7 @@ async function renderAll() {
   renderHisto('ageHisto', s.ages, AGE_COLORS, s.total);
   renderRetire(s);
   renderCollege(s);
+  renderHeatmap(s);
   document.getElementById('filterTotal').textContent = s.total.toLocaleString()+'명';
   animateBars();
   document.getElementById('footer').textContent = `동아대학교 전임교원 현황 대시보드 · ${currentYear}학년도 기준 · 업데이트: ${DB.meta.updated}`;
@@ -681,33 +698,82 @@ function renderKPI(s) {
   document.getElementById('kpiGenderSub').innerHTML=`여자 <strong style="color:#111">${s.female}</strong>명 / 남자 <strong style="color:#111">${s.male}</strong>명`;
 }
 
-// RATE CHART
+// RATE CHART (의학제외/포함 2개 라인)
 function renderRateChart() {
-  const rk=currentMedical==='exclude'?'exclude':'include';
-  const allYrs=Object.keys(DB.rate).sort(), vals=allYrs.map(y=>DB.rate[y]?(DB.rate[y][rk]??DB.rate[y].exclude??null):null);
+  const allYrs=Object.keys(DB.rate).sort();
+  const valsExcl=allYrs.map(y=>DB.rate[y]?.exclude??null);
+  const valsIncl=allYrs.map(y=>DB.rate[y]?.include??null);
+  const hasIncl=valsIncl.some(v=>v!==null);
   const lastIdx=allYrs.length-1;
+
   const ctx=document.getElementById('rateChart').getContext('2d');
   if(charts.rate)charts.rate.destroy();
   const grad=ctx.createLinearGradient(0,0,0,260);
-  grad.addColorStop(0,'rgba(19,101,254,0.12)');grad.addColorStop(1,'rgba(19,101,254,0)');
+  grad.addColorStop(0,'rgba(19,101,254,0.1)');grad.addColorStop(1,'rgba(19,101,254,0)');
+  const grad2=ctx.createLinearGradient(0,0,0,260);
+  grad2.addColorStop(0,'rgba(139,92,246,0.08)');grad2.addColorStop(1,'rgba(139,92,246,0)');
+
+  const datasets=[{
+    label:'의학계열 제외',data:valsExcl,
+    borderColor:'#1365FE',backgroundColor:grad,borderWidth:2,
+    pointBackgroundColor:allYrs.map((_,i)=>i===lastIdx?'#fff':'#1365FE'),
+    pointBorderColor:allYrs.map((_,i)=>i===lastIdx?'#1365FE':'transparent'),
+    pointBorderWidth:2,pointRadius:allYrs.map((_,i)=>i===lastIdx?8:4),
+    fill:true,tension:.4
+  }];
+  if(hasIncl){
+    datasets.push({
+      label:'의학계열 포함',data:valsIncl,
+      borderColor:'#8b5cf6',backgroundColor:grad2,borderWidth:2,
+      borderDash:[5,3],
+      pointBackgroundColor:'#8b5cf6',pointBorderColor:'transparent',
+      pointRadius:3,fill:false,tension:.4
+    });
+  }
+
   charts.rate=new Chart(ctx,{
-    type:'line',data:{labels:allYrs,datasets:[{label:'확보율',data:vals,borderColor:'#1365FE',backgroundColor:grad,borderWidth:2,pointBackgroundColor:allYrs.map((_,i)=>i===lastIdx?'#fff':'#1365FE'),pointBorderColor:allYrs.map((_,i)=>i===lastIdx?'#1365FE':'transparent'),pointBorderWidth:2,pointRadius:allYrs.map((_,i)=>i===lastIdx?8:4),fill:true,tension:.4}]},
-    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:56,right:24,left:8,bottom:8}},plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>` 확보율: ${c.parsed.y?.toFixed(2)}%`}}},scales:{x:{grid:{color:GRID},ticks:{color:'#9ca3af'}},y:{grid:{color:GRID},ticks:{color:'#9ca3af',callback:v=>v+'%'},min:55,max:75}}},
+    type:'line',data:{labels:allYrs,datasets},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      layout:{padding:{top:56,right:24,left:8,bottom:8}},
+      plugins:{
+        legend:{
+          display:hasIncl,
+          position:'top',
+          align:'end',
+          labels:{
+            color:'#6b7280',font:{size:11,family:"'Pretendard',sans-serif"},
+            boxWidth:20,boxHeight:2,usePointStyle:false,padding:16
+          }
+        },
+        tooltip:{
+          backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,
+          titleColor:'#111',bodyColor:'#6b7280',
+          callbacks:{label:c=>` ${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%`}
+        }
+      },
+      scales:{
+        x:{grid:{color:GRID},ticks:{color:'#9ca3af'}},
+        y:{grid:{color:GRID},ticks:{color:'#9ca3af',callback:v=>v+'%'},min:55,max:80}
+      }
+    },
     plugins:[{id:'rl',afterDraw(chart){
-      const{ctx,data,chartArea}=chart,ds=chart.getDatasetMeta(0);
-      data.datasets[0].data.forEach((val,i)=>{
-        if(val===null)return;
-        const pt=ds.data[i],x=pt.x,y=pt.y,isLast=i===lastIdx;
-        ctx.save();ctx.beginPath();ctx.rect(0,0,chart.width,chart.height);ctx.clip();
-        const label=val.toFixed(2)+'%';
-        ctx.font=isLast?'bold 12px "Pretendard",sans-serif':'11px "Pretendard",sans-serif';
-        const tw=ctx.measureText(label).width,pad=isLast?6:4,bh=isLast?22:17,bw=tw+pad*2;
-        let bx=x-bw/2,by=y-bh-(isLast?8:6);
-        if(by<4)by=4;if(bx<4)bx=4;if(bx+bw>chart.width-4)bx=chart.width-4-bw;
-        if(isLast){ctx.fillStyle='#1365FE';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,4);else ctx.rect(bx,by,bw,bh);ctx.fill();if(by+bh<y){ctx.beginPath();ctx.moveTo(x-4,by+bh);ctx.lineTo(x,by+bh+5);ctx.lineTo(x+4,by+bh);ctx.fill();}ctx.fillStyle='#fff';}
-        else{ctx.fillStyle='rgba(243,244,246,0.95)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,3);else ctx.rect(bx,by,bw,bh);ctx.fill();ctx.fillStyle='#6b7280';}
-        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,bx+bw/2,by+bh/2);ctx.restore();
-      });
+      // 의학제외 라인 마지막 포인트 말풍선
+      const{ctx,data}=chart,ds0=chart.getDatasetMeta(0);
+      const val=data.datasets[0].data[lastIdx];
+      if(val===null)return;
+      const pt=ds0.data[lastIdx],x=pt.x,y=pt.y;
+      ctx.save();ctx.beginPath();ctx.rect(0,0,chart.width,chart.height);ctx.clip();
+      const label=val.toFixed(2)+'%';
+      ctx.font='bold 12px "Pretendard",sans-serif';
+      const tw=ctx.measureText(label).width,pad=6,bh=22,bw=tw+pad*2;
+      let bx=x-bw/2,by=y-bh-8;
+      if(by<4)by=4;if(bx<4)bx=4;if(bx+bw>chart.width-4)bx=chart.width-4-bw;
+      ctx.fillStyle='#1365FE';
+      ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,4);else ctx.rect(bx,by,bw,bh);ctx.fill();
+      if(by+bh<y){ctx.beginPath();ctx.moveTo(x-4,by+bh);ctx.lineTo(x,by+bh+5);ctx.lineTo(x+4,by+bh);ctx.fill();}
+      ctx.fillStyle='#fff';ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.fillText(label,bx+bw/2,by+bh/2);ctx.restore();
     }}]
   });
 }
@@ -777,27 +843,126 @@ function renderHisto(cid, dataObj, colors, total) {
   }).join('');
 }
 
-// RETIRE
+// RETIRE (5개년 세로막대)
 function renderRetire(s){
-  const r=s.retire, yr=parseInt(currentYear);
-  const rows=[
-    {badge:'rb0',label:`당해(-) ${yr}학년도`,cnt:r['퇴직예정(-)'||0]||0,color:'#dc2626'},
-    {badge:'rb1',label:`예정(+1) ${yr+1}학년도`,cnt:r['퇴직예정(+1)']||0,color:'#ea580c'},
-    {badge:'rb2',label:`예정(+2) ${yr+2}학년도`,cnt:r['퇴직예정(+2)']||0,color:'#1365FE'},
-  ];
-  const mx=Math.max(...rows.map(r=>r.cnt),1);
-  document.getElementById('retireTable').innerHTML=rows.map(row=>`
-    <div class="retire-row">
-      <span class="rbadge ${row.badge}">${row.label}</span>
-      <strong style="font-size:14px;color:${row.color};min-width:38px;text-align:right">${row.cnt}명</strong>
-      <div class="retire-bar-bg"><div class="retire-bar" style="background:${row.color}" data-target="${(row.cnt/mx*100).toFixed(1)}"></div></div>
-    </div>`).join('');
+  const yr=parseInt(currentYear);
+  const mk=currentMedical==='include'?'include':'exclude';
+  const trends=DB.retire_trends?.[currentYear]?.[mk]||{};
+
+  // 5개년 라벨/데이터
+  const labels=[], values=[], colors=[];
+  const baseColors=['#dc2626','#ea580c','#f97316','#fb923c','#fbbf24'];
+  for(let i=0;i<5;i++){
+    const y=yr+i;
+    labels.push(`${y}학년도`);
+    values.push(trends[String(y)]||0);
+    colors.push(baseColors[i]+'dd');
+  }
+
   const ctx=document.getElementById('retireChart').getContext('2d');
   if(charts.retire)charts.retire.destroy();
   charts.retire=new Chart(ctx,{
-    type:'bar',data:{labels:rows.map(r=>r.label.split(' ')[0]),datasets:[{data:rows.map(r=>r.cnt),backgroundColor:rows.map(r=>r.color+'cc'),borderRadius:5,borderWidth:0}]},
-    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280'}},scales:{x:{grid:{display:false},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:GRID},ticks:{color:'#9ca3af'}}}}
+    type:'bar',
+    data:{
+      labels,
+      datasets:[{
+        data:values,
+        backgroundColor:colors,
+        borderRadius:6,
+        borderWidth:0,
+      }]
+    },
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{
+        legend:{display:false},
+        tooltip:{
+          backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,
+          titleColor:'#111',bodyColor:'#6b7280',
+          callbacks:{label:c=>` ${c.parsed.y}명`}
+        }
+      },
+      scales:{
+        x:{grid:{display:false},ticks:{color:'#9ca3af',font:{size:11}}},
+        y:{grid:{color:GRID},ticks:{color:'#9ca3af'},beginAtZero:true}
+      }
+    },
+    plugins:[{
+      id:'retireLabels',
+      afterDatasetsDraw(chart){
+        const{ctx,data}=chart;
+        chart.getDatasetMeta(0).data.forEach((bar,i)=>{
+          const v=data.datasets[0].data[i];
+          if(!v)return;
+          ctx.save();
+          ctx.font='bold 12px "Pretendard",sans-serif';
+          ctx.fillStyle='#111827';
+          ctx.textAlign='center';
+          ctx.textBaseline='bottom';
+          ctx.fillText(v+'명',bar.x,bar.y-2);
+          ctx.restore();
+        });
+      }
+    }]
   });
+}
+
+// HEATMAP
+function renderHeatmap(s) {
+  const AGE=['30세 미만','30세-40세','40세-50세','50세-60세','60세 초과'];
+  const TEN=['5년 미만','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
+  const heatmap=s.heatmap||{};
+  const total=s.total||1;
+
+  // 최대값 계산
+  let maxVal=0;
+  AGE.forEach(a=>TEN.forEach(t=>{const v=heatmap[a]?.[t]||0;if(v>maxVal)maxVal=v;}));
+
+  // 색상 계산 (0→흰색, max→#1365FE)
+  function cellColor(val){
+    if(!val||!maxVal)return'#f8faff';
+    const ratio=val/maxVal;
+    const r=Math.round(19+(241-19)*(1-ratio));
+    const g=Math.round(101+(250-101)*(1-ratio));
+    const b=Math.round(254+(255-254)*(1-ratio));
+    return`rgba(${r},${g},${b},${0.15+ratio*0.85})`;
+  }
+  function textColor(val){
+    if(!val||!maxVal)return'#9ca3af';
+    return val/maxVal>0.5?'#fff':'#1365FE';
+  }
+
+  let html=`<table class="heatmap-table">
+    <thead><tr>
+      <th class="row-header">연령대 \ 재직기간</th>
+      ${TEN.map(t=>`<th>${t.replace('년-','~').replace('년 미만','<5').replace('년 초과','+')}</th>`).join('')}
+    </tr></thead>
+    <tbody>`;
+
+  AGE.forEach(ag=>{
+    html+=`<tr><th class="row-header">${ag}</th>`;
+    TEN.forEach(t=>{
+      const v=heatmap[ag]?.[t]||0;
+      const pct=total>0?(v/total*100).toFixed(1):'0.0';
+      const bg=cellColor(v), tc=textColor(v);
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc}" title="${ag} × ${t}: ${v}명 (${pct}%)">
+        <div class="cell-cnt">${v||''}</div>
+        ${v?`<div class="cell-pct">${pct}%</div>`:''}
+      </td>`;
+    });
+    html+='</tr>';
+  });
+
+  html+='</tbody></table>';
+
+  // 범례
+  html+=`<div style="display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end;font-size:11px;color:#9ca3af">
+    <span>적음</span>
+    ${[0.1,0.3,0.5,0.7,0.9].map(r=>`<div style="width:20px;height:12px;border-radius:3px;background:rgba(19,101,254,${0.15+r*0.85})"></div>`).join('')}
+    <span>많음</span>
+  </div>`;
+
+  document.getElementById('heatmapWrap').innerHTML=html;
 }
 
 // COLLEGE
