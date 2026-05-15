@@ -3,1481 +3,823 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>전임교원 현황 대시보드</title>
+<title>동아대학교 교원관리 시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
-  @import url('https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css');
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;color:#111827;font-size:14px}
 
-  :root {
-    --bg:#0a0e1a; --surface:#111827; --surface2:#1a2235; --border:#1e2d45;
-    --accent:#3b82f6; --accent2:#06b6d4; --accent3:#8b5cf6;
-    --accent4:#f59e0b; --accent5:#10b981; --danger:#ef4444;
-    --text:#e2e8f0; --text-muted:#64748b; --text-dim:#94a3b8;
-  }
-  *{margin:0;padding:0;box-sizing:border-box}
-  body{font-family:'Pretendard',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden}
-  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+/* TOPNAV */
+.topnav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5eaf5;height:56px;display:flex;align-items:center;padding:0 28px;gap:0}
+.logo{display:flex;align-items:center;gap:10px;margin-right:36px;text-decoration:none}
+.logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.logo-box svg{width:16px;height:16px}
+.logo-text{font-size:14px;font-weight:700;color:#111827;white-space:nowrap}
+.logo-text span{color:#1365FE}
+.nav-tabs{display:flex;align-items:center;gap:2px;flex:1}
+.nav-tab{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;color:#6b7280;cursor:pointer;transition:all .15s;border:none;background:none;font-family:'Pretendard',sans-serif;white-space:nowrap}
+.nav-tab:hover{background:#f5f7ff;color:#1365FE}
+.nav-tab.active{background:#EBF1FF;color:#1365FE;font-weight:600}
+.nav-tab.disabled{color:#c5cad8;cursor:default}
+.nav-tab.disabled:hover{background:none;color:#c5cad8}
+.nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:10px}
+.nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5eaf5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;transition:all .15s}
+.nav-icon-btn:hover{border-color:#1365FE;color:#1365FE}
+.nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
 
-  .container{position:relative;z-index:1;max-width:1400px;margin:0 auto;padding:24px}
+/* PAGE */
+.page{display:none}
+.page.active{display:block}
 
-  /* HEADER */
-  header{display:flex;align-items:center;justify-content:space-between;margin-bottom:24px;padding-bottom:20px;border-bottom:1px solid var(--border);flex-wrap:wrap;gap:12px}
-  .header-left h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,#fff 0%,var(--accent2) 100%);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
-  .header-left p{font-size:13px;color:var(--text-muted);margin-top:3px;font-family:'Pretendard',sans-serif}
-  .header-right{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+/* DASHBOARD */
+.dash-wrap{min-height:calc(100vh - 56px);background:linear-gradient(145deg,#ffffff 0%,#ffffff 55%,#DBE8FE 100%);padding:24px 28px}
 
-  /* STATUS BAR */
-  .status-bar{display:flex;align-items:center;gap:12px;margin-bottom:20px;padding:10px 16px;background:var(--surface);border:1px solid var(--border);border-radius:10px;font-size:13px;flex-wrap:wrap}
-  .status-dot{width:7px;height:7px;border-radius:50%;background:var(--accent5);box-shadow:0 0 6px var(--accent5);animation:pulse 2s infinite}
-  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
-  .status-text{color:var(--text-dim);font-family:'Pretendard',sans-serif}
-  .status-text strong{color:var(--text)}
+/* PAGE HEADER */
+.page-hd{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:18px;gap:12px;flex-wrap:wrap}
+.page-hd-left h1{font-size:20px;font-weight:700;color:#111827}
+.page-hd-left p{font-size:12px;color:#9ca3af;margin-top:3px}
+.page-hd-right{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.med-btn{padding:6px 14px;border-radius:20px;font-size:12px;font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .15s;border:1px solid #DBE8FE;background:#fff;color:#6b7280;font-weight:500}
+.med-btn.active{background:#1365FE;border-color:#1365FE;color:#fff}
+.action-btn{display:flex;align-items:center;gap:5px;padding:6px 12px;border-radius:8px;font-size:12px;font-family:'Pretendard',sans-serif;cursor:pointer;border:none;transition:all .15s;font-weight:500}
+.action-btn.view{background:#FFF3E0;color:#C05E00;border:1px solid #FFE0B2}
+.action-btn.dl{background:#E8F5E9;color:#1B5E20;border:1px solid #C8E6C9}
 
-  /* CONTROLS */
-  .controls{display:flex;align-items:center;gap:16px;margin-bottom:24px;flex-wrap:wrap}
-  .ctrl-group{display:flex;align-items:center;gap:8px}
-  .ctrl-label{font-size:13px;color:var(--text-muted);white-space:nowrap}
-  .btn{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text-dim);font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .2s;white-space:nowrap}
-  .btn:hover{border-color:var(--accent);color:var(--text)}
-  .btn.active{background:var(--accent);border-color:var(--accent);color:#fff}
-  .btn.amber.active{background:var(--accent4);border-color:var(--accent4)}
-  select{padding:6px 14px;border-radius:20px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;outline:none;appearance:none;padding-right:28px;background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round'/%3E%3C/svg%3E");background-repeat:no-repeat;background-position:right 10px center;color-scheme:dark}
+/* STATUS BAR */
+.status-bar{display:flex;align-items:center;gap:12px;padding:8px 14px;background:#f8faff;border:1px solid #e5eaf5;border-radius:10px;margin-bottom:14px;flex-wrap:wrap;font-size:12px}
+.status-dot{width:7px;height:7px;border-radius:50%;background:#16a34a;animation:pulse 2s infinite;flex-shrink:0}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.4}}
+.status-txt{color:#6b7280}
+.status-txt strong{color:#111827}
 
-  /* KPI */
-  .kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:20px}
-  .kpi-card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:18px;position:relative;overflow:hidden;transition:transform .2s,border-color .2s;animation:fadeUp .5s ease both}
-  .kpi-card:hover{transform:translateY(-2px);border-color:rgba(59,130,246,.4)}
-  .kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:var(--kpi-color,var(--accent))}
-  .kpi-icon{font-size:18px;margin-bottom:8px}
-  .kpi-label{font-size:16px;color:var(--text-dim);font-weight:600;letter-spacing:-.3px;margin-bottom:4px}
-  .kpi-value{font-size:36px;font-weight:900;font-family:'Pretendard',sans-serif;line-height:1;color:var(--text)}
-  .kpi-value small{font-size:15px;font-weight:400;color:var(--text-muted);margin-left:3px}
-  .kpi-sub{font-size:13px;color:var(--text-muted);margin-top:5px}
-  .kpi-delta{font-size:13px;margin-top:3px}
-  .up{color:var(--accent5)} .down{color:var(--danger)} .flat{color:var(--text-muted)}
+/* FILTER BAR */
+.filter-bar{background:#fff;border:1px solid #e5eaf5;border-radius:12px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.filter-section{display:flex;align-items:center;gap:6px}
+.filter-label{font-size:11px;color:#9ca3af;font-weight:500;white-space:nowrap}
+.fchip{padding:4px 11px;border-radius:20px;font-size:11px;border:1px solid #e5eaf5;background:#f8faff;color:#6b7280;cursor:pointer;transition:all .15s;font-family:'Pretendard',sans-serif;white-space:nowrap}
+.fchip:hover{border-color:#1365FE;color:#1365FE}
+.fchip.on{background:#1365FE;border-color:#1365FE;color:#fff;font-weight:600}
+.fsep{color:#e5eaf5;font-size:16px;margin:0 2px}
+.filter-total{margin-left:auto;font-size:13px;font-weight:700;color:#1365FE;white-space:nowrap}
+.filter-reset-btn{padding:4px 10px;border-radius:8px;font-size:11px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer;font-family:'Pretendard',sans-serif}
+.disabled-bar{opacity:.4;pointer-events:none}
 
-  /* GRID LAYOUTS */
-  .grid-2-1{display:grid;grid-template-columns:2fr 1fr;gap:14px;margin-bottom:14px}
-  .grid-3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-bottom:14px}
-  .grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
-  .grid-full{margin-bottom:14px}
+/* KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px;margin-bottom:18px}
+.kpi-card{background:#fff;border-radius:14px;padding:18px;border:1px solid #e5eaf5;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
+.kpi-card:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(19,101,254,.08)}
+.kpi-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,#1365FE);border-radius:14px 14px 0 0}
+.kpi-icon-wrap{width:38px;height:38px;border-radius:10px;background:var(--ki,#EBF1FF);display:flex;align-items:center;justify-content:center;margin-bottom:12px}
+.kpi-icon-wrap svg{width:18px;height:18px}
+.kpi-lbl{font-size:11px;color:#9ca3af;font-weight:500;margin-bottom:5px}
+.kpi-num{font-size:28px;font-weight:800;color:#111827;line-height:1}
+.kpi-num small{font-size:13px;font-weight:400;color:#9ca3af;margin-left:2px}
+.kpi-sub{font-size:11px;color:#9ca3af;margin-top:5px}
+.kpi-delta{font-size:11px;margin-top:3px}
+.up{color:#16a34a}.dn{color:#dc2626}
 
-  /* CARD */
-  .card{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;position:relative;overflow:hidden;animation:fadeUp .5s ease both}
-  .card-title{font-size:16px;font-weight:700;color:var(--text);margin-bottom:14px;display:flex;align-items:center;gap:8px;letter-spacing:-0.3px}
-  .dot{width:6px;height:6px;border-radius:50%;background:var(--accent);flex-shrink:0}
-  .dot.c{background:var(--accent2)} .dot.p{background:var(--accent3)} .dot.a{background:var(--accent4)} .dot.g{background:var(--accent5)} .dot.r{background:var(--danger)}
+/* GRID */
+.grid-full{margin-bottom:14px}
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px}
+.grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
 
-  .chart-wrap{position:relative}
-  .h200{height:200px} .h240{height:240px} .h160{height:160px} .h280{height:280px}
+/* CARD */
+.card{background:#fff;border-radius:14px;padding:18px;border:1px solid #e5eaf5;transition:box-shadow .2s}
+.card:hover{box-shadow:0 2px 12px rgba(19,101,254,.06)}
+.card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:13px;font-weight:700;color:#111827;display:flex;align-items:center;gap:7px}
+.cdot{width:7px;height:7px;border-radius:50%;background:#1365FE;flex-shrink:0}
+.card-fbar{display:flex;gap:5px;margin-bottom:10px;flex-wrap:wrap}
 
-  /* TRACK BARS */
-  .track-list{display:flex;flex-direction:column;gap:9px}
-  .track-item{display:flex;flex-direction:column;gap:3px}
-  .track-hdr{display:flex;justify-content:space-between;align-items:center}
-  .track-name{font-size:13px;color:var(--text-dim)}
-  .track-pct{font-size:12px;color:var(--text-muted);font-family:'Pretendard',sans-serif}
-  .track-count{font-size:14px;font-family:'Pretendard',sans-serif;font-weight:600}
-  .bar-bg{height:5px;background:var(--border);border-radius:3px;overflow:hidden}
-  .bar-fill{height:100%;border-radius:3px;transition:width 1.2s ease;width:0}
+/* LEGEND */
+.legend{display:flex;flex-direction:column;gap:6px;margin-top:10px}
+.lg-row{display:flex;align-items:center;gap:7px;font-size:12px}
+.lg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
+.lg-name{color:#6b7280;flex:1}
+.lg-cnt{font-weight:700;color:#111827;font-size:13px}
+.lg-pct{color:#9ca3af;font-size:11px}
 
-  /* GENDER */
-  .gender-wrap{display:flex;align-items:center;justify-content:center;gap:20px}
-  .gender-legend{display:flex;flex-direction:column;gap:10px}
-  .lg-item{display:flex;align-items:center;gap:8px;font-size:13px;color:var(--text-dim)}
-  .lg-dot{width:10px;height:10px;border-radius:3px;flex-shrink:0}
-  .lg-num{font-family:'Pretendard',sans-serif;font-weight:700;font-size:16px;color:var(--text);margin-left:4px}
+/* HISTO */
+.histo-wrap{display:flex;flex-direction:column;gap:6px}
+.histo-row{display:grid;grid-template-columns:72px 1fr 52px 56px;align-items:center;gap:6px}
+.histo-lbl{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
+.bar-bg{height:8px;background:#f0f4ff;border-radius:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:4px;transition:width 1.2s ease;width:0}
+.histo-cnt{font-size:12px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
+.histo-pct{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
 
-  /* RANK GRID */
-  .rank-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:14px}
-  .rank-cell{padding:10px;border-radius:8px;background:var(--surface2);border:1px solid var(--border);text-align:center}
-  .rank-num{font-size:24px;font-weight:900;font-family:'Pretendard',sans-serif}
-  .rank-lbl{font-size:12px;color:var(--text-muted);margin-top:2px}
+/* RETIRE */
+.retire-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6}
+.retire-row:last-child{border-bottom:none}
+.rbadge{font-size:10px;padding:2px 9px;border-radius:10px;white-space:nowrap}
+.rb0{background:#fef2f2;color:#dc2626}.rb1{background:#fff7ed;color:#ea580c}.rb2{background:#eff6ff;color:#1365FE}
+.retire-bar-bg{flex:1;height:6px;background:#f3f4f6;border-radius:3px;overflow:hidden}
+.retire-bar{height:100%;border-radius:3px;transition:width 1s ease;width:0}
 
-  /* HISTOGRAM */
-  .histo-wrap{display:flex;flex-direction:column;gap:7px}
-  .histo-row{display:grid;grid-template-columns:80px 1fr 56px 60px;align-items:center;gap:6px}
-  .histo-label{font-size:12px;color:var(--text-muted);text-align:right;font-family:'Pretendard',sans-serif;white-space:nowrap}
-  .histo-count{font-size:13px;font-family:'Pretendard',sans-serif;color:var(--text-dim)}
+/* COLLEGE */
+.college-scroll{max-height:280px;overflow-y:auto}
+.college-scroll::-webkit-scrollbar{width:4px}
+.college-scroll::-webkit-scrollbar-track{background:#f8faff;border-radius:2px}
+.college-scroll::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:2px}
+.college-table{width:100%;border-collapse:collapse;font-size:12px}
+.college-table th{text-align:left;padding:6px 8px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;font-size:11px}
+.college-table td{padding:7px 8px;border-bottom:1px solid #f9fafb;color:#374151}
+.college-table tr:last-child td{border-bottom:none}
+.col-num{font-weight:700;color:#111827;text-align:right}
+.col-pct{color:#9ca3af;font-size:11px;text-align:right}
+.col-bar-bg{height:5px;background:#f0f4ff;border-radius:3px;overflow:hidden;width:80px}
+.col-bar{height:100%;background:#1365FE;border-radius:3px;transition:width 1s ease}
 
-  /* RETIRE TABLE */
-  .retire-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:14px}
-  .retire-table th{text-align:left;padding:7px 10px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
-  .retire-table td{padding:9px 10px;border-bottom:1px solid rgba(30,45,69,.6);color:var(--text-dim);font-family:'Pretendard',sans-serif}
-  .retire-table tr:last-child td{border-bottom:none}
-  .rbadge{display:inline-block;padding:2px 8px;border-radius:10px;font-size:12px;font-family:'Pretendard',sans-serif}
-  .rb-now{background:rgba(239,68,68,.15);color:var(--danger)}
-  .rb-1{background:rgba(245,158,11,.15);color:var(--accent4)}
-  .rb-2{background:rgba(59,130,246,.15);color:var(--accent)}
+/* LOADING */
+.loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px}
+.spinner{width:36px;height:36px;border:3px solid #DBE8FE;border-top-color:#1365FE;border-radius:50%;animation:spin .8s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.loading-txt{font-size:13px;color:#9ca3af}
 
-  /* COLLEGE TABLE */
-  .college-table{width:100%;border-collapse:collapse;font-size:13px}
-  .college-table th{text-align:left;padding:6px 8px;color:var(--text-muted);font-weight:500;border-bottom:1px solid var(--border);font-size:12px}
-  .college-table td{padding:7px 8px;border-bottom:1px solid rgba(30,45,69,.5);color:var(--text-dim)}
-  .college-table tr:last-child td{border-bottom:none}
-  .college-table .num{font-family:'Pretendard',sans-serif;text-align:right}
-  .college-bar-wrap{position:relative;height:6px;background:var(--border);border-radius:3px;overflow:hidden}
-  .college-bar{height:100%;background:#ea580c;border-radius:3px;transition:width 1s ease}
+/* COMING SOON */
+.coming-wrap{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ffffff 0%,#f0f5ff 60%,#DBE8FE 100%)}
+.coming-card{background:#fff;border-radius:20px;border:1px solid #e5eaf5;padding:48px;text-align:center;max-width:480px}
+.coming-icon{width:64px;height:64px;border-radius:16px;background:#EBF1FF;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
+.coming-icon svg{width:32px;height:32px}
+.coming-card h2{font-size:22px;font-weight:800;color:#111827;margin-bottom:8px}
+.coming-card p{font-size:14px;color:#9ca3af;line-height:1.7}
+.coming-badge{display:inline-block;background:#EBF1FF;color:#1365FE;font-size:12px;font-weight:600;padding:4px 14px;border-radius:20px;margin-top:20px}
 
-  /* LOADING */
-  .loading{display:flex;align-items:center;justify-content:center;height:200px;flex-direction:column;gap:12px}
-  .spinner{width:32px;height:32px;border:3px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:spin .8s linear infinite}
-  @keyframes spin{to{transform:rotate(360deg)}}
-  .load-text{font-size:12px;color:var(--text-muted);font-family:'Pretendard',sans-serif}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+.kpi-card{animation:fadeUp .4s ease both}
+.kpi-card:nth-child(1){animation-delay:.05s}.kpi-card:nth-child(2){animation-delay:.1s}
+.kpi-card:nth-child(3){animation-delay:.15s}.kpi-card:nth-child(4){animation-delay:.2s}
 
-  /* ERROR */
-  .error-box{background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.3);border-radius:10px;padding:20px;text-align:center}
-  .error-box h3{color:var(--danger);font-size:14px;margin-bottom:8px}
-  .error-box p{font-size:12px;color:var(--text-muted);line-height:1.6}
-  .error-box code{font-family:'Pretendard',sans-serif;background:var(--surface2);padding:2px 6px;border-radius:4px;font-size:11px}
+@media(max-width:1100px){.kpi-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
 
-  @keyframes fadeUp{from{opacity:0;transform:translateY(12px)}to{opacity:1;transform:translateY(0)}}
-
-  /* 단과대학 커스텀 스크롤바 */
-  .college-scroll{max-height:320px;overflow-y:auto}
-  .college-scroll::-webkit-scrollbar{width:5px}
-  .college-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:3px}
-  .college-scroll::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
-  .college-scroll::-webkit-scrollbar-thumb:hover{background:#e2e8f0}
-
-  /* FILTER CHIPS */
-  .filter-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
-  .filter-chip{padding:4px 12px;border-radius:12px;border:1px solid var(--border);background:var(--surface2);color:var(--text-muted);font-size:12px;font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .15s;white-space:nowrap}
-  .filter-chip:hover{border-color:var(--accent);color:var(--text)}
-  .filter-chip.active{background:var(--accent);border-color:var(--accent);color:#fff;font-weight:600}
-  .filter-chip.active.amber{background:var(--accent4);border-color:var(--accent4)}
-  .filter-chip.active.green{background:var(--accent5);border-color:var(--accent5)}
-  .filter-chip.active.purple{background:var(--accent3);border-color:var(--accent3)}
-  .filter-chip.active.cyan{background:var(--accent2);border-color:var(--accent2)}
-  .filter-chip.active.red{background:var(--danger);border-color:var(--danger)}
-
-  /* RADIO FILTER */
-  .radio-filter{display:flex;gap:10px;margin-bottom:10px;flex-wrap:wrap}
-  .radio-filter label{display:flex;align-items:center;gap:5px;font-size:11px;color:var(--text-muted);cursor:pointer;transition:color .15s}
-  .radio-filter label:hover{color:var(--text)}
-  .radio-filter input[type=radio]{accent-color:var(--accent);width:13px;height:13px;cursor:pointer}
-  .radio-filter input[type=radio]:checked + span{color:var(--text);font-weight:600}
-
-  /* NON-TENURE SUB FILTER */
-  .sub-filter{display:none;margin-top:6px;padding:8px 10px;background:var(--surface2);border-radius:8px;border:1px solid var(--border)}
-  .sub-filter.show{display:flex;flex-wrap:wrap;gap:5px}
-
-  /* 비정년트랙 필터 비활성화 상태 */
-  .filter-bar.disabled{opacity:.35;pointer-events:none}
-  .filter-bar.disabled .filter-chip{cursor:not-allowed}
-  .nontenure-disabled-msg{font-size:11px;color:var(--text-muted);margin-bottom:8px;padding:6px 10px;background:rgba(30,45,69,.6);border-radius:6px;display:none}
-  .nontenure-disabled-msg.show{display:block}
-
-  /* ACTIVE FILTER SUMMARY */
-  .filter-summary{display:flex;align-items:center;gap:6px;padding:7px 12px;background:rgba(59,130,246,.08);border:1px solid rgba(59,130,246,.2);border-radius:8px;margin-bottom:16px;flex-wrap:wrap;font-size:13px;color:var(--text-dim)}
-  .filter-summary .fs-label{color:var(--accent2);font-weight:600;margin-right:2px}
-  .filter-summary .fs-tag{background:rgba(59,130,246,.15);color:var(--accent);padding:2px 8px;border-radius:10px}
-  .filter-summary .fs-total{margin-left:auto;font-family:'Pretendard',sans-serif;font-weight:700;color:var(--text)}
-  .filter-reset{padding:2px 8px;border-radius:10px;border:1px solid var(--border);background:transparent;color:var(--text-muted);font-size:10px;cursor:pointer;transition:all .15s;font-family:'Pretendard',sans-serif}
-  .filter-reset:hover{border-color:var(--danger);color:var(--danger)}
-
-  footer{text-align:center;font-size:11px;color:var(--text-muted);padding:20px 0 8px;font-family:'Pretendard',sans-serif}
-
-  @media(max-width:1024px){
-    .kpi-row{grid-template-columns:repeat(2,1fr)}
-    .grid-2-1{grid-template-columns:1fr}
-    .grid-3{grid-template-columns:1fr 1fr}
-  }
-  @media(max-width:640px){
-    .kpi-row{grid-template-columns:1fr 1fr}
-    .grid-3{grid-template-columns:1fr}
-    .grid-2{grid-template-columns:1fr}
-  }
+footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
 <body>
-<div class="container">
 
-  <!-- HEADER -->
-  <header>
-    <div class="header-left">
-      <h1>전임교원 확보율 및 현황 대시보드</h1>
-      <p id="headerMeta">데이터 로딩 중...</p>
+<nav class="topnav">
+  <a class="logo" href="#" onclick="return false">
+    <div class="logo-box">
+      <svg viewBox="0 0 16 16" fill="none">
+        <rect x="2" y="2" width="5" height="5" rx="1.2" fill="white"/>
+        <rect x="9" y="2" width="5" height="5" rx="1.2" fill="white" opacity=".75"/>
+        <rect x="2" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".75"/>
+        <rect x="9" y="9" width="5" height="5" rx="1.2" fill="white" opacity=".5"/>
+      </svg>
     </div>
-    <div class="header-right">
-      <span id="yearBadge" style="background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;font-size:11px;font-weight:700;padding:4px 14px;border-radius:20px;font-family:'Pretendard',sans-serif">-</span>
-    </div>
-  </header>
-
-  <!-- STATUS -->
-  <div class="status-bar">
-    <div class="status-dot"></div>
-    <span class="status-text">데이터 소스: <strong id="dataSource">dashboard_data.json</strong></span>
-    <span class="status-text" style="margin-left:8px">데이터 생성: <strong id="lastUpdate">-</strong></span>
-    <span class="status-text" style="margin-left:8px">GitHub 업데이트: <strong id="githubUpdate">-</strong></span>
-    <span class="status-text" style="margin-left:auto;color:var(--accent2)">💡 데이터 갱신은 <strong>upload.html</strong> 에서 진행하세요</span>
+    <span class="logo-text">동아대학교 <span>교원관리</span></span>
+  </a>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('faculty',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      전임교원 현황
+    </button>
+    <button class="nav-tab disabled" onclick="showPage('recruit',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      전임교원 충원 <span class="nav-badge">준비중</span>
+    </button>
+    <button class="nav-tab disabled" onclick="showPage('coming1',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      준비중 1 <span class="nav-badge">준비중</span>
+    </button>
+    <button class="nav-tab disabled" onclick="showPage('coming2',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      준비중 2 <span class="nav-badge">준비중</span>
+    </button>
   </div>
-
-  <!-- CONTROLS -->
-  <div class="controls">
-    <div class="ctrl-group">
-      <span class="ctrl-label">의학계열</span>
-      <button class="btn active" id="btnExclude" onclick="setMedical('exclude')">제외</button>
-      <button class="btn" id="btnInclude" onclick="setMedical('include')">포함</button>
+  <div class="nav-right">
+    <div class="nav-icon-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
     </div>
+    <div class="nav-icon-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
+    </div>
+    <div class="nav-avatar">관리</div>
   </div>
+</nav>
 
-  <!-- LOADING STATE -->
-  <div id="loadingState" class="loading">
+<!-- 전임교원 현황 -->
+<div id="page-faculty" class="page active">
+<div class="dash-wrap">
+  <div id="loadingState" class="loading-wrap">
     <div class="spinner"></div>
-    <div class="load-text">dashboard_data.json 불러오는 중...</div>
+    <div class="loading-txt">dashboard_data.json 불러오는 중...</div>
   </div>
-
-  <!-- DASHBOARD (hidden until loaded) -->
-  <div id="dashboardContent" style="display:none">
-
-    <!-- ACTIVE FILTER SUMMARY -->
-    <div class="filter-summary" id="filterSummary">
-      <span class="fs-label">학년도</span>
-      <select id="yearSelect" onchange="onYearChange()" style="
-        padding:3px 28px 3px 10px;border-radius:8px;border:1px solid rgba(59,130,246,.3);
-        background:#1a2235;color:#e2e8f0;font-size:13px;
-        font-family:'Pretendard',sans-serif;cursor:pointer;outline:none;appearance:none;
-        background-image:url('data:image/svg+xml,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%2210%22 height=%226%22 fill=%22none%22%3E%3Cpath d=%22M1 1l4 4 4-4%22 stroke=%2294a3b8%22 stroke-width=%221.5%22 stroke-linecap=%22round%22/%3E%3C/svg%3E');
-        background-repeat:no-repeat;background-position:right 8px center;font-weight:600;
-        color-scheme:dark;
-      "></select>
-      <span style="color:rgba(59,130,246,.4);margin:0 4px">│</span>
-      <span class="fs-label">필터</span>
-      <span id="filterTags" style="display:flex;gap:5px;flex-wrap:wrap;align-items:center">전체 데이터</span>
-      <button class="filter-reset" onclick="resetAllFilters()">✕ 초기화</button>
-      <span class="fs-total" id="filterTotal"></span>
-      <div style="margin-left:auto;display:flex;gap:8px">
-        <button onclick="openRosterTab()" style="
-          padding:4px 12px;border-radius:8px;border:1px solid rgba(234,88,12,.4);
-          background:rgba(234,88,12,.1);color:#fb923c;font-size:12px;
-          font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .2s;
-          display:flex;align-items:center;gap:5px;white-space:nowrap;
-        " onmouseover="this.style.background='rgba(234,88,12,.2)'" onmouseout="this.style.background='rgba(234,88,12,.1)'">
-          📋 새 탭으로 보기
-        </button>
-        <button onclick="downloadRosterExcel()" style="
-          padding:4px 12px;border-radius:8px;border:1px solid rgba(16,185,129,.4);
-          background:rgba(16,185,129,.1);color:#10b981;font-size:12px;
-          font-family:'Pretendard',sans-serif;cursor:pointer;transition:all .2s;
-          display:flex;align-items:center;gap:5px;white-space:nowrap;
-        " onmouseover="this.style.background='rgba(16,185,129,.2)'" onmouseout="this.style.background='rgba(16,185,129,.1)'">
-          ⬇️ 엑셀 다운로드
-        </button>
+  <div id="dashContent" style="display:none">
+    <div class="page-hd">
+      <div class="page-hd-left">
+        <h1>전임교원 현황 대시보드</h1>
+        <p id="headerMeta">데이터 로딩 중...</p>
+      </div>
+      <div class="page-hd-right">
+        <button class="med-btn active" id="btnExclude" onclick="setMedical('exclude')">의학계열 제외</button>
+        <button class="med-btn" id="btnInclude" onclick="setMedical('include')">의학계열 포함</button>
+        <button class="action-btn view" onclick="openRosterTab()">📋 새 탭으로 보기</button>
+        <button class="action-btn dl" onclick="downloadRosterExcel()">⬇ 엑셀 다운로드</button>
       </div>
     </div>
 
-    <!-- KPI CARDS -->
-    <div class="kpi-row">
-      <div class="kpi-card" style="--kpi-color:#3b82f6;animation-delay:.05s">
-        <div class="kpi-icon">👥</div>
-        <div class="kpi-label">전임교원 수</div>
-        <div class="kpi-value" id="kpiTotal">-<small>명</small></div>
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span class="status-txt">데이터 소스: <strong id="dataSource">dashboard_data.json</strong></span>
+      <span class="status-txt">데이터 생성: <strong id="lastUpdate">-</strong></span>
+      <span class="status-txt">GitHub 업데이트: <strong id="githubUpdate">-</strong></span>
+      <span style="margin-left:auto;font-size:11px;color:#1365FE">💡 데이터 갱신은 <strong>upload.html</strong>에서 진행하세요</span>
+    </div>
+
+    <div class="filter-bar">
+      <div class="filter-section">
+        <span class="filter-label">학년도</span>
+        <select id="yearSelect" onchange="onYearChange()" style="font-size:12px;border:1px solid #DBE8FE;border-radius:8px;padding:4px 10px;color:#1365FE;background:#f8faff;outline:none;font-family:'Pretendard',sans-serif;font-weight:600;color-scheme:light"></select>
+      </div>
+      <span class="fsep">|</span>
+      <div class="filter-section">
+        <span class="filter-label">트랙</span>
+        <div id="trackFilter" style="display:flex;gap:4px">
+          <span class="fchip on" onclick="setFilter('track','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('track','정년트랙',this)">정년트랙</span>
+          <span class="fchip" onclick="setFilter('track','비정년트랙',this)">비정년트랙</span>
+        </div>
+      </div>
+      <span class="fsep">|</span>
+      <div class="filter-section">
+        <span class="filter-label">비정년</span>
+        <div id="nonTenureFilter" style="display:flex;gap:4px" class="disabled-bar">
+          <span class="fchip on" onclick="setFilter('non_tenure','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('non_tenure','강의전담',this)">강의전담</span>
+          <span class="fchip" onclick="setFilter('non_tenure','연구전담',this)">연구전담</span>
+          <span class="fchip" onclick="setFilter('non_tenure','산학협력전담',this)">산학협력</span>
+          <span class="fchip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
+        </div>
+      </div>
+      <span class="fsep">|</span>
+      <div class="filter-section">
+        <span class="filter-label">직급</span>
+        <div id="rankFilter" style="display:flex;gap:4px">
+          <span class="fchip on" onclick="setFilter('rank','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('rank','교수',this)">교수</span>
+          <span class="fchip" onclick="setFilter('rank','부교수',this)">부교수</span>
+          <span class="fchip" onclick="setFilter('rank','조교수',this)">조교수</span>
+        </div>
+      </div>
+      <span class="fsep">|</span>
+      <div class="filter-section">
+        <span class="filter-label">성별</span>
+        <div id="genderFilter" style="display:flex;gap:4px">
+          <span class="fchip on" onclick="setFilter('gender','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('gender','남자',this)">남자</span>
+          <span class="fchip" onclick="setFilter('gender','여자',this)">여자</span>
+        </div>
+      </div>
+      <button class="filter-reset-btn" onclick="resetAllFilters()">✕ 초기화</button>
+      <span class="filter-total" id="filterTotal">-</span>
+    </div>
+
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kc:#1365FE;--ki:#EBF1FF">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#1365FE" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div class="kpi-lbl">전임교원 수</div>
+        <div class="kpi-num" id="kpiTotal">-<small>명</small></div>
         <div class="kpi-sub" id="kpiTrackSub">-</div>
         <div class="kpi-delta" id="kpiTotalDelta"></div>
       </div>
-      <div class="kpi-card" style="--kpi-color:#06b6d4;animation-delay:.10s">
-        <div class="kpi-icon">📊</div>
-        <div class="kpi-label" id="rateLabel">확보율</div>
-        <div class="kpi-value" id="kpiRate">-<small>%</small></div>
+      <div class="kpi-card" style="--kc:#0ea5e9;--ki:#e0f2fe">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="kpi-lbl" id="rateLabel">확보율</div>
+        <div class="kpi-num" id="kpiRate">-<small>%</small></div>
         <div class="kpi-delta" id="kpiRateDelta"></div>
       </div>
-      <div class="kpi-card" style="--kpi-color:#f59e0b;animation-delay:.15s">
-        <div class="kpi-icon">⚠️</div>
-        <div class="kpi-label">정년퇴직 예정</div>
-        <div class="kpi-value" id="kpiRetire">-<small>명</small></div>
+      <div class="kpi-card" style="--kc:#f59e0b;--ki:#fef3c7">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="kpi-lbl">정년퇴직 예정자 현황</div>
+        <div class="kpi-num" id="kpiRetire">-<small>명</small></div>
         <div class="kpi-sub" id="kpiRetireSub">-</div>
       </div>
-      <div class="kpi-card" style="--kpi-color:#10b981;animation-delay:.20s">
-        <div class="kpi-icon">⚖️</div>
-        <div class="kpi-label">여성 비율</div>
-        <div class="kpi-value" id="kpiFemale">-<small>%</small></div>
+      <div class="kpi-card" style="--kc:#8b5cf6;--ki:#ede9fe">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg></div>
+        <div class="kpi-lbl">여성 비율</div>
+        <div class="kpi-num" id="kpiFemale">-<small>%</small></div>
         <div class="kpi-sub" id="kpiGenderSub">-</div>
       </div>
     </div>
 
-    <!-- ROW 1: 전임교원 확보율 추이 (전체 너비) -->
-    <div style="margin-bottom:14px">
+    <!-- 확보율 추이 -->
+    <div class="grid-full">
       <div class="card">
-        <div class="card-title"><span class="dot c"></span>전임교원 확보율 추이</div>
-        <div class="chart-wrap" style="height:320px"><canvas id="rateChart"></canvas></div>
-        <p style="margin-top:10px;font-size:12px;color:var(--accent4);line-height:1.6;border-top:1px solid var(--border);padding-top:8px">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
+        <div style="position:relative;height:260px"><canvas id="rateChart"></canvas></div>
+        <p style="margin-top:10px;font-size:11px;color:#f59e0b;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px">
           ※ 전임교원 확보율은 의학계열을 제외하고 산출하며, 매 학년도별 4월 1일 고등교육통계조사 기준임
         </p>
       </div>
     </div>
 
-    <!-- ROW 2: 트랙별 현황 | 비정년트랙별 현황 -->
-    <div class="grid-2" style="margin-bottom:14px">
+    <!-- 트랙별 | 비정년트랙별 -->
+    <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="dot p"></span>트랙별 현황</div>
-        <div class="filter-bar" id="trackFilter">
-          <span class="filter-chip active" onclick="setFilter('track','전체',this)">전체</span>
-          <span class="filter-chip" onclick="setFilter('track','정년트랙',this)">정년트랙</span>
-          <span class="filter-chip" onclick="setFilter('track','비정년트랙',this)">비정년트랙</span>
+        <div class="card-hd"><div class="card-title"><div class="cdot"></div>트랙별 현황</div></div>
+        <div class="card-fbar" id="trackFilterCard">
+          <span class="fchip on" onclick="setFilter('track','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('track','정년트랙',this)">정년트랙</span>
+          <span class="fchip" onclick="setFilter('track','비정년트랙',this)">비정년트랙</span>
         </div>
-        <div style="position:relative;height:220px;margin-top:8px"><canvas id="trackDonutChart"></canvas></div>
-        <div id="trackDonutLegend" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
+        <div style="position:relative;height:180px"><canvas id="trackDonutChart"></canvas></div>
+        <div class="legend" id="trackDonutLegend"></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="dot c"></span>비정년트랙별 현황</div>
-
-        <div class="filter-bar" id="nonTenureFilter">
-          <span class="filter-chip active" onclick="setFilter('non_tenure','전체',this)">전체</span>
-          <span class="filter-chip" onclick="setFilter('non_tenure','강의전담',this)">강의전담</span>
-          <span class="filter-chip" onclick="setFilter('non_tenure','연구전담',this)">연구전담</span>
-          <span class="filter-chip" onclick="setFilter('non_tenure','산학협력전담',this)">산학협력전담</span>
-          <span class="filter-chip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>비정년트랙별 현황</div></div>
+        <div class="card-fbar disabled-bar" id="nonTenureFilterCard">
+          <span class="fchip on" onclick="setFilter('non_tenure','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('non_tenure','강의전담',this)">강의전담</span>
+          <span class="fchip" onclick="setFilter('non_tenure','연구전담',this)">연구전담</span>
+          <span class="fchip" onclick="setFilter('non_tenure','산학협력전담',this)">산학협력</span>
+          <span class="fchip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
         </div>
-        <div style="position:relative;height:220px;margin-top:8px"><canvas id="nonTenureDonutChart"></canvas></div>
-        <div id="nonTenureDonutLegend" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
-      </div>
-    </div>
-
-    <!-- ROW 3: 직급별 현황 | 성별 현황 -->
-    <div class="grid-2" style="margin-bottom:14px">
-      <div class="card">
-        <div class="card-title"><span class="dot a"></span>직급별 현황</div>
-        <div class="filter-bar" id="rankFilter">
-          <span class="filter-chip active amber" onclick="setFilter('rank','전체',this)">전체</span>
-          <span class="filter-chip" onclick="setFilter('rank','교수',this)">교수</span>
-          <span class="filter-chip" onclick="setFilter('rank','부교수',this)">부교수</span>
-          <span class="filter-chip" onclick="setFilter('rank','조교수',this)">조교수</span>
-        </div>
-        <div style="position:relative;height:80px;margin-top:8px"><canvas id="rankChart"></canvas></div>
-        <div id="rankLegend" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
-      </div>
-      <div class="card">
-        <div class="card-title"><span class="dot c"></span>성별 현황</div>
-        <div class="filter-bar" id="genderFilter">
-          <span class="filter-chip active cyan" onclick="setFilter('gender','전체',this)">전체</span>
-          <span class="filter-chip" onclick="setFilter('gender','남자',this)">남자</span>
-          <span class="filter-chip" onclick="setFilter('gender','여자',this)">여자</span>
-        </div>
-        <div style="position:relative;height:80px;margin-top:8px"><canvas id="genderChart"></canvas></div>
-        <div id="genderLegend" style="margin-top:10px;display:flex;flex-direction:column;gap:6px"></div>
+        <div style="position:relative;height:180px"><canvas id="nonTenureDonutChart"></canvas></div>
+        <div class="legend" id="nonTenureDonutLegend"></div>
       </div>
     </div>
 
-    <!-- ROW 4: 재직기간별 분포 | 연령대별 분포 -->
-    <div class="grid-2" style="margin-bottom:14px">
+    <!-- 직급별 | 성별 -->
+    <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="dot g"></span>재직기간별 분포</div>
-        <div class="filter-bar" id="tenureFilter" style="margin-bottom:10px">
-          <span class="filter-chip active green" onclick="setFilter('tenure','전체',this)">전체</span>
-          <span class="filter-chip" onclick="setFilter('tenure','5년 이하',this)">5년 이하</span>
-          <span class="filter-chip" onclick="setFilter('tenure','5년-10년',this)">5-10년</span>
-          <span class="filter-chip" onclick="setFilter('tenure','10년-15년',this)">10-15년</span>
-          <span class="filter-chip" onclick="setFilter('tenure','15년-20년',this)">15-20년</span>
-          <span class="filter-chip" onclick="setFilter('tenure','20년-25년',this)">20-25년</span>
-          <span class="filter-chip" onclick="setFilter('tenure','25년-30년',this)">25-30년</span>
-          <span class="filter-chip" onclick="setFilter('tenure','30년 초과',this)">30년 초과</span>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>직급별 현황</div></div>
+        <div class="card-fbar" id="rankFilterCard">
+          <span class="fchip on" onclick="setFilter('rank','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('rank','교수',this)">교수</span>
+          <span class="fchip" onclick="setFilter('rank','부교수',this)">부교수</span>
+          <span class="fchip" onclick="setFilter('rank','조교수',this)">조교수</span>
+        </div>
+        <div style="position:relative;height:28px;margin:4px 0"><canvas id="rankChart"></canvas></div>
+        <div class="legend" id="rankLegend" style="margin-top:10px"></div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#8b5cf6"></div>성별 현황</div></div>
+        <div class="card-fbar" id="genderFilterCard">
+          <span class="fchip on" onclick="setFilter('gender','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('gender','남자',this)">남자</span>
+          <span class="fchip" onclick="setFilter('gender','여자',this)">여자</span>
+        </div>
+        <div style="position:relative;height:28px;margin:4px 0"><canvas id="genderChart"></canvas></div>
+        <div class="legend" id="genderLegend" style="margin-top:10px"></div>
+      </div>
+    </div>
+
+    <!-- 재직기간 | 연령대 -->
+    <div class="grid-2">
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
+        <div class="card-fbar" id="tenureFilterCard">
+          <span class="fchip on" onclick="setFilter('tenure','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('tenure','5년 이하',this)">5년 이하</span>
+          <span class="fchip" onclick="setFilter('tenure','5년-10년',this)">5-10년</span>
+          <span class="fchip" onclick="setFilter('tenure','10년-15년',this)">10-15년</span>
+          <span class="fchip" onclick="setFilter('tenure','15년-20년',this)">15-20년</span>
+          <span class="fchip" onclick="setFilter('tenure','20년-25년',this)">20-25년</span>
+          <span class="fchip" onclick="setFilter('tenure','25년-30년',this)">25-30년</span>
+          <span class="fchip" onclick="setFilter('tenure','30년 초과',this)">30년+</span>
         </div>
         <div class="histo-wrap" id="tenureHisto"></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="dot a"></span>연령대별 분포</div>
-        <div class="filter-bar" id="ageFilter" style="margin-bottom:10px">
-          <span class="filter-chip active amber" onclick="setFilter('age','전체',this)">전체</span>
-          <span class="filter-chip" onclick="setFilter('age','25세-30세',this)">25-30세</span>
-          <span class="filter-chip" onclick="setFilter('age','30세-35세',this)">30-35세</span>
-          <span class="filter-chip" onclick="setFilter('age','35세-40세',this)">35-40세</span>
-          <span class="filter-chip" onclick="setFilter('age','40세-45세',this)">40-45세</span>
-          <span class="filter-chip" onclick="setFilter('age','45세-50세',this)">45-50세</span>
-          <span class="filter-chip" onclick="setFilter('age','50세-55세',this)">50-55세</span>
-          <span class="filter-chip" onclick="setFilter('age','55세-60세',this)">55-60세</span>
-          <span class="filter-chip" onclick="setFilter('age','60세-65세',this)">60-65세</span>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령대별 분포</div></div>
+        <div class="card-fbar" id="ageFilterCard">
+          <span class="fchip on" onclick="setFilter('age','전체',this)">전체</span>
+          <span class="fchip" onclick="setFilter('age','25세-30세',this)">25-30세</span>
+          <span class="fchip" onclick="setFilter('age','30세-35세',this)">30-35세</span>
+          <span class="fchip" onclick="setFilter('age','35세-40세',this)">35-40세</span>
+          <span class="fchip" onclick="setFilter('age','40세-45세',this)">40-45세</span>
+          <span class="fchip" onclick="setFilter('age','45세-50세',this)">45-50세</span>
+          <span class="fchip" onclick="setFilter('age','50세-55세',this)">50-55세</span>
+          <span class="fchip" onclick="setFilter('age','55세-60세',this)">55-60세</span>
+          <span class="fchip" onclick="setFilter('age','60세-65세',this)">60-65세</span>
         </div>
         <div class="histo-wrap" id="ageHisto"></div>
       </div>
     </div>
 
-    <!-- ROW 5+6: 정년퇴직 예정자 현황 | 단과대학별 현황 -->
-    <div class="grid-2" style="margin-bottom:14px">
+    <!-- 퇴직예정 | 단과대학 -->
+    <div class="grid-2">
       <div class="card">
-        <div class="card-title"><span class="dot r"></span>정년퇴직 예정자 현황</div>
-        <table class="retire-table" id="retireTable"></table>
-        <div style="height:160px"><canvas id="retireChart"></canvas></div>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
+        <div id="retireTable"></div>
+        <div style="position:relative;height:120px;margin-top:12px"><canvas id="retireChart"></canvas></div>
       </div>
       <div class="card">
-        <div class="card-title"><span class="dot"></span>단과대학별 현황</div>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
         <div class="college-scroll">
           <table class="college-table" id="collegeTable"></table>
         </div>
       </div>
     </div>
 
-  </div><!-- /dashboardContent -->
+    <footer id="footer">동아대학교 전임교원 현황 대시보드</footer>
+  </div>
+</div>
+</div>
 
-  <footer id="footer">전임교원 현황 대시보드 · JSON 방식</footer>
+<!-- 준비중 페이지들 -->
+<div id="page-recruit" class="page">
+  <div class="coming-wrap"><div class="coming-card">
+    <div class="coming-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1365FE" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
+    <h2>전임교원 충원</h2>
+    <p>전임교원 채용 및 충원 현황을 확인할 수 있는<br>대시보드입니다. 현재 개발 중에 있습니다.</p>
+    <span class="coming-badge">준비중</span>
+  </div></div>
+</div>
+<div id="page-coming1" class="page">
+  <div class="coming-wrap"><div class="coming-card">
+    <div class="coming-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1365FE" stroke-width="1.8"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg></div>
+    <h2>준비중 1</h2>
+    <p>새로운 대시보드가 곧 추가될 예정입니다.<br>조금만 기다려 주세요.</p>
+    <span class="coming-badge">준비중</span>
+  </div></div>
+</div>
+<div id="page-coming2" class="page">
+  <div class="coming-wrap"><div class="coming-card">
+    <div class="coming-icon"><svg viewBox="0 0 24 24" fill="none" stroke="#1365FE" stroke-width="1.8"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg></div>
+    <h2>준비중 2</h2>
+    <p>새로운 대시보드가 곧 추가될 예정입니다.<br>조금만 기다려 주세요.</p>
+    <span class="coming-badge">준비중</span>
+  </div></div>
 </div>
 
 <script>
-// ============ STATE ============
-let DB = null;
-let currentYear = null;
-let currentMedical = 'exclude';
-let charts = {};
-let rosterCache = {}; // 명부 캐시 (lazy load)
-let rawRecordsCache = {}; // 실시간 필터링용 원본 데이터 캐시
-
-// 필터 상태
-let activeFilters = {
-  track: '전체',
-  non_tenure: '전체',
-  rank: '전체',
-  gender: '전체',
-  age: '전체',
-  tenure: '전체'
-};
-
-// ============ CHART DEFAULTS ============
-Chart.defaults.color = '#64748b';
 Chart.defaults.font.family = "'Pretendard', sans-serif";
 Chart.defaults.font.size = 11;
-const GRID = 'rgba(30,45,69,0.8)';
-const TICK = '#475569';
+Chart.defaults.color = '#9ca3af';
 
-const COLORS = ['#7c2d12','#9a3412','#c2410c','#ea580c','#f97316','#fb923c','#fdba74','#fcd34d'];
+// PAGE NAV
+function showPage(id, el) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  if (el) el.classList.add('active');
+}
 
-// ============ LOAD DATA ============
+// STATE
+let DB=null, currentYear=null, currentMedical='exclude';
+let charts={}, rosterCache={}, rawRecordsCache={};
+let activeFilters={track:'전체',non_tenure:'전체',rank:'전체',gender:'전체',age:'전체',tenure:'전체'};
+
+const GRID='rgba(243,244,246,1)';
+const TRACK_COLORS=['#1365FE','#BFDBFE'];
+const NT_COLORS=['#1365FE','#60A5FA','#93C5FD','#BFDBFE'];
+const RANK_COLORS=['#1365FE','#60A5FA','#BFDBFE'];
+const GENDER_COLORS=['#1365FE','#8b5cf6'];
+const AGE_COLORS=['#1e40af','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe','#dbeafe'];
+const TENURE_COLORS=['#1e40af','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'];
+
+// LOAD
 async function loadData() {
   try {
-    const res = await fetch('dashboard_data.json?t=' + Date.now());
-    if (!res.ok) throw new Error(`HTTP ${res.status}`);
+    const res = await fetch('dashboard_data.json?t='+Date.now());
+    if (!res.ok) throw new Error('HTTP '+res.status);
     DB = await res.json();
     initDashboard();
   } catch(e) {
-    showError(e);
+    document.getElementById('loadingState').innerHTML = `<div style="background:#fef2f2;border:1px solid #fca5a5;border-radius:12px;padding:24px;text-align:center;max-width:500px"><h3 style="color:#dc2626;font-size:15px;margin-bottom:8px">⚠️ 데이터를 불러올 수 없습니다</h3><p style="font-size:12px;color:#6b7280;line-height:1.7">dashboard_data.json 파일이 같은 폴더에 있어야 합니다.<br><br>upload.html에서 엑셀 파일을 업로드해 JSON을 생성하세요.<br><br><span style="color:#dc2626;font-size:11px">${e.message}</span></p></div>`;
   }
 }
 
-function showError(e) {
-  document.getElementById('loadingState').innerHTML = `
-    <div class="error-box">
-      <h3>⚠️ 데이터 파일을 찾을 수 없습니다</h3>
-      <p>
-        <code>dashboard_data.json</code> 파일이 같은 폴더에 있어야 합니다.<br><br>
-        <strong>해결 방법:</strong><br>
-        1. <code>upload.html</code>을 열어 엑셀 파일을 업로드하세요<br>
-        2. 생성된 <code>dashboard_data.json</code>을 이 파일과 같은 폴더에 넣으세요<br>
-        3. 서버에 올린 경우 파일 경로를 확인하세요
-      </p>
-      <p style="margin-top:10px;color:var(--danger);font-size:11px">${e.message}</p>
-    </div>`;
-}
-
-// ============ INIT ============
 async function initDashboard() {
-  document.getElementById('loadingState').style.display = 'none';
-  document.getElementById('dashboardContent').style.display = 'block';
-
-  // Meta info
-  // 데이터 생성일시 (JSON meta)
-  const updatedRaw = DB.meta.updated || '-';
-  document.getElementById('lastUpdate').textContent = updatedRaw;
-
-  // GitHub 업데이트 날짜 (파일 Last-Modified 헤더에서 읽기)
+  document.getElementById('loadingState').style.display='none';
+  document.getElementById('dashContent').style.display='block';
+  document.getElementById('lastUpdate').textContent = DB.meta.updated||'-';
+  document.getElementById('dataSource').textContent = DB.meta.source||'dashboard_data.json';
   try {
-    fetch('dashboard_data.json', {method:'HEAD'}).then(res => {
-      const lastMod = res.headers.get('Last-Modified');
-      if (lastMod) {
-        const d = new Date(lastMod);
-        const githubDate = d.getFullYear() + '-' +
-          String(d.getMonth()+1).padStart(2,'0') + '-' +
-          String(d.getDate()).padStart(2,'0');
-        document.getElementById('githubUpdate').textContent = githubDate;
-      } else {
-        document.getElementById('githubUpdate').textContent = '-';
-      }
+    fetch('dashboard_data.json',{method:'HEAD'}).then(res=>{
+      const lm=res.headers.get('Last-Modified');
+      if(lm){const d=new Date(lm);document.getElementById('githubUpdate').textContent=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
     });
-  } catch(e) {
-    document.getElementById('githubUpdate').textContent = '-';
-  }
-  document.getElementById('dataSource').textContent = DB.meta.source || 'dashboard_data.json';
-
-  // Year selector
-  const sel = document.getElementById('yearSelect');
-  DB.meta.years.slice().reverse().forEach(yr => {
-    const opt = document.createElement('option');
-    opt.value = yr;
-    opt.textContent = yr + '학년도';
-    sel.appendChild(opt);
-  });
-  currentYear = DB.meta.years[DB.meta.years.length - 1];
-  sel.value = currentYear;
-
-  document.getElementById('yearBadge').textContent = currentYear + '학년도';
-  document.getElementById('headerMeta').textContent = `RAWDATA 기반 · ${DB.meta.years.length}개년 데이터`;
-
-  // 초기 상태: 비정년트랙 필터 비활성화
-  document.getElementById('nonTenureFilter').classList.add('disabled');
-
+  } catch(e){}
+  const sel=document.getElementById('yearSelect');
+  DB.meta.years.slice().reverse().forEach(yr=>{const o=document.createElement('option');o.value=yr;o.textContent=yr+'학년도';sel.appendChild(o);});
+  currentYear=DB.meta.years[DB.meta.years.length-1];
+  sel.value=currentYear;
+  document.getElementById('headerMeta').textContent=`RAWDATA 기반 · ${DB.meta.years.length}개년 데이터`;
+  document.getElementById('nonTenureFilter').classList.add('disabled-bar');
+  document.getElementById('nonTenureFilterCard').classList.add('disabled-bar');
   await renderAll();
-  updateFilterSummary();
 }
 
+// DATA ACCESS
+function getYearData(yr){
+  const b=DB.summary[yr];if(!b)return null;
+  return b[currentMedical==='include'?'include':'exclude']||b;
+}
+function getFiltered(yd,key){
+  if(!key)return yd.base||yd;
+  return(yd.filters&&yd.filters[key])?yd.filters[key]:(yd.base||yd);
+}
+function getSummary(yr){
+  const yd=getYearData(yr);if(!yd)return null;
+  const f=activeFilters,allDef=Object.values(f).every(v=>v==='전체');
+  if(allDef)return yd.base||yd;
+  let k=null;
+  if(f.track!=='전체')k=(f.track==='비정년트랙'&&f.non_tenure!=='전체')?`track:비정년트랙|non_tenure:${f.non_tenure}`:`track:${f.track}`;
+  else if(f.rank!=='전체')k=`rank:${f.rank}`;
+  else if(f.gender!=='전체')k=`gender:${f.gender}`;
+  else if(f.age!=='전체')k=`age:${f.age}`;
+  else if(f.tenure!=='전체')k=`tenure:${f.tenure}`;
+  return getFiltered(yd,k);
+}
+function getSummaryForTrack(yr){
+  const yd=getYearData(yr);if(!yd)return null;
+  return getFiltered(yd,activeFilters.track!=='전체'?`track:${activeFilters.track}`:null);
+}
+function getSummaryForNT(yr){
+  const yd=getYearData(yr);if(!yd)return null;
+  const f=activeFilters;
+  let k=null;
+  if(f.non_tenure!=='전체')k=`track:비정년트랙|non_tenure:${f.non_tenure}`;
+  else if(f.track==='비정년트랙')k=`track:비정년트랙`;
+  return getFiltered(yd,k);
+}
+function needsMulti(){return Object.values(activeFilters).filter(v=>v!=='전체').length>=2;}
+
+// ROSTER
+async function loadRoster(){
+  if(rosterCache[currentYear])return rosterCache[currentYear];
+  try{const res=await fetch(`dashboard_roster_${currentYear}.json?t=${Date.now()}`);if(!res.ok)throw new Error();const d=await res.json();rosterCache[currentYear]=d;return d;}
+  catch(e){alert(`dashboard_roster_${currentYear}.json 파일을 불러올 수 없습니다.`);return null;}
+}
+async function loadRawRecs(){
+  if(rawRecordsCache[currentYear])return rawRecordsCache[currentYear];
+  try{const res=await fetch(`dashboard_roster_${currentYear}.json?t=${Date.now()}`);if(!res.ok)return null;const d=await res.json();const mk=currentMedical==='include'?'include':'exclude';rawRecordsCache[currentYear]=d[mk].all||[];return rawRecordsCache[currentYear];}
+  catch(e){return null;}
+}
+function applyMF(records){
+  const f=activeFilters;
+  return records.filter(r=>{
+    if(f.track!=='전체'&&r['트랙구분']!==f.track)return false;
+    if(f.non_tenure!=='전체'&&r['비정년트랙구분']!==f.non_tenure)return false;
+    if(f.rank!=='전체'&&r['직급']!==f.rank)return false;
+    if(f.gender!=='전체'&&r['성별']!==f.gender)return false;
+    if(f.age!=='전체'&&r['연령대']!==f.age)return false;
+    if(f.tenure!=='전체'&&r['재직기간대']!==f.tenure)return false;
+    return true;
+  });
+}
+function calcStats(recs){
+  const AGE=['25세-30세','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세'];
+  const TEN=['5년 이하','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
+  if(!recs||!recs.length)return{total:0,tenure_track:0,non_tenure:0,male:0,female:0,prof:0,assoc:0,asst:0,tracks:{정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0},ages:Object.fromEntries(AGE.map(a=>[a,0])),tenure_dist:Object.fromEntries(TEN.map(t=>[t,0])),retire:{'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0},colleges:{}};
+  const tracks={정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0};
+  recs.forEach(r=>{if(r['트랙구분']==='정년트랙')tracks['정년트랙']++;else{const s=r['비정년트랙구분'];if(s&&s in tracks)tracks[s]++;}});
+  const ages=Object.fromEntries(AGE.map(a=>[a,0])),tdist=Object.fromEntries(TEN.map(t=>[t,0]));
+  const retire={'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0},colleges={};
+  const yr=parseInt(currentYear);
+  recs.forEach(r=>{
+    if(r['연령대']in ages)ages[r['연령대']]++;
+    if(r['재직기간대']in tdist)tdist[r['재직기간대']]++;
+    const c=r['원소속 상위']||'기타';colleges[c]=(colleges[c]||0)+1;
+    const m=String(r['퇴직예정일(학년도-학기)']||'').match(/^(\d{4})학년도/);
+    if(m){const ry=parseInt(m[1]);if(ry<=yr)retire['퇴직예정(-)']++;else if(ry===yr+1)retire['퇴직예정(+1)']++;else if(ry===yr+2)retire['퇴직예정(+2)']++;}
+  });
+  return{total:recs.length,tenure_track:recs.filter(r=>r['트랙구분']==='정년트랙').length,non_tenure:recs.filter(r=>r['트랙구분']==='비정년트랙').length,male:recs.filter(r=>r['성별']==='남자').length,female:recs.filter(r=>r['성별']==='여자').length,prof:recs.filter(r=>r['직급']==='교수').length,assoc:recs.filter(r=>r['직급']==='부교수').length,asst:recs.filter(r=>r['직급']==='조교수').length,tracks,ages,tenure_dist:tdist,retire,colleges};
+}
+function getFL(){const f=activeFilters,t=[];if(f.track!=='전체')t.push(f.track);if(f.non_tenure!=='전체')t.push(f.non_tenure);if(f.rank!=='전체')t.push(f.rank);if(f.gender!=='전체')t.push(f.gender);if(f.age!=='전체')t.push(f.age);if(f.tenure!=='전체')t.push(f.tenure);return t.length?t.join(' · '):'전체';}
+function getFK(){const f=activeFilters;if(f.track!=='전체')return f.track==='비정년트랙'&&f.non_tenure!=='전체'?`track:비정년트랙|non_tenure:${f.non_tenure}`:`track:${f.track}`;if(f.rank!=='전체')return`rank:${f.rank}`;if(f.gender!=='전체')return`gender:${f.gender}`;if(f.age!=='전체')return`age:${f.age}`;if(f.tenure!=='전체')return`tenure:${f.tenure}`;return null;}
+function getRD(rdb){if(!rdb)return[];const mk=currentMedical==='include'?'include':'exclude',yd=rdb[mk],fk=getFK();if(fk&&yd.filters?.[fk])return yd.filters[fk];return yd.all||[];}
+
+async function openRosterTab(){
+  const rdb=await loadRoster(),roster=getRD(rdb);
+  if(!roster.length){alert('표시할 데이터가 없습니다.');return;}
+  const headers=DB.meta.roster_headers,fl=getFL();
+  const html=`<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>교원 명부 - ${currentYear}학년도 (${fl})</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Pretendard',sans-serif;background:#f8faff;color:#111827;padding:24px}h2{font-size:18px;font-weight:800;margin-bottom:4px}p{font-size:12px;color:#9ca3af;margin-bottom:16px}table{width:100%;border-collapse:collapse;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e5eaf5;font-size:12px}th{background:#f8faff;padding:10px 12px;text-align:left;color:#9ca3af;font-weight:600;border-bottom:1px solid #e5eaf5;white-space:nowrap;position:sticky;top:0}td{padding:9px 12px;border-bottom:1px solid #f3f4f6;color:#374151}tr:hover td{background:#f8faff}.badge{display:inline-block;background:#EBF1FF;color:#1365FE;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;margin-left:8px}</style></head><body><h2>전임교원 명부 - ${currentYear}학년도 <span class="badge">${roster.length}명</span></h2><p>필터: ${fl} · 의학계열: ${currentMedical==='exclude'?'제외':'포함'}</p><table><thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead><tbody>${roster.map(row=>`<tr>${headers.map(h=>`<td>${row[h]??''}</td>`).join('')}</tr>`).join('')}</tbody></table></body></html>`;
+  window.open(URL.createObjectURL(new Blob([html],{type:'text/html;charset=utf-8'})),'_blank');
+}
+async function downloadRosterExcel(){
+  const rdb=await loadRoster(),roster=getRD(rdb);
+  if(!roster.length){alert('다운로드할 데이터가 없습니다.');return;}
+  const headers=DB.meta.roster_headers,fl=getFL();
+  const bom='\uFEFF',csv=bom+[headers.join(','),...roster.map(row=>headers.map(h=>{const v=String(row[h]??'');return v.includes(',')||v.includes('"')?`"${v.replace(/"/g,'""')}"`:`${v}`;}).join(','))].join('\n');
+  const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download=`교원명부_${currentYear}학년도_${fl}.csv`;a.click();
+}
+
+// FILTERS
+function syncChips(filterId, value) {
+  document.querySelectorAll(`#${filterId} .fchip`).forEach(c => c.classList.toggle('on', c.textContent.trim() === value));
+}
+async function setFilter(type, value, chipEl) {
+  activeFilters[type] = value;
+  if (type === 'track') {
+    const isNT = value === '비정년트랙';
+    ['nonTenureFilter','nonTenureFilterCard'].forEach(id => {
+      document.getElementById(id).classList.toggle('disabled-bar', !isNT);
+    });
+    if (!isNT) {
+      activeFilters.non_tenure = '전체';
+      ['nonTenureFilter','nonTenureFilterCard'].forEach(id => syncChips(id, '전체'));
+    }
+  }
+  const barMap = {track:'trackFilter',non_tenure:'nonTenureFilter',rank:'rankFilter',gender:'genderFilter'};
+  const cardMap = {track:'trackFilterCard',non_tenure:'nonTenureFilterCard',rank:'rankFilterCard',gender:'genderFilterCard',tenure:'tenureFilterCard',age:'ageFilterCard'};
+  if (barMap[type]) syncChips(barMap[type], value);
+  if (cardMap[type]) syncChips(cardMap[type], value);
+  await renderAll();
+}
+async function resetAllFilters() {
+  activeFilters = {track:'전체',non_tenure:'전체',rank:'전체',gender:'전체',age:'전체',tenure:'전체'};
+  document.querySelectorAll('.fchip').forEach(c => c.classList.toggle('on', c.textContent.trim() === '전체'));
+  ['nonTenureFilter','nonTenureFilterCard'].forEach(id => document.getElementById(id).classList.add('disabled-bar'));
+  await renderAll();
+}
 async function onYearChange() {
   currentYear = document.getElementById('yearSelect').value;
-  document.getElementById('yearBadge').textContent = currentYear + '학년도';
-  // 학년도 변경 시 rawRecords 캐시 초기화 (의학계열 필터 반영)
   delete rawRecordsCache[currentYear];
   await renderAll();
 }
-
 async function setMedical(mode) {
   currentMedical = mode;
-  document.getElementById('btnExclude').classList.toggle('active', mode === 'exclude');
-  document.getElementById('btnInclude').classList.toggle('active', mode === 'include');
-  // 의학계열 변경 시 rawRecords 캐시 초기화
+  document.getElementById('btnExclude').classList.toggle('active', mode==='exclude');
+  document.getElementById('btnInclude').classList.toggle('active', mode==='include');
   rawRecordsCache = {};
   await renderAll();
 }
 
-// ============ GET FILTERED SUMMARY ============
-function getYearData(year) {
-  const base = DB.summary[year];
-  if (!base) return null;
-  const medKey = currentMedical === 'include' ? 'include' : 'exclude';
-  return base[medKey] || base;
-}
-
-function getFilteredData(yearData, filterKey) {
-  if (!filterKey) return yearData.base || yearData;
-  if (yearData.filters && yearData.filters[filterKey]) {
-    return yearData.filters[filterKey];
-  }
-  return yearData.base || yearData;
-}
-
-// 일반 필터 적용 (track + non_tenure 조합 포함)
-function getSummary(year) {
-  const yearData = getYearData(year);
-  if (!yearData) return null;
-  const f = activeFilters;
-  const allDefault = Object.values(f).every(v => v === '전체');
-  if (allDefault) return yearData.base || yearData;
-
-  let filterKey = null;
-  if (f.track !== '전체') {
-    filterKey = (f.track === '비정년트랙' && f.non_tenure !== '전체')
-      ? `track:비정년트랙|non_tenure:${f.non_tenure}`
-      : `track:${f.track}`;
-  } else if (f.rank !== '전체') filterKey = `rank:${f.rank}`;
-  else if (f.gender !== '전체') filterKey = `gender:${f.gender}`;
-  else if (f.age !== '전체') filterKey = `age:${f.age}`;
-  else if (f.tenure !== '전체') filterKey = `tenure:${f.tenure}`;
-
-  return getFilteredData(yearData, filterKey);
-}
-
-// 트랙별 차트 전용: non_tenure 필터 제외 (track까지만 적용)
-function getSummaryForTrack(year) {
-  const yearData = getYearData(year);
-  if (!yearData) return null;
-  const f = activeFilters;
-  const filterKey = f.track !== '전체' ? `track:${f.track}` : null;
-  return getFilteredData(yearData, filterKey);
-}
-
-// 비정년트랙 차트 전용: track:비정년트랙 + non_tenure 조합
-function getSummaryForNonTenure(year) {
-  const yearData = getYearData(year);
-  if (!yearData) return null;
-  const f = activeFilters;
-  let filterKey = null;
-  if (f.non_tenure !== '전체') {
-    filterKey = `track:비정년트랙|non_tenure:${f.non_tenure}`;
-  } else if (f.track === '비정년트랙') {
-    filterKey = `track:비정년트랙`;
-  }
-  return getFilteredData(yearData, filterKey);
-}
-
-// ============ 실시간 다중 필터링 ============
-async function loadRawRecords() {
-  if (rawRecordsCache[currentYear]) return rawRecordsCache[currentYear];
-
-  // roster 파일에서 원본 데이터 로딩
-  try {
-    const url = `dashboard_roster_${currentYear}.json?t=${Date.now()}`;
-    const res = await fetch(url);
-    if (!res.ok) throw new Error(`roster 파일 없음`);
-    const data = await res.json();
-    const medKey = currentMedical === 'include' ? 'include' : 'exclude';
-    rawRecordsCache[currentYear] = data[medKey].all || [];
-    return rawRecordsCache[currentYear];
-  } catch(e) {
-    console.warn('rawRecords 로딩 실패:', e.message);
-    return null;
-  }
-}
-
-function applyMultiFilter(records) {
-  if (!records) return null;
-  const f = activeFilters;
-  return records.filter(r => {
-    if (f.track !== '전체' && r['트랙구분'] !== f.track) return false;
-    if (f.non_tenure !== '전체' && r['비정년트랙구분'] !== f.non_tenure) return false;
-    if (f.rank !== '전체' && r['직급'] !== f.rank) return false;
-    if (f.gender !== '전체' && r['성별'] !== f.gender) return false;
-    if (f.age !== '전체' && r['연령대'] !== f.age) return false;
-    if (f.tenure !== '전체' && r['재직기간대'] !== f.tenure) return false;
-    return true;
-  });
-}
-
-function calcStatsFromRecords(records) {
-  const AGE_ORDER=['25세-30세','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세'];
-  const TENURE_ORDER=['5년 이하','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
-
-  if (!records || !records.length) return {
-    total:0, tenure_track:0, non_tenure:0, male:0, female:0,
-    prof:0, assoc:0, asst:0,
-    tracks:{정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0},
-    ages:Object.fromEntries(AGE_ORDER.map(a=>[a,0])),
-    tenure_dist:Object.fromEntries(TENURE_ORDER.map(t=>[t,0])),
-    retire:{'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0},
-    colleges:{}
-  };
-
-  const tracks = {정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0};
-  records.forEach(r => {
-    if (r['트랙구분']==='정년트랙') tracks['정년트랙']++;
-    else { const s=r['비정년트랙구분']; if(s && s in tracks) tracks[s]++; }
-  });
-
-  const ages = Object.fromEntries(AGE_ORDER.map(a=>[a,0]));
-  const tdist = Object.fromEntries(TENURE_ORDER.map(t=>[t,0]));
-  const retire = {'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0};
-  const colleges = {};
-
-  const yr = parseInt(currentYear);
-
-  records.forEach(r => {
-    // 연령대
-    if(r['연령대'] in ages) ages[r['연령대']]++;
-    // 재직기간대
-    if(r['재직기간대'] in tdist) tdist[r['재직기간대']]++;
-    // 단과대학
-    const c = r['원소속 상위'] || '기타';
-    colleges[c] = (colleges[c]||0) + 1;
-    // 퇴직예정 구분 - 퇴직예정일(학년도-학기)에서 학년도 추출
-    const retireStr = r['퇴직예정일(학년도-학기)'] || '';
-    const match = retireStr.match(/^(\d{4})학년도/);
-    if (match) {
-      const retireYr = parseInt(match[1]);
-      if (retireYr <= yr) retire['퇴직예정(-)']++;
-      else if (retireYr === yr + 1) retire['퇴직예정(+1)']++;
-      else if (retireYr === yr + 2) retire['퇴직예정(+2)']++;
-    }
-  });
-
-  return {
-    total: records.length,
-    tenure_track: records.filter(r=>r['트랙구분']==='정년트랙').length,
-    non_tenure: records.filter(r=>r['트랙구분']==='비정년트랙').length,
-    male: records.filter(r=>r['성별']==='남자').length,
-    female: records.filter(r=>r['성별']==='여자').length,
-    prof: records.filter(r=>r['직급']==='교수').length,
-    assoc: records.filter(r=>r['직급']==='부교수').length,
-    asst: records.filter(r=>r['직급']==='조교수').length,
-    tracks, ages, tenure_dist:tdist, retire, colleges
-  };
-}
-
-// 다중 필터가 필요한지 체크 (2개 이상 활성화 시 true)
-function needsMultiFilter() {
-  const f = activeFilters;
-  const activeCount = Object.values(f).filter(v => v !== '전체').length;
-  return activeCount >= 2;
-}
-
-// ============ FILTER CONTROL ============
-async function setFilter(type, value, chipEl) {
-  activeFilters[type] = value;
-
-  // 트랙 필터 변경 시 비정년트랙 필터 활성화/비활성화 처리
-  if (type === 'track') {
-    const ntFilter = document.getElementById('nonTenureFilter');
-  
-    if (value === '비정년트랙') {
-      // 비정년트랙 선택 → 필터 활성화
-      ntFilter.classList.remove('disabled');
-    } else {
-      // 전체 또는 정년트랙 선택 → 비정년트랙 필터 비활성화 + 초기화
-      ntFilter.classList.add('disabled');
-      activeFilters.non_tenure = '전체';
-      document.querySelectorAll('#nonTenureFilter .filter-chip').forEach(c => {
-        c.classList.toggle('active', c.textContent.trim() === '전체');
-      });
-    }
-  }
-
-  // 칩 active 상태 업데이트
-  if (chipEl) {
-    const bar = chipEl.closest('.filter-bar, .sub-filter');
-    if (bar) {
-      bar.querySelectorAll('.filter-chip').forEach(c => c.classList.remove('active'));
-      chipEl.classList.add('active');
-    }
-  }
-
-  updateFilterSummary();
-  renderAll();
-}
-
-async function resetAllFilters() {
-  activeFilters = { track:'전체', non_tenure:'전체', rank:'전체', gender:'전체', age:'전체', tenure:'전체' };
-
-  // 칩 초기화
-  document.querySelectorAll('.filter-bar .filter-chip, .sub-filter .filter-chip').forEach(c => {
-    c.classList.toggle('active', c.textContent.trim() === '전체');
-  });
-
-  // 비정년트랙 필터 비활성화 (전체 선택 상태)
-  document.getElementById('nonTenureFilter').classList.add('disabled');
-
-  updateFilterSummary();
-  renderAll();
-}
-
-function updateFilterSummary(s) {
-  const f = activeFilters;
-  const tags = [];
-  if (f.track !== '전체') tags.push(f.track);
-  if (f.non_tenure !== '전체') tags.push(f.non_tenure);
-  if (f.rank !== '전체') tags.push(f.rank);
-  if (f.gender !== '전체') tags.push(f.gender);
-  if (f.age !== '전체') tags.push(f.age);
-  if (f.tenure !== '전체') tags.push(f.tenure);
-
-  const tagsEl = document.getElementById('filterTags');
-  const totalEl = document.getElementById('filterTotal');
-  const summaryEl = document.getElementById('filterSummary');
-
-  if (tags.length === 0) {
-    tagsEl.innerHTML = '<span style="color:var(--text-muted)">전체 데이터</span>';
-    summaryEl.style.borderColor = 'rgba(59,130,246,.2)';
-  } else {
-    tagsEl.innerHTML = tags.map(t => `<span class="fs-tag">${t}</span>`).join('');
-    summaryEl.style.borderColor = 'rgba(245,158,11,.4)';
-  }
-
-  // s가 전달되면 그 값 사용, 아니면 getSummary로 계산
-  const stat = s || getSummary(currentYear);
-  if (stat) totalEl.textContent = `${stat.total.toLocaleString()}명`;
-}
-
-// ============ RENDER ALL ============
+// RENDER ALL
 async function renderAll() {
   let s = getSummary(currentYear);
   if (!s) return;
-
-  // 다중 필터 적용 (2개 이상 필터 활성화 시 roster에서 실시간 계산)
-  if (needsMultiFilter()) {
-    const records = await loadRawRecords();
-    if (records) {
-      const filtered = applyMultiFilter(records);
-      s = calcStatsFromRecords(filtered);
-    }
+  if (needsMulti()) {
+    const recs = await loadRawRecs();
+    if (recs) s = calcStats(applyMF(recs));
   }
-
-  updateFilterSummary(s);
   renderKPI(s);
   renderRateChart();
-  renderTrackList(getSummaryForTrack(currentYear));
-  renderNonTenureDonut(getSummaryForNonTenure(currentYear));
-  renderRankChart(s);
-  renderGenderChart(s);
-  renderRetireTable(s);
-  renderRetireChart(s);
-  renderAgeHisto(s);
-  renderTenureHisto(s);
-  renderCollegeTable(s);
+  renderTrackDonut(getSummaryForTrack(currentYear));
+  renderNTDonut(getSummaryForNT(currentYear));
+  renderStkBar('rankChart','rankLegend',['교수','부교수','조교수'],[s.prof,s.assoc,s.asst],RANK_COLORS,s,'rank');
+  renderStkBar('genderChart','genderLegend',['남자','여자'],[s.male,s.female],GENDER_COLORS,s,'gender');
+  renderHisto('tenureHisto', s.tenure_dist, TENURE_COLORS, s.total);
+  renderHisto('ageHisto', s.ages, AGE_COLORS, s.total);
+  renderRetire(s);
+  renderCollege(s);
+  document.getElementById('filterTotal').textContent = s.total.toLocaleString()+'명';
   animateBars();
-
-  document.getElementById('footer').textContent =
-    `전임교원 현황 대시보드 · ${currentYear}학년도 기준 · 업데이트: ${DB.meta.updated}`;
+  document.getElementById('footer').textContent = `동아대학교 전임교원 현황 대시보드 · ${currentYear}학년도 기준 · 업데이트: ${DB.meta.updated}`;
 }
 
-// ============ KPI ============
+// KPI
 function renderKPI(s) {
-  // Total
   document.getElementById('kpiTotal').innerHTML = `${s.total}<small>명</small>`;
-  document.getElementById('kpiTrackSub').innerHTML =
-    `정년트랙 <strong style="color:var(--text)">${s.tenure_track}</strong> · 비정년 <strong style="color:var(--text)">${s.non_tenure}</strong>`;
-
-  // Delta vs prev year
-  const years = DB.meta.years;
-  const idx = years.indexOf(currentYear);
-  if (idx > 0) {
-    const prev = getSummary(years[idx-1]);
-    if (prev) {
-      const diff = s.total - prev.total;
-      const sign = diff > 0 ? '+' : '';
-      const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
-      document.getElementById('kpiTotalDelta').innerHTML =
-        `<span class="${cls}">${sign}${diff} vs ${years[idx-1]}년</span>`;
-    }
-  } else {
-    document.getElementById('kpiTotalDelta').innerHTML = '';
-  }
-
-  // Rate
-  const rateKey = currentMedical === 'exclude' ? 'exclude' : 'include';
-  const rateObj = DB.rate[currentYear];
-  const rateVal = rateObj ? (rateObj[rateKey] ?? rateObj.exclude) : null;
-  document.getElementById('rateLabel').textContent = currentMedical === 'exclude' ? '확보율 (의학 제외)' : '확보율 (의학 포함)';
-  document.getElementById('kpiRate').innerHTML = rateVal ? `${rateVal.toFixed(2)}<small>%</small>` : `–<small>%</small>`;
-
-  if (idx > 0) {
-    const prevRateObj = DB.rate[years[idx-1]];
-    const prevRate = prevRateObj ? (prevRateObj[rateKey] ?? prevRateObj.exclude) : null;
-    if (rateVal && prevRate) {
-      const diff = (rateVal - prevRate).toFixed(1);
-      const sign = diff > 0 ? '+' : '';
-      const cls = diff > 0 ? 'up' : diff < 0 ? 'down' : 'flat';
-      document.getElementById('kpiRateDelta').innerHTML =
-        `<span class="${cls}">${sign}${diff}%p vs ${years[idx-1]}년</span>`;
-    }
-  } else {
-    document.getElementById('kpiRateDelta').innerHTML = '';
-  }
-
-  // Retire
-  const retireNow = s.retire['퇴직예정(-)'] || 0;
-  const retire1 = s.retire['퇴직예정(+1)'] || 0;
-  const retire2 = s.retire['퇴직예정(+2)'] || 0;
-  document.getElementById('kpiRetire').innerHTML = `${retireNow}<small>명</small>`;
-  document.getElementById('kpiRetireSub').innerHTML =
-    `차년 <strong style="color:var(--accent4)">${retire1}</strong>명 · +2년 <strong style="color:var(--accent)">${retire2}</strong>명`;
-
-  // Gender
-  const femalePct = s.total > 0 ? (s.female / s.total * 100).toFixed(1) : '–';
-  document.getElementById('kpiFemale').innerHTML = `${femalePct}<small>%</small>`;
-  document.getElementById('kpiGenderSub').innerHTML =
-    `여자 <strong style="color:var(--text)">${s.female}</strong>명 / 남자 <strong style="color:var(--text)">${s.male}</strong>명`;
+  document.getElementById('kpiTrackSub').innerHTML = `정년트랙 <strong style="color:#111">${s.tenure_track}</strong> · 비정년 <strong style="color:#111">${s.non_tenure}</strong>`;
+  const yrs=DB.meta.years, idx=yrs.indexOf(currentYear);
+  if(idx>0){const prev=getSummary(yrs[idx-1]);if(prev){const d=s.total-prev.total,cls=d>0?'up':d<0?'dn':'';document.getElementById('kpiTotalDelta').innerHTML=`<span class="${cls}">${d>0?'+':''}${d}명 vs ${yrs[idx-1]}년</span>`;}}
+  const rk=currentMedical==='exclude'?'exclude':'include', ro=DB.rate[currentYear], rv=ro?(ro[rk]??ro.exclude):null;
+  document.getElementById('rateLabel').textContent=currentMedical==='exclude'?'확보율 (의학 제외)':'확보율 (의학 포함)';
+  document.getElementById('kpiRate').innerHTML=rv?`${rv.toFixed(2)}<small>%</small>`:`–<small>%</small>`;
+  if(idx>0){const pr=DB.rate[yrs[idx-1]];const pv=pr?(pr[rk]??pr.exclude):null;if(rv&&pv){const d=(rv-pv).toFixed(2),cls=d>0?'up':d<0?'dn':'';document.getElementById('kpiRateDelta').innerHTML=`<span class="${cls}">${d>0?'+':''}${d}%p vs ${yrs[idx-1]}년</span>`;}}
+  const r=s.retire;
+  document.getElementById('kpiRetire').innerHTML=`${r['퇴직예정(-)'||0]||0}<small>명</small>`;
+  document.getElementById('kpiRetireSub').innerHTML=`차년 <strong style="color:#111">${r['퇴직예정(+1)']||0}</strong>명 · +2년 <strong style="color:#111">${r['퇴직예정(+2)']||0}</strong>명`;
+  const fp=s.total>0?(s.female/s.total*100).toFixed(1):'–';
+  document.getElementById('kpiFemale').innerHTML=`${fp}<small>%</small>`;
+  document.getElementById('kpiGenderSub').innerHTML=`여자 <strong style="color:#111">${s.female}</strong>명 / 남자 <strong style="color:#111">${s.male}</strong>명`;
 }
 
-// ============ RATE CHART ============
+// RATE CHART
 function renderRateChart() {
-  const rateKey = currentMedical === 'exclude' ? 'exclude' : 'include';
-  const allYears = Object.keys(DB.rate).sort();
-  const vals = allYears.map(y => DB.rate[y] ? (DB.rate[y][rateKey] ?? DB.rate[y].exclude ?? null) : null);
-  const lastIdx = allYears.length - 1; // 가장 최근 학년도 인덱스
-
-  const ctx = document.getElementById('rateChart').getContext('2d');
-  if (charts.rate) charts.rate.destroy();
-
-  const grad = ctx.createLinearGradient(0,0,0,240);
-  grad.addColorStop(0,'rgba(6,182,212,0.25)');
-  grad.addColorStop(1,'rgba(6,182,212,0)');
-
-  // 각 포인트 스타일: 최근값 강조
-  const pointBgColors = allYears.map((_,i) =>
-    i === lastIdx ? '#fff' : '#06b6d4'
-  );
-  const pointBorderColors = allYears.map((_,i) =>
-    i === lastIdx ? '#06b6d4' : 'transparent'
-  );
-  const pointRadii = allYears.map((_,i) =>
-    i === lastIdx ? 9 : 4
-  );
-  const pointHoverRadii = allYears.map((_,i) =>
-    i === lastIdx ? 11 : 6
-  );
-
-  charts.rate = new Chart(ctx, {
-    type: 'line',
-    data: {
-      labels: allYears,
-      datasets: [{
-        label: '확보율(%)',
-        data: vals,
-        borderColor: '#06b6d4',
-        backgroundColor: grad,
-        borderWidth: 2,
-        pointBackgroundColor: pointBgColors,
-        pointBorderColor: pointBorderColors,
-        pointBorderWidth: 2,
-        pointRadius: pointRadii,
-        pointHoverRadius: pointHoverRadii,
-        fill: true, tension: 0.4,
-        datalabels: {
-          display: true
-        }
-      }]
-    },
-    options: {
-      responsive:true, maintainAspectRatio:false,
-      layout: { padding: { top: 60, right: 24, left: 8, bottom: 8 } },
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1,
-          callbacks:{label: c=>` 확보율: ${c.parsed.y?.toFixed(2)}%`}
-        },
-        // 각 포인트 위에 수치 표시 (커스텀 플러그인)
-        rateLabels: true
-      },
-      scales:{
-        x:{grid:{color:GRID},ticks:{color:TICK}},
-        y:{grid:{color:GRID},ticks:{color:TICK,callback:v=>v+'%'},min:55,max:75}
-      }
-    },
-    plugins: [{
-      id: 'rateLabels',
-      afterDraw(chart) {
-        const { ctx, data, chartArea } = chart;
-        const dataset = chart.getDatasetMeta(0);
-        // 차트 영역 클리핑 해제 - 캔버스 전체 영역에 그리기
-        ctx.save();
-        ctx.setTransform(1, 0, 0, 1, 0, 0); // 변환 초기화
-        ctx.restore();
-
-        data.datasets[0].data.forEach((val, i) => {
-          if (val === null) return;
-          const point = dataset.data[i];
-          const x = point.x;
-          const y = point.y;
-          const isLast = i === lastIdx;
-
-          ctx.save();
-          // 클리핑 영역 제거 (차트 밖에도 그릴 수 있도록)
-          ctx.beginPath();
-          ctx.rect(0, 0, chart.width, chart.height);
-          ctx.clip();
-
-          const label = val.toFixed(2) + '%';
-          ctx.font = isLast
-            ? 'bold 12px "Pretendard", sans-serif'
-            : '10px "Pretendard", sans-serif';
-          const textW = ctx.measureText(label).width;
-          const boxPad = isLast ? 5 : 3;
-          const boxH = isLast ? 20 : 16;
-          const tailH = isLast ? 6 : 0;
-          const boxW = textW + boxPad * 2;
-          const margin = 4; // 캔버스 상단 여백
-
-          // 말풍선 위치: 포인트 위쪽, 캔버스 상단 잘림 방지
-          let boxX = x - boxW / 2;
-          let boxY = y - boxH - tailH - 8;
-
-          // 상단 잘림 방지 - 잘리면 아래로 내림
-          if (boxY < margin) boxY = margin;
-
-          // 좌우 잘림 방지
-          if (boxX < margin) boxX = margin;
-          if (boxX + boxW > chart.width - margin) boxX = chart.width - margin - boxW;
-
-          if (isLast) {
-            // 강조 박스
-            ctx.fillStyle = '#06b6d4';
-            ctx.beginPath();
-            if (ctx.roundRect) {
-              ctx.roundRect(boxX, boxY, boxW, boxH, 4);
-            } else {
-              ctx.rect(boxX, boxY, boxW, boxH);
-            }
-            ctx.fill();
-
-            // 말풍선 꼬리 (박스가 포인트 위에 있을 때만)
-            if (boxY + boxH < y) {
-              ctx.beginPath();
-              ctx.moveTo(x - 4, boxY + boxH);
-              ctx.lineTo(x, boxY + boxH + tailH);
-              ctx.lineTo(x + 4, boxY + boxH);
-              ctx.fill();
-            }
-            ctx.fillStyle = '#fff';
-          } else {
-            ctx.fillStyle = 'rgba(17,24,39,0.85)';
-            ctx.beginPath();
-            if (ctx.roundRect) {
-              ctx.roundRect(boxX, boxY, boxW, boxH, 3);
-            } else {
-              ctx.rect(boxX, boxY, boxW, boxH);
-            }
-            ctx.fill();
-            ctx.fillStyle = '#94a3b8';
-          }
-
-          ctx.textAlign = 'center';
-          ctx.textBaseline = 'middle';
-          ctx.fillText(label, boxX + boxW / 2, boxY + boxH / 2);
-          ctx.restore();
-        });
-      }
-    }]
+  const rk=currentMedical==='exclude'?'exclude':'include';
+  const allYrs=Object.keys(DB.rate).sort(), vals=allYrs.map(y=>DB.rate[y]?(DB.rate[y][rk]??DB.rate[y].exclude??null):null);
+  const lastIdx=allYrs.length-1;
+  const ctx=document.getElementById('rateChart').getContext('2d');
+  if(charts.rate)charts.rate.destroy();
+  const grad=ctx.createLinearGradient(0,0,0,260);
+  grad.addColorStop(0,'rgba(19,101,254,0.12)');grad.addColorStop(1,'rgba(19,101,254,0)');
+  charts.rate=new Chart(ctx,{
+    type:'line',data:{labels:allYrs,datasets:[{label:'확보율',data:vals,borderColor:'#1365FE',backgroundColor:grad,borderWidth:2,pointBackgroundColor:allYrs.map((_,i)=>i===lastIdx?'#fff':'#1365FE'),pointBorderColor:allYrs.map((_,i)=>i===lastIdx?'#1365FE':'transparent'),pointBorderWidth:2,pointRadius:allYrs.map((_,i)=>i===lastIdx?8:4),fill:true,tension:.4}]},
+    options:{responsive:true,maintainAspectRatio:false,layout:{padding:{top:56,right:24,left:8,bottom:8}},plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>` 확보율: ${c.parsed.y?.toFixed(2)}%`}}},scales:{x:{grid:{color:GRID},ticks:{color:'#9ca3af'}},y:{grid:{color:GRID},ticks:{color:'#9ca3af',callback:v=>v+'%'},min:55,max:75}}},
+    plugins:[{id:'rl',afterDraw(chart){
+      const{ctx,data,chartArea}=chart,ds=chart.getDatasetMeta(0);
+      data.datasets[0].data.forEach((val,i)=>{
+        if(val===null)return;
+        const pt=ds.data[i],x=pt.x,y=pt.y,isLast=i===lastIdx;
+        ctx.save();ctx.beginPath();ctx.rect(0,0,chart.width,chart.height);ctx.clip();
+        const label=val.toFixed(2)+'%';
+        ctx.font=isLast?'bold 12px "Pretendard",sans-serif':'11px "Pretendard",sans-serif';
+        const tw=ctx.measureText(label).width,pad=isLast?6:4,bh=isLast?22:17,bw=tw+pad*2;
+        let bx=x-bw/2,by=y-bh-(isLast?8:6);
+        if(by<4)by=4;if(bx<4)bx=4;if(bx+bw>chart.width-4)bx=chart.width-4-bw;
+        if(isLast){ctx.fillStyle='#1365FE';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,4);else ctx.rect(bx,by,bw,bh);ctx.fill();if(by+bh<y){ctx.beginPath();ctx.moveTo(x-4,by+bh);ctx.lineTo(x,by+bh+5);ctx.lineTo(x+4,by+bh);ctx.fill();}ctx.fillStyle='#fff';}
+        else{ctx.fillStyle='rgba(243,244,246,0.95)';ctx.beginPath();if(ctx.roundRect)ctx.roundRect(bx,by,bw,bh,3);else ctx.rect(bx,by,bw,bh);ctx.fill();ctx.fillStyle='#6b7280';}
+        ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(label,bx+bw/2,by+bh/2);ctx.restore();
+      });
+    }}]
   });
 }
 
-// ============ DONUT CHART 공통 렌더러 ============
-function renderDonutChart(canvasId, legendId, labels, values, colors, total) {
-  const ctx = document.getElementById(canvasId).getContext('2d');
-  if (charts[canvasId]) charts[canvasId].destroy();
-
-  const totalVal = total || values.reduce((a,b)=>a+b,0);
-
-  charts[canvasId] = new Chart(ctx, {
-    type: 'doughnut',
-    data: {
-      labels,
-      datasets:[{data:values, backgroundColor:colors, borderWidth:2, borderColor:'#111827', hoverOffset:4}]
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false, cutout:'65%',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1,
-          callbacks:{
-            label: c => {
-              const pct = totalVal>0?(c.parsed/totalVal*100).toFixed(2):'0.00';
-              return ` ${c.label}: ${c.parsed}명 (${pct}%)`;
-            }
-          }
-        }
-      }
-    },
-    plugins:[{
-      id:'centerText',
-      afterDatasetsDraw(chart){
-        const {ctx,chartArea:{left,top,right,bottom}} = chart;
-        const cx=(left+right)/2, cy=(top+bottom)/2;
-        ctx.save();
-        ctx.textAlign='center'; ctx.textBaseline='middle';
-        ctx.font='bold 18px "Pretendard",sans-serif';
-        ctx.fillStyle='#e2e8f0';
-        ctx.fillText(totalVal.toLocaleString(), cx, cy-8);
-        ctx.font='10px "Pretendard",sans-serif';
-        ctx.fillStyle='#64748b';
-        ctx.fillText('명', cx, cy+10);
-        ctx.restore();
-      }
-    }]
+// DONUT
+function renderDonut(cid,lid,labels,values,colors,total){
+  const ctx=document.getElementById(cid).getContext('2d');
+  if(charts[cid])charts[cid].destroy();
+  const tot=total||values.reduce((a,b)=>a+b,0);
+  charts[cid]=new Chart(ctx,{
+    type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>{const pct=tot>0?(c.parsed/tot*100).toFixed(2):'0.00';return ` ${c.label}: ${c.parsed}명 (${pct}%)`}}}}},
+    plugins:[{id:'ctr',afterDatasetsDraw(chart){
+      const{ctx,chartArea:{left,top,right,bottom}}=chart,cx=(left+right)/2,cy=(top+bottom)/2;
+      ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
+      ctx.font='bold 18px "Pretendard",sans-serif';ctx.fillStyle='#111827';ctx.fillText(tot.toLocaleString(),cx,cy-7);
+      ctx.font='11px "Pretendard",sans-serif';ctx.fillStyle='#9ca3af';ctx.fillText('명',cx,cy+10);ctx.restore();
+    }}]
   });
+  document.getElementById(lid).innerHTML=labels.map((l,i)=>{
+    const cnt=values[i]||0,pct=tot>0?(cnt/tot*100).toFixed(2):'0.00';
+    return `<div class="lg-row"><div class="lg-dot" style="background:${colors[i]}"></div><span class="lg-name">${l}</span><span class="lg-cnt">${cnt}명</span><span class="lg-pct">(${pct}%)</span></div>`;
+  }).join('');
+}
+function renderTrackDonut(s){
+  if(!s)return;
+  const nt=(s.tracks['강의전담']||0)+(s.tracks['연구전담']||0)+(s.tracks['산학협력전담']||0)+(s.tracks['외국인']||0);
+  renderDonut('trackDonutChart','trackDonutLegend',['정년트랙','비정년트랙'],[s.tracks['정년트랙']||0,nt],TRACK_COLORS,s.total);
+}
+function renderNTDonut(s){
+  if(!s)return;
+  const keys=['강의전담','연구전담','산학협력전담','외국인'],vals=keys.map(k=>s.tracks[k]||0),tot=vals.reduce((a,b)=>a+b,0);
+  renderDonut('nonTenureDonutChart','nonTenureDonutLegend',keys,vals,NT_COLORS,tot);
+}
 
-  // 범례
-  document.getElementById(legendId).innerHTML = labels.map((label,i)=>{
-    const cnt = values[i]||0;
-    const pct = totalVal>0?(cnt/totalVal*100).toFixed(2):'0.00';
-    return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
-      <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
-      <span style="color:var(--text-dim);flex:1">${label}</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600">${cnt}명</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</span>
-    </div>`;
+// STACKED BAR
+function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
+  const f=activeFilters[filterType];
+  const labels=f!=='전체'?allLbls.filter(l=>l===f):allLbls;
+  const values=f!=='전체'?allVals.filter((_,i)=>allLbls[i]===f):allVals;
+  const colors=f!=='전체'?allClrs.filter((_,i)=>allLbls[i]===f):allClrs;
+  const tot=values.reduce((a,b)=>a+b,0), bt=s.total||1;
+  const ctx=document.getElementById(cid).getContext('2d');
+  if(charts[cid])charts[cid].destroy();
+  charts[cid]=new Chart(ctx,{
+    type:'bar',data:{labels:[''],datasets:labels.map((l,i)=>({label:l,data:[values[i]],backgroundColor:colors[i],borderWidth:0,borderRadius:i===0?4:i===labels.length-1?4:0,borderSkipped:false}))},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>{const pct=bt>0?(c.parsed.x/bt*100).toFixed(2):'0.00';return ` ${c.dataset.label}: ${c.parsed.x}명 (${pct}%)`;}}},},scales:{x:{stacked:true,display:false,max:tot},y:{stacked:true,display:false}}}
+  });
+  document.getElementById(lid).innerHTML=labels.map((l,i)=>{
+    const cnt=values[i],pct=bt>0?(cnt/bt*100).toFixed(2):'0.00';
+    return `<div class="lg-row"><div class="lg-dot" style="background:${colors[i]}"></div><span class="lg-name">${l}</span><span class="lg-cnt">${cnt}명</span><span class="lg-pct">(${pct}%)</span></div>`;
   }).join('');
 }
 
-// ============ TRACK DONUT ============
-function renderTrackList(s) {
-  if (!s) return;
-  const tracks = s.tracks;
-  const total = s.total;
-
-  // 정년트랙 / 비정년트랙 2개로만 표시
-  const tenureCount = tracks['정년트랙'] || 0;
-  const nonTenureCount = (tracks['강의전담']||0) + (tracks['연구전담']||0) +
-                         (tracks['산학협력전담']||0) + (tracks['외국인']||0);
-
-  renderDonutChart(
-    'trackDonutChart', 'trackDonutLegend',
-    ['정년트랙', '비정년트랙'],
-    [tenureCount, nonTenureCount],
-    ['#c2410c', '#fbbf24'],
-    total
-  );
-}
-
-// ============ NON-TENURE DONUT ============
-function renderNonTenureDonut(s) {
-  if (!s) return;
-  const tracks = s.tracks;
-  const ntTotal = (tracks['강의전담']||0)+(tracks['연구전담']||0)+(tracks['산학협력전담']||0)+(tracks['외국인']||0);
-  renderDonutChart(
-    'nonTenureDonutChart', 'nonTenureDonutLegend',
-    ['강의전담','연구전담','산학협력전담','외국인'],
-    ['강의전담','연구전담','산학협력전담','외국인'].map(k=>tracks[k]||0),
-    ['#ea580c','#fb923c','#fbbf24','#f59e0b'],
-    ntTotal
-  );
-}
-
-// ============ RANK CHART (100% 가로 누적 막대) ============
-function renderRankChart(s) {
-  const allLabels = ['교수','부교수','조교수'];
-  const allValues = [s.prof, s.assoc, s.asst];
-  const allColors = ['#c2410c','#ea580c','#fb923c'];
-
-  // 직급 필터 적용: 선택된 직급만 표시
-  const rankFilter = activeFilters.rank;
-  const labels = rankFilter !== '전체'
-    ? allLabels.filter(l => l === rankFilter)
-    : allLabels;
-  const values = rankFilter !== '전체'
-    ? allValues.filter((_, i) => allLabels[i] === rankFilter)
-    : allValues;
-  const colors = rankFilter !== '전체'
-    ? allColors.filter((_, i) => allLabels[i] === rankFilter)
-    : allColors;
-
-  const total = values.reduce((a,b)=>a+b,0);
-
-  const ctx = document.getElementById('rankChart').getContext('2d');
-  if (charts.rank) charts.rank.destroy();
-
-  charts.rank = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['직급별'],
-      datasets: labels.map((label,i) => ({
-        label,
-        data: [values[i]],
-        backgroundColor: colors[i],
-        borderWidth: 0,
-        borderRadius: 4,
-        borderSkipped: false,
-      }))
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      indexAxis:'y',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1,
-          callbacks:{
-            label: c=>{
-              const pct=total>0?(c.parsed.x/total*100).toFixed(2):'0.00';
-              return ` ${c.dataset.label}: ${c.parsed.x}명 (${pct}%)`;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{stacked:true,display:false,max:total},
-        y:{stacked:true,display:false}
-      }
-    }
-  });
-
-  // 범례 - 전체 대비 비율 표시
-  const baseTotal = s.total || 1;
-  document.getElementById('rankLegend').innerHTML = labels.map((label,i)=>{
-    const cnt=values[i]; const pct=baseTotal>0?(cnt/baseTotal*100).toFixed(2):'0.00';
-    return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
-      <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
-      <span style="color:var(--text-dim);flex:1">${label}</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600">${cnt}명</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</span>
-    </div>`;
-  }).join('');
-}
-
-// ============ GENDER CHART (100% 가로 누적 막대, 색상 차별화) ============
-function renderGenderChart(s) {
-  const allLabels = ['남자','여자'];
-  const allValues = [s.male, s.female];
-  const allColors = ['#c2410c','#fbbf24'];
-
-  // 성별 필터 적용: 선택된 성별만 표시
-  const genderFilter = activeFilters.gender;
-  const labels = genderFilter !== '전체'
-    ? allLabels.filter(l => l === genderFilter)
-    : allLabels;
-  const values = genderFilter !== '전체'
-    ? allValues.filter((_, i) => allLabels[i] === genderFilter)
-    : allValues;
-  const colors = genderFilter !== '전체'
-    ? allColors.filter((_, i) => allLabels[i] === genderFilter)
-    : allColors;
-
-  const total = values.reduce((a,b)=>a+b,0);
-  const baseTotal = s.total || 1;
-
-  const ctx = document.getElementById('genderChart').getContext('2d');
-  if (charts.gender) charts.gender.destroy();
-
-  charts.gender = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: ['성별'],
-      datasets: labels.map((label,i) => ({
-        label,
-        data: [values[i]],
-        backgroundColor: colors[i],
-        borderWidth: 0,
-        borderRadius: 4,
-        borderSkipped: false,
-      }))
-    },
-    options:{
-      responsive:true, maintainAspectRatio:false,
-      indexAxis:'y',
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1,
-          callbacks:{
-            label: c=>{
-              const pct=baseTotal>0?(c.parsed.x/baseTotal*100).toFixed(2):'0.00';
-              return ` ${c.dataset.label}: ${c.parsed.x}명 (${pct}%)`;
-            }
-          }
-        }
-      },
-      scales:{
-        x:{stacked:true,display:false,max:total},
-        y:{stacked:true,display:false}
-      }
-    }
-  });
-
-  // 범례 - 전체 대비 비율 표시
-  document.getElementById('genderLegend').innerHTML = labels.map((label,i)=>{
-    const cnt=values[i]; const pct=baseTotal>0?(cnt/baseTotal*100).toFixed(2):'0.00';
-    return `<div style="display:flex;align-items:center;gap:8px;font-size:13px">
-      <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
-      <span style="color:var(--text-dim);flex:1">${label}</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600">${cnt}명</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</span>
-    </div>`;
-  }).join('');
-}
-
-// ============ RETIRE TABLE + CHART ============
-function renderRetireTable(s) {
-  const r = s.retire;
-  document.getElementById('retireTable').innerHTML = `
-    <thead><tr><th>구분</th><th>인원</th><th>해당 학년도</th></tr></thead>
-    <tbody>
-      <tr><td><span class="rbadge rb-now">당해(-)</span></td><td style="color:var(--danger);font-weight:600">${r['퇴직예정(-)']||0}명</td><td>${parseInt(currentYear)}학년도</td></tr>
-      <tr><td><span class="rbadge rb-1">예정(+1)</span></td><td style="color:var(--accent4);font-weight:600">${r['퇴직예정(+1)']||0}명</td><td>${parseInt(currentYear)+1}학년도</td></tr>
-      <tr><td><span class="rbadge rb-2">예정(+2)</span></td><td style="color:var(--accent);font-weight:600">${r['퇴직예정(+2)']||0}명</td><td>${parseInt(currentYear)+2}학년도</td></tr>
-    </tbody>`;
-}
-
-function renderRetireChart(s) {
-  const r = s.retire;
-  const ctx = document.getElementById('retireChart').getContext('2d');
-  if (charts.retire) charts.retire.destroy();
-  charts.retire = new Chart(ctx, {
-    type:'bar',
-    data:{
-      labels:['당해(-)','예정(+1)','예정(+2)'],
-      datasets:[{data:[r['퇴직예정(-)']||0,r['퇴직예정(+1)']||0,r['퇴직예정(+2)']||0],
-        backgroundColor:['rgba(194,65,12,.85)','rgba(234,88,12,.85)','rgba(251,191,36,.85)'],
-        borderRadius:4,borderWidth:0}]
-    },
-    options:{responsive:true,maintainAspectRatio:false,
-      plugins:{legend:{display:false},tooltip:{backgroundColor:'#1a2235',borderColor:'#1e2d45',borderWidth:1}},
-      scales:{
-        x:{grid:{display:false},ticks:{color:TICK,font:{size:10}}},
-        y:{grid:{color:GRID},ticks:{color:TICK,stepSize:10}}
-      }}
-  });
-}
-
-// ============ HISTOGRAMS (인원수+비율 표시) ============
-function renderHisto(containerId, labels, values, colors) {
-  const max = Math.max(...values);
-  const total = values.reduce((a,b)=>a+b, 0);
-  document.getElementById(containerId).innerHTML = labels.map((label, i) => {
-    const barPct = max>0 ? (values[i]/max*100).toFixed(1) : 0;
-    const ratePct = total>0 ? (values[i]/total*100).toFixed(2) : '0.00';
+// HISTO
+function renderHisto(cid, dataObj, colors, total) {
+  const labels=Object.keys(dataObj), values=Object.values(dataObj);
+  const tot=total||values.reduce((a,b)=>a+b,0), max=Math.max(...values);
+  document.getElementById(cid).innerHTML=labels.map((label,i)=>{
+    const bp=max>0?(values[i]/max*100).toFixed(1):0, rp=tot>0?(values[i]/tot*100).toFixed(2):'0.00';
     return `<div class="histo-row">
-      <div class="histo-label">${label}</div>
-      <div class="bar-bg"><div class="bar-fill" style="background:${colors[i%colors.length]}" data-target="${barPct}"></div></div>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600;font-size:13px;white-space:nowrap;text-align:right">${values[i]}명</span>
-      <span style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px;white-space:nowrap;text-align:right">(${ratePct}%)</span>
+      <div class="histo-lbl">${label}</div>
+      <div class="bar-bg"><div class="bar-fill" style="background:${colors[i%colors.length]}" data-target="${bp}"></div></div>
+      <span class="histo-cnt">${values[i]}명</span>
+      <span class="histo-pct">(${rp}%)</span>
     </div>`;
   }).join('');
 }
 
-function renderAgeHisto(s) {
-  const ages = s.ages;
-  const labels = Object.keys(ages);
-  const values = Object.values(ages);
-  renderHisto('ageHisto', labels, values, COLORS);
-}
-
-function renderTenureHisto(s) {
-  const t = s.tenure_dist;
-  const labels = Object.keys(t);
-  const values = Object.values(t);
-  renderHisto('tenureHisto', labels, values, COLORS);
-}
-
-// ============ COLLEGE TABLE ============
-function renderCollegeTable(s) {
-  const colleges = s.colleges || {};
-  const total = s.total || 1;
-
-  if (!Object.keys(colleges).length) {
-    document.getElementById('collegeTable').innerHTML =
-      '<tbody><tr><td colspan="3" style="text-align:center;padding:20px;color:var(--text-muted);font-size:12px">해당 데이터 없음</td></tr></tbody>';
-    return;
-  }
-
-  const sorted = Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
-  const max = sorted[0]?.[1] || 1;
-  document.getElementById('collegeTable').innerHTML =
-    `<thead><tr><th>단과대학</th><th style="text-align:right">인원</th><th style="text-align:right">비율</th><th style="width:100px"></th></tr></thead>
-    <tbody>${sorted.map(([name,cnt]) => {
-      const pct = (cnt/total*100).toFixed(1);
-      return `<tr>
-        <td>${name}</td>
-        <td class="num" style="font-family:'Pretendard',sans-serif;color:var(--text);font-weight:600;font-size:13px">${cnt}명</td>
-        <td class="num" style="font-family:'Pretendard',sans-serif;color:var(--text-muted);font-size:12px">(${pct}%)</td>
-        <td><div class="college-bar-wrap"><div class="college-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td>
-      </tr>`;
-    }).join('')}
-    </tbody>`;
-
-  // 바 애니메이션 즉시 실행
-  setTimeout(() => {
-    document.querySelectorAll('.college-bar[data-target]').forEach(el => {
-      el.style.width = el.dataset.target + '%';
-    });
-  }, 50);
-}
-
-// ============ ANIMATE BARS ============
-function animateBars() {
-  setTimeout(() => {
-    document.querySelectorAll('.bar-fill[data-target], .college-bar[data-target]').forEach(el => {
-      el.style.width = el.dataset.target + '%';
-    });
-  }, 100);
-}
-
-// ============ ROSTER (교원 명부 - 학년도별 파일 lazy load) ============
-
-
-function getFilterLabel() {
-  const f = activeFilters;
-  const tags = [];
-  if (f.track !== '전체') tags.push(f.track);
-  if (f.non_tenure !== '전체') tags.push(f.non_tenure);
-  if (f.rank !== '전체') tags.push(f.rank);
-  if (f.gender !== '전체') tags.push(f.gender);
-  if (f.age !== '전체') tags.push(f.age);
-  if (f.tenure !== '전체') tags.push(f.tenure);
-  return tags.length ? tags.join(' · ') : '전체';
-}
-
-// 필터 키 반환
-function getFilterKey() {
-  const f = activeFilters;
-  if (f.track !== '전체') {
-    return f.track === '비정년트랙' && f.non_tenure !== '전체'
-      ? `track:비정년트랙|non_tenure:${f.non_tenure}`
-      : `track:${f.track}`;
-  }
-  if (f.rank !== '전체') return `rank:${f.rank}`;
-  if (f.gender !== '전체') return `gender:${f.gender}`;
-  if (f.age !== '전체') return `age:${f.age}`;
-  if (f.tenure !== '전체') return `tenure:${f.tenure}`;
-  return null;
-}
-
-// 버튼 로딩 상태
-function setRosterBtnLoading(loading) {
-  document.querySelectorAll('[data-roster-btn]').forEach(b => {
-    b.textContent = loading ? '⏳ 로딩 중...' : b.dataset.rosterLabel;
-    b.disabled = loading;
+// RETIRE
+function renderRetire(s){
+  const r=s.retire, yr=parseInt(currentYear);
+  const rows=[
+    {badge:'rb0',label:`당해(-) ${yr}학년도`,cnt:r['퇴직예정(-)'||0]||0,color:'#dc2626'},
+    {badge:'rb1',label:`예정(+1) ${yr+1}학년도`,cnt:r['퇴직예정(+1)']||0,color:'#ea580c'},
+    {badge:'rb2',label:`예정(+2) ${yr+2}학년도`,cnt:r['퇴직예정(+2)']||0,color:'#1365FE'},
+  ];
+  const mx=Math.max(...rows.map(r=>r.cnt),1);
+  document.getElementById('retireTable').innerHTML=rows.map(row=>`
+    <div class="retire-row">
+      <span class="rbadge ${row.badge}">${row.label}</span>
+      <strong style="font-size:14px;color:${row.color};min-width:38px;text-align:right">${row.cnt}명</strong>
+      <div class="retire-bar-bg"><div class="retire-bar" style="background:${row.color}" data-target="${(row.cnt/mx*100).toFixed(1)}"></div></div>
+    </div>`).join('');
+  const ctx=document.getElementById('retireChart').getContext('2d');
+  if(charts.retire)charts.retire.destroy();
+  charts.retire=new Chart(ctx,{
+    type:'bar',data:{labels:rows.map(r=>r.label.split(' ')[0]),datasets:[{data:rows.map(r=>r.cnt),backgroundColor:rows.map(r=>r.color+'cc'),borderRadius:5,borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280'}},scales:{x:{grid:{display:false},ticks:{color:'#9ca3af',font:{size:10}}},y:{grid:{color:GRID},ticks:{color:'#9ca3af'}}}}
   });
 }
 
-// 해당 학년도 roster 파일 로딩 (캐시 활용)
-async function loadRoster() {
-  if (rosterCache[currentYear]) return rosterCache[currentYear];
-  setRosterBtnLoading(true);
-  try {
-    const res = await fetch(`dashboard_roster_${currentYear}.json?t=${Date.now()}`);
-    if (!res.ok) throw new Error(`dashboard_roster_${currentYear}.json 파일 없음`);
-    const data = await res.json();
-    rosterCache[currentYear] = data;
-    return data;
-  } catch(e) {
-    alert(`명부 파일을 불러올 수 없습니다.\n${e.message}`);
-    return null;
-  } finally {
-    setRosterBtnLoading(false);
-  }
+// COLLEGE
+function renderCollege(s){
+  const colleges=s.colleges||{}, total=s.total||1;
+  if(!Object.keys(colleges).length){document.getElementById('collegeTable').innerHTML='<tbody><tr><td colspan="4" style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">해당 데이터 없음</td></tr></tbody>';return;}
+  const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const max=sorted[0]?.[1]||1;
+  document.getElementById('collegeTable').innerHTML=`<thead><tr><th>단과대학</th><th style="text-align:right">인원</th><th style="text-align:right">비율</th><th style="width:90px"></th></tr></thead><tbody>${sorted.map(([name,cnt])=>{
+    const pct=(cnt/total*100).toFixed(1);
+    return `<tr><td>${name}</td><td class="col-num">${cnt}명</td><td class="col-pct">(${pct}%)</td><td><div class="col-bar-bg"><div class="col-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td></tr>`;
+  }).join('')}</tbody>`;
+  setTimeout(()=>document.querySelectorAll('.col-bar[data-target]').forEach(el=>{el.style.width=el.dataset.target+'%';}),50);
 }
 
-// 필터 적용된 roster 데이터 반환
-function getRosterData(rosterDB) {
-  if (!rosterDB) return [];
-  const medKey = currentMedical === 'include' ? 'include' : 'exclude';
-  const yearData = rosterDB[medKey];
-  const filterKey = getFilterKey();
-  if (filterKey && yearData.filters?.[filterKey]) return yearData.filters[filterKey];
-  return yearData.all || [];
+function animateBars(){
+  setTimeout(()=>document.querySelectorAll('.bar-fill[data-target],.retire-bar[data-target]').forEach(el=>{el.style.width=el.dataset.target+'%';}),100);
 }
 
-async function openRosterTab() {
-  const rosterDB = await loadRoster();
-  const roster = getRosterData(rosterDB);
-  if (!roster.length) { alert('표시할 데이터가 없습니다.'); return; }
-  const headers = DB.meta.roster_headers;
-  const filterLabel = getFilterLabel();
-
-  const html = `<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8">
-<title>교원 명부 - ${currentYear}학년도 (${filterLabel})</title>
-<style>
-  body{font-family:'Pretendard',sans-serif;background:#0a0e1a;color:#e2e8f0;margin:0;padding:20px}
-  h2{font-size:16px;font-weight:700;margin-bottom:4px;color:#fff}
-  p{font-size:12px;color:#64748b;margin-bottom:16px}
-  table{width:100%;border-collapse:collapse;font-size:12px}
-  th{background:#1a2235;padding:8px 10px;text-align:left;color:#94a3b8;font-weight:500;border-bottom:1px solid #1e2d45;white-space:nowrap;position:sticky;top:0}
-  td{padding:8px 10px;border-bottom:1px solid rgba(30,45,69,.5);color:#cbd5e1}
-  tr:hover td{background:rgba(234,88,12,.05)}
-  .total{display:inline-block;background:rgba(234,88,12,.15);color:#fb923c;padding:2px 10px;border-radius:10px;font-size:11px;margin-left:8px}
-</style>
-</head>
-<body>
-<h2>전임교원 명부 - ${currentYear}학년도 <span class="total">${roster.length}명</span></h2>
-<p>필터: ${filterLabel} · 의학계열: ${currentMedical === 'exclude' ? '제외' : '포함'}</p>
-<table>
-  <thead><tr>${headers.map(h=>`<th>${h}</th>`).join('')}</tr></thead>
-  <tbody>${roster.map(row=>`<tr>${headers.map(h=>`<td>${row[h]??''}</td>`).join('')}</tr>`).join('')}</tbody>
-</table>
-</body></html>`;
-
-  window.open(URL.createObjectURL(new Blob([html], {type:'text/html;charset=utf-8'})), '_blank');
-}
-
-async function downloadRosterExcel() {
-  const rosterDB = await loadRoster();
-  const roster = getRosterData(rosterDB);
-  if (!roster.length) { alert('다운로드할 데이터가 없습니다.'); return; }
-  const headers = DB.meta.roster_headers;
-  const filterLabel = getFilterLabel();
-  const bom = '\uFEFF';
-  const csvRows = [
-    headers.join(','),
-    ...roster.map(row => headers.map(h => {
-      const val = String(row[h] ?? '');
-      return val.includes(',') || val.includes('"') ? `"${val.replace(/"/g,'""')}"` : val;
-    }).join(','))
-  ];
-  const csv = bom + csvRows.join('\n');
-  const blob = new Blob([csv], {type:'text/csv;charset=utf-8'});
-  const a = document.createElement('a');
-  a.href = URL.createObjectURL(blob);
-  a.download = `교원명부_${currentYear}학년도_${filterLabel}.csv`;
-  a.click();
-}
-
-// ============ BOOT ============
 loadData();
 </script>
 </body>
