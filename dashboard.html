@@ -159,7 +159,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .heatmap-table{border-collapse:separate;border-spacing:4px;width:100%}
 .heatmap-table th{font-size:11px;color:#9ca3af;font-weight:500;padding:4px 8px;text-align:center;white-space:nowrap}
 .heatmap-table th.row-header{text-align:right;min-width:80px}
-.heatmap-cell{border-radius:6px;height:44px;text-align:center;vertical-align:middle;font-size:11px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell{border-radius:6px;width:80px;height:80px;text-align:center;vertical-align:middle;font-size:11px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
 .heatmap-cell .cell-cnt{font-size:12px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:10px;opacity:.8}
@@ -425,7 +425,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <!-- 히트맵: 연령대 x 재직기간 -->
     <div class="grid-full">
       <div class="card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령대 × 재직기간 분포 히트맵</div></div>
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령대 × 재직기간 분포</div></div>
         <div id="heatmapWrap" style="overflow-x:auto"></div>
       </div>
     </div>
@@ -843,20 +843,19 @@ function renderHisto(cid, dataObj, colors, total) {
   }).join('');
 }
 
-// RETIRE (5개년 세로막대)
+// RETIRE (5개년 가로막대)
 function renderRetire(s){
   const yr=parseInt(currentYear);
   const mk=currentMedical==='include'?'include':'exclude';
   const trends=DB.retire_trends?.[currentYear]?.[mk]||{};
 
-  // 5개년 라벨/데이터
   const labels=[], values=[], colors=[];
-  const baseColors=['#dc2626','#ea580c','#f97316','#fb923c','#fbbf24'];
+  const baseColors=['#1365FE','#3B82F6','#60A5FA','#93C5FD','#BFDBFE'];
   for(let i=0;i<5;i++){
     const y=yr+i;
     labels.push(`${y}학년도`);
     values.push(trends[String(y)]||0);
-    colors.push(baseColors[i]+'dd');
+    colors.push(baseColors[i]);
   }
 
   const ctx=document.getElementById('retireChart').getContext('2d');
@@ -868,23 +867,24 @@ function renderRetire(s){
       datasets:[{
         data:values,
         backgroundColor:colors,
-        borderRadius:6,
+        borderRadius:5,
         borderWidth:0,
       }]
     },
     options:{
       responsive:true,maintainAspectRatio:false,
+      indexAxis:'y',
       plugins:{
         legend:{display:false},
         tooltip:{
           backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,
           titleColor:'#111',bodyColor:'#6b7280',
-          callbacks:{label:c=>` ${c.parsed.y}명`}
+          callbacks:{label:c=>` ${c.parsed.x}명`}
         }
       },
       scales:{
-        x:{grid:{display:false},ticks:{color:'#9ca3af',font:{size:11}}},
-        y:{grid:{color:GRID},ticks:{color:'#9ca3af'},beginAtZero:true}
+        x:{grid:{color:GRID},ticks:{color:'#9ca3af'},beginAtZero:true},
+        y:{grid:{display:false},ticks:{color:'#374151',font:{size:11}}}
       }
     },
     plugins:[{
@@ -897,9 +897,9 @@ function renderRetire(s){
           ctx.save();
           ctx.font='bold 12px "Pretendard",sans-serif';
           ctx.fillStyle='#111827';
-          ctx.textAlign='center';
-          ctx.textBaseline='bottom';
-          ctx.fillText(v+'명',bar.x,bar.y-2);
+          ctx.textAlign='left';
+          ctx.textBaseline='middle';
+          ctx.fillText(v+'명', bar.x+6, bar.y);
           ctx.restore();
         });
       }
@@ -907,18 +907,16 @@ function renderRetire(s){
   });
 }
 
-// HEATMAP
+// HEATMAP (가로=연령대, 세로=재직기간)
 function renderHeatmap(s) {
   const AGE=['30세 미만','30세-40세','40세-50세','50세-60세','60세 초과'];
   const TEN=['5년 미만','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
   const heatmap=s.heatmap||{};
   const total=s.total||1;
 
-  // 최대값 계산
   let maxVal=0;
   AGE.forEach(a=>TEN.forEach(t=>{const v=heatmap[a]?.[t]||0;if(v>maxVal)maxVal=v;}));
 
-  // 색상 계산 (0→흰색, max→#1365FE)
   function cellColor(val){
     if(!val||!maxVal)return'#f8faff';
     const ratio=val/maxVal;
@@ -928,34 +926,33 @@ function renderHeatmap(s) {
     return`rgba(${r},${g},${b},${0.15+ratio*0.85})`;
   }
   function textColor(val){
-    if(!val||!maxVal)return'#9ca3af';
+    if(!val||!maxVal)return'#c7d9fb';
     return val/maxVal>0.5?'#fff':'#1365FE';
   }
 
-  let html=`<table class="heatmap-table">
+  // 가로=연령대(열), 세로=재직기간(행)
+  let html=`<div style="overflow-x:auto"><table class="heatmap-table">
     <thead><tr>
-      <th class="row-header">연령대 \ 재직기간</th>
-      ${TEN.map(t=>`<th>${t.replace('년-','~').replace('년 미만','<5').replace('년 초과','+')}</th>`).join('')}
+      <th class="row-header" style="min-width:90px">재직기간 \\ 연령대</th>
+      ${AGE.map(a=>`<th style="min-width:90px;width:90px">${a}</th>`).join('')}
     </tr></thead>
     <tbody>`;
 
-  AGE.forEach(ag=>{
-    html+=`<tr><th class="row-header">${ag}</th>`;
-    TEN.forEach(t=>{
+  TEN.forEach(t=>{
+    html+=`<tr><th class="row-header">${t}</th>`;
+    AGE.forEach(ag=>{
       const v=heatmap[ag]?.[t]||0;
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
-      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc}" title="${ag} × ${t}: ${v}명 (${pct}%)">
-        <div class="cell-cnt">${v||''}</div>
-        ${v?`<div class="cell-pct">${pct}%</div>`:''}
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:90px" title="${ag} × ${t}: ${v}명 (${pct}%)">
+        ${v?`<div class="cell-cnt">${v}</div><div class="cell-pct">(${pct}%)</div>`:''}
       </td>`;
     });
     html+='</tr>';
   });
 
-  html+='</tbody></table>';
+  html+='</tbody></table></div>';
 
-  // 범례
   html+=`<div style="display:flex;align-items:center;gap:6px;margin-top:10px;justify-content:flex-end;font-size:11px;color:#9ca3af">
     <span>적음</span>
     ${[0.1,0.3,0.5,0.7,0.9].map(r=>`<div style="width:20px;height:12px;border-radius:3px;background:rgba(19,101,254,${0.15+r*0.85})"></div>`).join('')}
