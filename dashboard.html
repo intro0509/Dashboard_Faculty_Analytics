@@ -96,7 +96,7 @@
 
   /* HISTOGRAM */
   .histo-wrap{display:flex;flex-direction:column;gap:7px}
-  .histo-row{display:grid;grid-template-columns:80px 1fr 36px;align-items:center;gap:8px}
+  .histo-row{display:grid;grid-template-columns:80px 1fr 52px 64px;align-items:center;gap:6px}
   .histo-label{font-size:12px;color:var(--text-muted);text-align:right;font-family:'DM Mono',monospace;white-space:nowrap}
   .histo-count{font-size:13px;font-family:'DM Mono',monospace;color:var(--text-dim)}
 
@@ -137,8 +137,8 @@
   .college-scroll{max-height:320px;overflow-y:auto}
   .college-scroll::-webkit-scrollbar{width:5px}
   .college-scroll::-webkit-scrollbar-track{background:var(--surface2);border-radius:3px}
-  .college-scroll::-webkit-scrollbar-thumb{background:#ea580c;border-radius:3px;opacity:.7}
-  .college-scroll::-webkit-scrollbar-thumb:hover{background:#fb923c}
+  .college-scroll::-webkit-scrollbar-thumb{background:#94a3b8;border-radius:3px}
+  .college-scroll::-webkit-scrollbar-thumb:hover{background:#e2e8f0}
 
   /* FILTER CHIPS */
   .filter-bar{display:flex;align-items:center;gap:6px;flex-wrap:wrap;margin-bottom:10px}
@@ -392,19 +392,13 @@
       </div>
     </div>
 
-    <!-- ROW 5: 정년퇴직 예정자 현황 (전체 너비) -->
-    <div style="margin-bottom:14px">
+    <!-- ROW 5+6: 정년퇴직 예정자 현황 | 단과대학별 현황 -->
+    <div class="grid-2" style="margin-bottom:14px">
       <div class="card">
         <div class="card-title"><span class="dot r"></span>정년퇴직 예정자 현황</div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:20px;align-items:start">
-          <table class="retire-table" id="retireTable"></table>
-          <div style="height:160px"><canvas id="retireChart"></canvas></div>
-        </div>
+        <table class="retire-table" id="retireTable"></table>
+        <div style="height:160px"><canvas id="retireChart"></canvas></div>
       </div>
-    </div>
-
-    <!-- ROW 6: 단과대학별 현황 (전체 너비) -->
-    <div style="margin-bottom:14px">
       <div class="card">
         <div class="card-title"><span class="dot"></span>단과대학별 현황</div>
         <div class="college-scroll">
@@ -1294,11 +1288,11 @@ function renderHisto(containerId, labels, values, colors) {
   document.getElementById(containerId).innerHTML = labels.map((label, i) => {
     const barPct = max>0 ? (values[i]/max*100).toFixed(1) : 0;
     const ratePct = total>0 ? (values[i]/total*100).toFixed(2) : '0.00';
-    return `<div class="histo-row" style="grid-template-columns:80px 1fr auto auto;gap:6px">
+    return `<div class="histo-row">
       <div class="histo-label">${label}</div>
       <div class="bar-bg"><div class="bar-fill" style="background:${colors[i%colors.length]}" data-target="${barPct}"></div></div>
-      <div class="histo-count" style="white-space:nowrap">${values[i]}명</div>
-      <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap">(${ratePct}%)</div>
+      <div class="histo-count" style="white-space:nowrap;text-align:right">${values[i]}명</div>
+      <div style="font-size:12px;font-family:'DM Mono',monospace;color:var(--text-muted);white-space:nowrap;text-align:right">(${ratePct}%)</div>
     </div>`;
   }).join('');
 }
@@ -1336,8 +1330,8 @@ function renderCollegeTable(s) {
       const pct = (cnt/total*100).toFixed(1);
       return `<tr>
         <td>${name}</td>
-        <td class="num">${cnt}명</td>
-        <td class="num" style="color:var(--text-muted);font-size:12px">${pct}%</td>
+        <td class="num" style="font-family:'DM Mono',monospace;color:var(--text);font-weight:600">${cnt}명</td>
+        <td class="num" style="font-family:'DM Mono',monospace;color:var(--text-muted);font-size:12px">(${pct}%)</td>
         <td><div class="college-bar-wrap"><div class="college-bar" data-target="${(cnt/max*100).toFixed(1)}"></div></div></td>
       </tr>`;
     }).join('')}
