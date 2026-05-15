@@ -156,10 +156,10 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 @media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
 
 /* HEATMAP */
-.heatmap-table{border-collapse:separate;border-spacing:4px;width:100%}
-.heatmap-table th{font-size:11px;color:#9ca3af;font-weight:500;padding:4px 8px;text-align:center;white-space:nowrap}
-.heatmap-table th.row-header{text-align:right;min-width:80px}
-.heatmap-cell{border-radius:6px;width:80px;height:80px;text-align:center;vertical-align:middle;font-size:11px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-table{border-collapse:separate;border-spacing:3px;width:auto;margin:0}
+.heatmap-table th{font-size:10px;color:#9ca3af;font-weight:500;padding:3px 6px;text-align:center;white-space:nowrap}
+.heatmap-table th.row-header{text-align:right;min-width:70px;font-size:10px}
+.heatmap-cell{border-radius:5px;width:44px;height:44px;text-align:center;vertical-align:middle;font-size:10px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
 .heatmap-cell .cell-cnt{font-size:12px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:10px;opacity:.8}
@@ -383,7 +383,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="grid-full">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령대 × 재직기간 분포</div></div>
-        <div id="heatmapWrap" style="overflow-x:auto"></div>
+        <div id="heatmapWrap"></div>
       </div>
     </div>
 
@@ -718,8 +718,11 @@ function renderRateChart() {
       // 의학제외 라인 마지막 포인트 말풍선
       const{ctx,data}=chart,ds0=chart.getDatasetMeta(0);
       const val=data.datasets[0].data[lastIdx];
-      if(val===null)return;
-      const pt=ds0.data[lastIdx],x=pt.x,y=pt.y;
+      if(val===null||val===undefined)return;
+      const ptArr=ds0.data;
+      if(!ptArr||!ptArr[lastIdx])return;
+      const pt=ptArr[lastIdx],x=pt.x,y=pt.y;
+      if(x===undefined||y===undefined)return;
       ctx.save();ctx.beginPath();ctx.rect(0,0,chart.width,chart.height);ctx.clip();
       const label=val.toFixed(2)+'%';
       ctx.font='bold 12px "Pretendard",sans-serif';
@@ -768,10 +771,9 @@ function renderNTDonut(s){
 
 // STACKED BAR
 function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
-  const f=activeFilters[filterType];
-  const labels=f!=='전체'?allLbls.filter(l=>l===f):allLbls;
-  const values=f!=='전체'?allVals.filter((_,i)=>allLbls[i]===f):allVals;
-  const colors=f!=='전체'?allClrs.filter((_,i)=>allLbls[i]===f):allClrs;
+  const labels=allLbls;
+  const values=allVals;
+  const colors=allClrs;
   const tot=values.reduce((a,b)=>a+b,0), bt=s.total||1;
   const ctx=document.getElementById(cid).getContext('2d');
   if(charts[cid])charts[cid].destroy();
@@ -890,8 +892,8 @@ function renderHeatmap(s) {
   // 가로=연령대(열), 세로=재직기간(행)
   let html=`<div style="overflow-x:auto"><table class="heatmap-table">
     <thead><tr>
-      <th class="row-header" style="min-width:90px">재직기간 \\ 연령대</th>
-      ${AGE.map(a=>`<th style="min-width:90px;width:90px">${a}</th>`).join('')}
+      <th class="row-header" style="min-width:70px">재직기간 \\ 연령대</th>
+      ${AGE.map(a=>`<th style="min-width:44px;width:44px">${a}</th>`).join('')}
     </tr></thead>
     <tbody>`;
 
@@ -901,7 +903,7 @@ function renderHeatmap(s) {
       const v=heatmap[ag]?.[t]||0;
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
-      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:90px" title="${ag} × ${t}: ${v}명 (${pct}%)">
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:44px" title="${ag} × ${t}: ${v}명 (${pct}%)">
         ${v?`<div class="cell-cnt">${v}</div><div class="cell-pct">(${pct}%)</div>`:''}
       </td>`;
     });
