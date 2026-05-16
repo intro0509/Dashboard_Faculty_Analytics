@@ -978,21 +978,29 @@ function renderHisto(cid, dataObj, colors, total) {
     id:'radialBar_'+cid,
     afterDraw(chart){
       const c = chart.ctx;
-      const W = chart.canvas.width / (window.devicePixelRatio || 1);
-      const H = chart.canvas.height / (window.devicePixelRatio || 1);
+      const dpr = window.devicePixelRatio || 1;
+      const W = chart.canvas.width / dpr;
+      const H = chart.canvas.height / dpr;
 
-      // 레이블존 55% | 차트존 45% — cx는 전체의 72% 지점(오른쪽 영역 중앙)
-      const chartZoneW = W * 0.45;
-      const cx = W * 0.72;
+      // 차트: canvas 정중앙
+      const cx = W / 2;
       const cy = H / 2;
-      const outerR = Math.min(chartZoneW, H) / 2 * 0.88;
+      const outerR = Math.min(W, H) / 2 * 0.82;
 
-      // 재직기간·연령 동일 두께 (fixedN=7 고정)
+      // fixedN=7 고정으로 재직기간·연령 동일 두께
       const fixedN = 7;
       const arcGap = outerR / fixedN * 1.35;
       const barH = Math.min(outerR / fixedN * 0.65, 16);
       const iconR = barH / 2 + 1;
       const prog = charts['_anim_'+cid] || 1;
+
+      // 레이블 고정 탭 열 위치 (canvas 절대 좌표)
+      // 가장 바깥 호의 12시 x좌표 기준으로 레이블 영역 계산
+      const arcTopX = cx; // 12시 방향 x = cx (cos(-π/2)=0)
+      const labelAreaRight = arcTopX - iconR - 8; // 아이콘 바로 왼쪽
+      const col3Right = labelAreaRight;      // 비율 오른쪽 끝
+      const col2Right = col3Right - 52;     // 인원 오른쪽 끝
+      const col1Left  = 8;                  // 항목명 왼쪽 시작
 
       c.save();
       labels.forEach((label, i) => {
@@ -1016,48 +1024,30 @@ function renderHisto(cid, dataObj, colors, total) {
           c.strokeStyle = color; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
         }
 
-        // 12시 방향 아이콘
-        const sx = cx + r * Math.cos(startAngle);
-        const sy = cy + r * Math.sin(startAngle);
-        c.beginPath();
-        c.arc(sx, sy, iconR, 0, Math.PI * 2);
-        c.fillStyle = '#fff'; c.fill();
-        c.strokeStyle = color; c.lineWidth = 1.5; c.stroke();
-        c.fillStyle = color;
-        c.font = `bold ${Math.max(barH * 0.5, 7)}px 'Pretendard',sans-serif`;
-        c.textAlign = 'center'; c.textBaseline = 'middle';
-        c.fillText('→', sx, sy);
+        // 12시 방향 시작점 y (레이블 y 기준)
+        const sy = cy - r;
 
-        // 레이블: [항목명] [인원] [비율] 한 줄, 아이콘 왼쪽에서 역산 배치
+        // 레이블: 고정 3열 탭 정렬
         c.globalAlpha = Math.min(prog * 1.5, 1);
-        c.textBaseline = 'middle'; c.textAlign = 'left';
+        c.textBaseline = 'middle';
 
-        c.font = `400 11px 'Pretendard',sans-serif`;
-        const labelW = c.measureText(label).width;
-        c.font = `700 12px 'Pretendard',sans-serif`;
-        const cntTxt = `${values[i]}명`;
-        const cntW = c.measureText(cntTxt).width;
-        c.font = `400 11px 'Pretendard',sans-serif`;
-        const pctTxt = `(${pct}%)`;
-        const pctW = c.measureText(pctTxt).width;
-
-        const colGap = 8;
-        const rightEdge = sx - iconR - 5;
-        const pctX   = rightEdge - pctW;
-        const cntX   = pctX - colGap - cntW;
-        const labelX = cntX - colGap - labelW;
-
+        // 열1: 항목명 — 왼쪽 정렬
         c.font = `400 11px 'Pretendard',sans-serif`;
         c.fillStyle = '#6b7280';
-        c.fillText(label, labelX, sy);
+        c.textAlign = 'left';
+        c.fillText(label, col1Left, sy);
 
+        // 열2: 인원 — 오른쪽 정렬
         c.font = `700 12px 'Pretendard',sans-serif`;
         c.fillStyle = '#111827';
-        c.fillText(cntTxt, cntX, sy);
+        c.textAlign = 'right';
+        c.fillText(`${values[i]}명`, col2Right, sy);
 
+        // 열3: 비율 — 오른쪽 정렬
         c.font = `400 11px 'Pretendard',sans-serif`;
         c.fillStyle = '#9ca3af';
-        c.fillText(pctTxt, pctX, sy);
+        c.textAlign = 'right';
+        c.fillText(`(${pct}%)`, col3Right, sy);
 
         c.globalAlpha = 1;
       });
