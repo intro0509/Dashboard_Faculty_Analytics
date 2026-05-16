@@ -930,6 +930,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   charts[cid]=chartInst;
 
   // 마우스 이벤트
+  const canvas=ctx.canvas;
   canvas.onmousemove=function(e){
     const rect=canvas.getBoundingClientRect();
     const mx=e.clientX-rect.left;
