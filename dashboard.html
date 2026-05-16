@@ -985,28 +985,29 @@ function renderHisto(cid, dataObj, colors, total) {
       // 차트: canvas 정중앙
       const cx = W / 2;
       const cy = H / 2;
-      const outerR = Math.min(W, H) / 2 * 0.82;
 
-      // fixedN=7 고정으로 재직기간·연령 동일 두께
-      const fixedN = 7;
-      const arcGap = outerR / fixedN * 1.35;
-      const barH = Math.min(outerR / fixedN * 0.65, 16);
-      const iconR = barH / 2 + 1;
+      // 모든 항목이 반드시 표시되도록 n 기준으로 arcGap·outerR 계산
+      const margin = 8; // 최소 안쪽 반지름
+      // outerR: 전체 높이/너비 안에서 n개 항목이 다 들어오도록 자동 산출
+      const maxR = Math.min(W, H) / 2 * 0.90;
+      // arcGap: (outerR - margin) / (n-1) 로 항목 간격 균등 배분
+      const arcGap = n > 1 ? (maxR - margin) / (n - 1) : maxR;
+      const outerR = maxR;
+      const barH = Math.min(arcGap * 0.55, 16);
       const prog = charts['_anim_'+cid] || 1;
 
-      // 레이블 고정 탭 열 위치 (canvas 절대 좌표)
-      // 가장 바깥 호의 12시 x좌표 기준으로 레이블 영역 계산
-      const arcTopX = cx; // 12시 방향 x = cx (cos(-π/2)=0)
-      const labelAreaRight = arcTopX - iconR - 8; // 아이콘 바로 왼쪽
-      const col3Right = labelAreaRight;      // 비율 오른쪽 끝
-      const col2Right = col3Right - 52;     // 인원 오른쪽 끝
-      const col1Left  = 8;                  // 항목명 왼쪽 시작
+      // 레이블 고정 탭 열 (canvas 절대좌표 기준)
+      // 차트 왼쪽 끝(cx - outerR) 바로 왼쪽까지 레이블 영역
+      const labelRight = cx - outerR - 6;  // 레이블 전체 오른쪽 한계
+      const col3Right  = labelRight;        // 비율 오른쪽 끝
+      const col2Right  = col3Right - 48;   // 인원 오른쪽 끝
+      const col1Left   = 6;                // 항목명 왼쪽 시작
 
       c.save();
       labels.forEach((label, i) => {
         const ratio = values[i] / max;
+        // 바깥에서 안쪽 순서로 반지름 계산 (모든 항목 보장)
         const r = outerR - (i * arcGap);
-        if(r < 8) return;
         const startAngle = -Math.PI / 2;
         const animatedAngle = startAngle + (maxAngle * ratio * prog);
         const color = colors[i % colors.length];
@@ -1017,14 +1018,14 @@ function renderHisto(cid, dataObj, colors, total) {
         c.arc(cx, cy, r, startAngle, startAngle + maxAngle);
         c.strokeStyle = '#f0f4ff'; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
 
-        // 데이터 호
+        // 데이터 호 (값이 0이면 배경만)
         if(ratio > 0){
           c.beginPath();
           c.arc(cx, cy, r, startAngle, animatedAngle);
           c.strokeStyle = color; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
         }
 
-        // 12시 방향 시작점 y (레이블 y 기준)
+        // 레이블 y = 12시 방향 (cy - r)
         const sy = cy - r;
 
         // 레이블: 고정 3열 탭 정렬
