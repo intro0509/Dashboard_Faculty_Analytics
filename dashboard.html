@@ -105,8 +105,8 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .histo-wrap{display:flex;flex-direction:column;gap:6px}
 .histo-row{display:grid;grid-template-columns:72px 1fr 52px 56px;align-items:center;gap:6px;min-height:26px}
 .histo-lbl{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
-.bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden}
-.bar-fill{height:100%;border-radius:8px;transition:width 1s ease;width:0%}
+.bar-bg{height:18px;background:#f0f4ff;border-radius:9px;overflow:hidden}
+.bar-fill{height:100%;border-radius:9px;transition:width 1s ease;width:0%}
 .histo-cnt{font-size:12px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
 .histo-pct{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
 
@@ -126,8 +126,8 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .college-table tr:last-child td{border-bottom:none}
 .col-num{font-weight:700;color:#111827;text-align:right}
 .col-pct{color:#9ca3af;font-size:11px;text-align:right}
-.col-bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden;width:80px}
-.col-bar{height:100%;background:#1365FE;border-radius:8px;transition:width 1s ease}
+.col-bar-bg{height:5px;background:#f0f4ff;border-radius:3px;overflow:hidden;width:80px}
+.col-bar{height:100%;background:#1365FE;border-radius:3px;transition:width 1s ease}
 
 /* LOADING */
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px}
@@ -536,7 +536,9 @@ function applyMF(records){
 }
 function calcStats(recs){
   const AGE=['30세 미만','30세-40세','40세-50세','50세-60세','60세 초과'];
-  const TEN=['5년 미만','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
+  const TEN=['5년 미만','5년-15년','15년-25년','25년-35년','35년 초과'];
+  const HM_AGE=['30세 미만','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세','65세 초과'];
+  const HM_TEN=['3년 미만','3년-5년','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년-35년','35년 초과'];
   if(!recs||!recs.length)return{total:0,tenure_track:0,non_tenure:0,male:0,female:0,prof:0,assoc:0,asst:0,tracks:{정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0},ages:Object.fromEntries(AGE.map(a=>[a,0])),tenure_dist:Object.fromEntries(TEN.map(t=>[t,0])),retire:{'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0},colleges:{},heatmap:{}};
   const tracks={정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0};
   recs.forEach(r=>{if(r['트랙구분']==='정년트랙')tracks['정년트랙']++;else{const s=r['비정년트랙구분'];if(s&&s in tracks)tracks[s]++;}});
@@ -550,10 +552,10 @@ function calcStats(recs){
     const m=String(r['퇴직예정일(학년도-학기)']||'').match(/^(\d{4})학년도/);
     if(m){const ry=parseInt(m[1]);if(ry<=yr)retire['퇴직예정(-)']++;else if(ry===yr+1)retire['퇴직예정(+1)']++;else if(ry===yr+2)retire['퇴직예정(+2)']++;}
   });
-  // 히트맵 계산
+  // 히트맵 계산 (9x9 세분화)
   const hm={};
-  AGE.forEach(a=>{hm[a]={};TEN.forEach(t=>{hm[a][t]=0;});});
-  recs.forEach(r=>{const ag=r['연령대'],tg=r['재직기간대'];if(ag in hm&&tg in hm[ag])hm[ag][tg]++;});
+  HM_AGE.forEach(a=>{hm[a]={};HM_TEN.forEach(t=>{hm[a][t]=0;});});
+  recs.forEach(r=>{const ag=r['연령대_상세'],tg=r['재직기간대_상세'];if(ag in hm&&tg in hm[ag])hm[ag][tg]++;});
   return{total:recs.length,tenure_track:recs.filter(r=>r['트랙구분']==='정년트랙').length,non_tenure:recs.filter(r=>r['트랙구분']==='비정년트랙').length,male:recs.filter(r=>r['성별']==='남자').length,female:recs.filter(r=>r['성별']==='여자').length,prof:recs.filter(r=>r['직급']==='교수').length,assoc:recs.filter(r=>r['직급']==='부교수').length,asst:recs.filter(r=>r['직급']==='조교수').length,tracks,ages,tenure_dist:tdist,retire,colleges,heatmap:hm};
 }
 function getFL(){const f=activeFilters,t=[];if(f.track!=='전체')t.push(f.track);if(f.non_tenure!=='전체')t.push(f.non_tenure);return t.length?t.join(' · '):'전체';}
@@ -954,7 +956,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
 }
 
 // RADIAL BAR CHART (재직기간/연령) - 12시 방향 시작, 레이블 좌측
-const TENURE_LBL={'5년 미만':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년 초과':'▲ 30년'};
+const TENURE_LBL={'5년 미만':'▼ 5년','5년-15년':'▼ 15년','15년-25년':'▼ 25년','25년-35년':'▼ 35년','35년 초과':'▲ 35년'};
 const AGE_LBL2={'30세 미만':'▼ 30세','30세-40세':'▼ 40세','40세-50세':'▼ 50세','50세-60세':'▼ 60세','60세 초과':'▲ 60세'};
 function renderHisto(cid, dataObj, colors, total) {
   const rawLabels=Object.keys(dataObj), values=Object.values(dataObj);
@@ -977,77 +979,88 @@ function renderHisto(cid, dataObj, colors, total) {
   const plugin={
     id:'radialBar_'+cid,
     afterDraw(chart){
-      const c = chart.ctx;
-      const dpr = window.devicePixelRatio || 1;
-      const W = chart.canvas.width / dpr;
-      const H = chart.canvas.height / dpr;
-
-      // 차트: canvas 정중앙
-      const cx = W / 2;
-      const cy = H / 2;
-
-      // 모든 항목이 반드시 표시 — n 기준으로 arcGap·outerR 자동 계산
-      const margin = 8;
-      const maxR = Math.min(W, H) / 2 * 0.90;
-      const arcGap = n > 1 ? (maxR - margin) / (n - 1) : maxR;
-      const outerR = maxR;
-      // 재직기간·연령 모두 동일 두께: n에 무관하게 고정 비율
-      const barH = Math.min(arcGap * 0.55, 16);
-      const prog = charts['_anim_'+cid] || 1;
-
-      // 레이블 고정 탭 열 — 오른쪽 한계를 cx(12시 방향 x)로 설정
-      const labelRight = cx - 6;   // 12시 방향 바로 왼쪽
-      const col3Right  = labelRight;
-      const col2Right  = col3Right - 52;
-      const col1Left   = 6;
+      const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
+      const W=right-left, H=bottom-top;
+      // 왼쪽 60% 레이블, 오른쪽 40% 차트
+      const chartZoneW=W*0.48;
+      const cx=right-chartZoneW/2;
+      const cy=(top+bottom)/2;
+      const outerR=Math.min(chartZoneW, H)/2*0.88;
+      const barH=Math.min(outerR/Math.min(n,5)*0.65, 18);
+      const fixedN=Math.max(n,7);
+      const gap=outerR/fixedN*1.35;
+      const prog=charts['_anim_'+cid]||1;
+      const iconR=barH/2+1;
 
       c.save();
-      labels.forEach((label, i) => {
-        const ratio = values[i] / max;
-        const r = outerR - (i * arcGap);
-        const startAngle = -Math.PI / 2;
-        const animatedAngle = startAngle + (maxAngle * ratio * prog);
-        const color = colors[i % colors.length];
-        const pct = tot > 0 ? (values[i] / tot * 100).toFixed(1) : '0.0';
+      labels.forEach((label,i)=>{
+        const ratio=values[i]/max;
+        const r=outerR-(i*gap);
+        if(r<8)return;
+        const startAngle=-Math.PI/2;
+        const animatedAngle=startAngle+(maxAngle*ratio*prog);
+        const color=colors[i%colors.length];
+        const pct=tot>0?(values[i]/tot*100).toFixed(1):'0.0';
 
         // 배경 호
         c.beginPath();
-        c.arc(cx, cy, r, startAngle, startAngle + maxAngle);
-        c.strokeStyle = '#f0f4ff'; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
+        c.arc(cx,cy,r,startAngle,startAngle+maxAngle);
+        c.strokeStyle='#f0f4ff';
+        c.lineWidth=barH;
+        c.lineCap='round';
+        c.stroke();
 
-        // 데이터 호 (값 0이면 배경만)
-        if(ratio > 0){
+        // 데이터 호 (애니메이션)
+        if(ratio>0){
           c.beginPath();
-          c.arc(cx, cy, r, startAngle, animatedAngle);
-          c.strokeStyle = color; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
+          c.arc(cx,cy,r,startAngle,animatedAngle);
+          c.strokeStyle=color;
+          c.lineWidth=barH;
+          c.lineCap='round';
+          c.stroke();
         }
 
-        // 레이블 y = 12시 방향 (cy - r)
-        const sy = cy - r;
+        // 12시 시작점
+        const sx=cx+r*Math.cos(startAngle);
+        const sy=cy+r*Math.sin(startAngle);
 
-        // 레이블: 고정 3열 탭 정렬
-        c.globalAlpha = Math.min(prog * 1.5, 1);
-        c.textBaseline = 'middle';
+        // 원형 화살표 아이콘
+        c.beginPath();
+        c.arc(sx,sy,iconR,0,Math.PI*2);
+        c.fillStyle='#fff'; c.fill();
+        c.strokeStyle=color; c.lineWidth=1.5; c.stroke();
+        c.fillStyle=color;
+        c.font=`bold ${Math.max(barH*0.5,7)}px 'Pretendard',sans-serif`;
+        c.textAlign='center'; c.textBaseline='middle';
+        c.fillText('→',sx,sy);
 
-        // 열1: 항목명 — 왼쪽 정렬
-        c.font = `400 11px 'Pretendard',sans-serif`;
-        c.fillStyle = '#6b7280';
-        c.textAlign = 'left';
-        c.fillText(label, col1Left, sy);
+        // 레이블: 해당 항목 sy 높이에 맞춰 왼쪽에 배치
+        c.globalAlpha=Math.min(prog*1.5,1);
+        const lx=left; // 왼쪽 시작
+        const lw=sx-iconR-lx-8; // 사용 가능 너비
 
-        // 열2: 인원 — 오른쪽 정렬
-        c.font = `700 12px 'Pretendard',sans-serif`;
-        c.fillStyle = '#111827';
-        c.textAlign = 'right';
-        c.fillText(`${values[i]}명`, col2Right, sy);
+        // 항목명 (회색, 14px, 400)
+        c.font=`400 11px 'Pretendard',sans-serif`;
+        c.fillStyle='#6b7280';
+        c.textAlign='left';
+        c.textBaseline='middle';
+        c.fillText(label, lx, sy-7);
 
-        // 열3: 비율 — 오른쪽 정렬
-        c.font = `400 11px 'Pretendard',sans-serif`;
-        c.fillStyle = '#9ca3af';
-        c.textAlign = 'right';
-        c.fillText(`(${pct}%)`, col3Right, sy);
+        // 인원수 (굵은 검정, 13px, 700)
+        c.font=`700 13px 'Pretendard',sans-serif`;
+        c.fillStyle='#111827';
+        c.fillText(`${values[i]}명`, lx, sy+7);
 
-        c.globalAlpha = 1;
+        // 비율 (연한 회색, 11px, 400)
+        c.font=`400 11px 'Pretendard',sans-serif`;
+        c.fillStyle='#9ca3af';
+        // 인원수 너비 계산 후 비율 배치
+        c.font=`700 13px 'Pretendard',sans-serif`;
+        const cntW=c.measureText(`${values[i]}명`).width;
+        c.font=`400 11px 'Pretendard',sans-serif`;
+        c.fillText(` (${pct}%)`, lx+cntW, sy+7);
+
+        c.globalAlpha=1;
       });
       c.restore();
     }
@@ -1115,8 +1128,8 @@ function renderRetire(s){
 
 // HEATMAP (가로=연령대, 세로=재직기간)
 function renderHeatmap(s) {
-  const AGE=['30세 미만','30세-40세','40세-50세','50세-60세','60세 초과'];
-  const TEN=['5년 미만','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
+  const AGE=['30세 미만','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세','65세 초과'];
+  const TEN=['3년 미만','3년-5년','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년-35년','35년 초과'];
   const heatmap=s.heatmap||{};
   const total=s.total||1;
   if(!Object.keys(heatmap).length){document.getElementById('heatmapWrap').innerHTML='<p style="color:#9ca3af;font-size:12px;padding:20px">히트맵 데이터 없음</p>';return;}
@@ -1137,9 +1150,9 @@ function renderHeatmap(s) {
     return val/maxVal>0.5?'#fff':'#1365FE';
   }
 
-  // 가로=재직기간(열), 세로=연령대(행) [축 교환]
-  const TEN_LBL={'5년 미만':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년 초과':'▲ 30년'};
-  const AGE_LBL={'30세 미만':'▼ 30세','30세-40세':'▼ 40세','40세-50세':'▼ 50세','50세-60세':'▼ 60세','60세 초과':'▲ 60세'};
+  // 가로=재직기간(열), 세로=연령대(행)
+  const TEN_LBL={'3년 미만':'▼ 3년','3년-5년':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년-35년':'▼ 35년','35년 초과':'▲ 35년'};
+  const AGE_LBL={'30세 미만':'▼ 30세','30세-35세':'▼ 35세','35세-40세':'▼ 40세','40세-45세':'▼ 45세','45세-50세':'▼ 50세','50세-55세':'▼ 55세','55세-60세':'▼ 60세','60세-65세':'▼ 65세','65세 초과':'▲ 65세'};
 
   let html=`<div style="overflow-x:auto"><table class="heatmap-table">
     <thead><tr>
