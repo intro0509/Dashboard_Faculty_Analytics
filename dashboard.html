@@ -357,12 +357,12 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
 
-        <div style="position:relative;height:260px"><canvas id="tenureHisto"></canvas></div>
+        <div style="position:relative;height:300px"><canvas id="tenureHisto"></canvas></div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
 
-        <div style="position:relative;height:260px"><canvas id="ageHisto"></canvas></div>
+        <div style="position:relative;height:300px"><canvas id="ageHisto"></canvas></div>
       </div>
     </div>
 
@@ -844,8 +844,8 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   const ctx=document.getElementById(cid).getContext('2d');
   if(charts[cid])charts[cid].destroy();
   charts[cid]=new Chart(ctx,{
-    type:'bar',data:{labels:[''],datasets:labels.map((l,i)=>({label:l,data:[values[i]],backgroundColor:colors[i],borderWidth:0,borderRadius:4,borderSkipped:false}))},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>{const pct=bt>0?(c.parsed.x/bt*100).toFixed(2):'0.00';return ` ${c.dataset.label}: ${c.parsed.x}명 (${pct}%)`;}}},},scales:{x:{stacked:true,display:false,max:tot*1.05},y:{stacked:true,display:false}}}
+    type:'bar',data:{labels:[''],datasets:labels.map((l,i)=>({label:l,data:[values[i]],backgroundColor:colors[i],borderWidth:2,borderColor:'#fff',borderRadius:6,borderSkipped:false}))},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>{const pct=bt>0?(c.parsed.x/bt*100).toFixed(2):'0.00';return ` ${c.dataset.label}: ${c.parsed.x}명 (${pct}%)`;}}},},scales:{x:{stacked:true,display:false,max:tot*1.08},y:{stacked:true,display:false}}}
   });
   document.getElementById(lid).innerHTML = `<div style="display:grid;grid-template-columns:repeat(${labels.length},1fr);gap:0;margin-top:12px">
     ${labels.map((l,i)=>{
@@ -862,75 +862,83 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   </div>`;
 }
 
-// POLAR AREA CHART (재직기간/연령)
+// RADIAL BAR CHART (재직기간/연령) - 12시 방향 시작, 레이블 좌측
 function renderHisto(cid, dataObj, colors, total) {
   const labels=Object.keys(dataObj), values=Object.values(dataObj);
   const tot=total||values.reduce((a,b)=>a+b,0);
+  const max=Math.max(...values)||1;
+  const n=labels.length;
 
-  const ctx=document.getElementById(cid).getContext('2d');
-  if(charts[cid])charts[cid].destroy();
+  const canvas=document.getElementById(cid);
+  const ctx=canvas.getContext('2d');
+  if(charts[cid]){charts[cid].destroy();charts[cid]=null;}
 
-  charts[cid]=new Chart(ctx,{
-    type:'polarArea',
-    data:{
-      labels,
-      datasets:[{
-        data:values,
-        backgroundColor:colors.map(c=>c+'cc'),
-        borderColor:colors.map(c=>c),
-        borderWidth:1.5,
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{
-          display:true,
-          position:'right',
-          labels:{
-            color:'#6b7280',
-            font:{size:11,family:"'Pretendard',sans-serif"},
-            boxWidth:12,boxHeight:12,
-            padding:10,
-            generateLabels(chart){
-              const data=chart.data;
-              return data.labels.map((label,i)=>{
-                const val=data.datasets[0].data[i];
-                const pct=tot>0?(val/tot*100).toFixed(1):'0.0';
-                return {
-                  text:`${label}  ${val}명 (${pct}%)`,
-                  fillStyle:data.datasets[0].backgroundColor[i],
-                  strokeStyle:data.datasets[0].borderColor[i],
-                  lineWidth:1.5,
-                  index:i
-                };
-              });
-            }
-          }
-        },
-        tooltip:{
-          backgroundColor:'#fff',
-          borderColor:'#e5eaf5',
-          borderWidth:1,
-          titleColor:'#111827',
-          bodyColor:'#6b7280',
-          callbacks:{
-            label(c){
-              const pct=tot>0?(c.parsed.r/tot*100).toFixed(2):'0.00';
-              return ` ${c.parsed.r}명 (${pct}%)`;
-            }
-          }
+  // 커스텀 플러그인으로 직접 그리기
+  const plugin={
+    id:'radialBar_'+cid,
+    afterDraw(chart){
+      const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
+      const cx=(left+right)/2, cy=(top+bottom)/2;
+      const outerR=Math.min((right-left),(bottom-top))/2*0.85;
+      const barH=outerR/n*0.7;
+      const gap=outerR/n;
+
+      c.save();
+      c.font=`500 11px 'Pretendard',sans-serif`;
+
+      labels.forEach((label,i)=>{
+        const ratio=values[i]/max;
+        const r=outerR-(i*gap);
+        if(r<10)return;
+
+        // 배경 호
+        c.beginPath();
+        c.arc(cx,cy,r,-Math.PI/2,Math.PI*3/2);
+        c.strokeStyle='#f0f4ff';
+        c.lineWidth=barH;
+        c.lineCap='round';
+        c.stroke();
+
+        // 데이터 호
+        if(ratio>0){
+          const endAngle=-Math.PI/2+(Math.PI*2*ratio);
+          c.beginPath();
+          c.arc(cx,cy,r,-Math.PI/2,endAngle);
+          c.strokeStyle=colors[i%colors.length];
+          c.lineWidth=barH;
+          c.lineCap='round';
+          c.stroke();
         }
-      },
-      scales:{
-        r:{
-          ticks:{display:false},
-          grid:{color:'rgba(243,244,246,1)'},
-          pointLabels:{display:false}
-        }
-      }
+
+        // 레이블 (12시 방향 좌측)
+        const lx=cx-r-barH/2-6;
+        const ly=cy-r;
+        c.fillStyle='#6b7280';
+        c.textAlign='right';
+        c.textBaseline='middle';
+        c.fillText(label, lx, cy-r);
+
+        // 인원수
+        const pct=tot>0?(values[i]/tot*100).toFixed(1):'0.0';
+        c.fillStyle='#111827';
+        c.font=`700 11px 'Pretendard',sans-serif`;
+        c.textAlign='left';
+        c.fillText(`${values[i]}명 (${pct}%)`, cx+r+barH/2+6, cy-r);
+        c.font=`500 11px 'Pretendard',sans-serif`;
+      });
+      c.restore();
     }
+  };
+
+  // 빈 차트에 플러그인 붙이기
+  charts[cid]=new Chart(ctx,{
+    type:'doughnut',
+    data:{labels:[],datasets:[{data:[]}]},
+    options:{
+      responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{enabled:false}}
+    },
+    plugins:[plugin]
   });
 }
 
@@ -991,18 +999,20 @@ function renderHeatmap(s) {
     return val/maxVal>0.5?'#fff':'#1365FE';
   }
 
-  // 가로=연령대(열), 세로=재직기간(행)
+  // 가로=재직기간(열), 세로=연령대(행) [축 교환]
+  const TEN_LBL={'5년 미만':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년 초과':'▲ 30년'};
+  const AGE_LBL={'30세 미만':'▼ 30세','30세-40세':'▼ 40세','40세-50세':'▼ 50세','50세-60세':'▼ 60세','60세 초과':'▲ 60세'};
+
   let html=`<div style="overflow-x:auto"><table class="heatmap-table">
     <thead><tr>
       <th class="row-header" style="min-width:70px"></th>
-      ${AGE.map(()=>`<th style="min-width:44px;width:44px"></th>`).join('')}
+      ${TEN.map(()=>`<th style="min-width:40px;width:40px"></th>`).join('')}
     </tr></thead>
     <tbody>`;
 
-  const TEN_LBL={'5년 미만':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년 초과':'▲ 30년'};
-  [...TEN].reverse().forEach(t=>{
-    html+=`<tr><th class="row-header">${TEN_LBL[t]||t}</th>`;
-    AGE.forEach(ag=>{
+  [...AGE].reverse().forEach(ag=>{
+    html+=`<tr><th class="row-header">${AGE_LBL[ag]||ag}</th>`;
+    TEN.forEach(t=>{
       const v=heatmap[ag]?.[t]||0;
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
@@ -1013,10 +1023,9 @@ function renderHeatmap(s) {
     html+='</tr>';
   });
 
-  const AGE_LBL={'30세 미만':'▼ 30세','30세-40세':'▼ 40세','40세-50세':'▼ 50세','50세-60세':'▼ 60세','60세 초과':'▲ 60세'};
   html+=`<tr>
     <th class="row-header" style="min-width:70px"></th>
-    ${AGE.map(a=>`<th style="min-width:40px;width:40px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${AGE_LBL[a]||a}</th>`).join('')}
+    ${TEN.map(t=>`<th style="min-width:40px;width:40px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${TEN_LBL[t]||t}</th>`).join('')}
   </tr>`;
 
   html+='</tbody></table></div>';
@@ -1130,26 +1139,36 @@ function renderCollege(s){
   el.style.height=H+'px';
   el.style.overflow='hidden';
 
+  const maxCnt=data[0]?.cnt||1;
   el.innerHTML=tiles.map((t,i)=>{
     const fs=t.w>80&&t.h>50?11:t.w>50&&t.h>35?10:9;
     const showCnt=t.w>60&&t.h>45;
     const showPct=t.w>60&&t.h>60;
+    // 인원수 비례 색상 농도 (진한→연한)
+    const ratio=t.cnt/maxCnt;
+    const r=Math.round(19+(219-19)*(1-ratio));
+    const g=Math.round(101+(219-101)*(1-ratio));
+    const b=Math.round(254+(254-254)*(1-ratio));
+    const bg=`rgb(${r},${g},${b})`;
+    // 농도 낮으면 글자 파랑 계열, 높으면 흰색
+    const textCol=ratio>0.45?'#fff':'#1365FE';
+    const textColSub=ratio>0.45?'rgba(255,255,255,0.85)':'rgba(19,101,254,0.7)';
     return `<div style="
       position:absolute;
       left:${t.x+1}px;top:${t.y+1}px;
       width:${t.w-2}px;height:${t.h-2}px;
-      background:${palette[i%palette.length]};
+      background:${bg};
       border-radius:6px;
       display:flex;flex-direction:column;
       align-items:center;justify-content:center;
       overflow:hidden;cursor:default;
       transition:filter .2s;
-      " onmouseover="this.style.filter='brightness(1.1)'"
+      " onmouseover="this.style.filter='brightness(0.95)'"
          onmouseout="this.style.filter=''"
          title="${t.name}: ${t.cnt}명 (${t.pct}%)">
-      <div style="font-size:${fs}px;font-weight:700;color:#fff;text-align:center;padding:2px 4px;line-height:1.3;word-break:keep-all">${t.name}</div>
-      ${showCnt?`<div style="font-size:${fs+1}px;font-weight:800;color:#fff;opacity:.95">${t.cnt}명</div>`:''}
-      ${showPct?`<div style="font-size:${fs-1}px;color:rgba(255,255,255,.8)">(${t.pct}%)</div>`:''}
+      <div style="font-size:${fs}px;font-weight:700;color:${textCol};text-align:center;padding:2px 4px;line-height:1.3;word-break:keep-all">${t.name}</div>
+      ${showCnt?`<div style="font-size:${fs+1}px;font-weight:800;color:${textCol}">${t.cnt}명</div>`:''}
+      ${showPct?`<div style="font-size:${fs-1}px;color:${textColSub}">(${t.pct}%)</div>`:''}
     </div>`;
   }).join('');;
 
