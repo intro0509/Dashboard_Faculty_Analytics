@@ -302,7 +302,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="grid-full">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
-        <div style="position:relative;height:260px"><canvas id="rateChart"></canvas></div>
+        <div style="position:relative;height:300px"><canvas id="rateChart"></canvas></div>
         <p style="margin-top:10px;font-size:11px;color:#f59e0b;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px">
           ※ 전임교원 확보율은 의학계열을 제외하고 산출하며, 매 학년도별 4월 1일 고등교육통계조사 기준임
         </p>
@@ -658,23 +658,28 @@ function renderKPI(s) {
 // RATE CHART (의학제외/포함 2개 라인)
 function renderRateChart() {
   const allYrs = Object.keys(DB.rate).sort();
-  const valsExcl = allYrs.map(y => DB.rate[y]?.exclude ?? null);
-  const valsIncl = allYrs.map(y => DB.rate[y]?.include ?? null);
+  if (!allYrs.length) return;
+
+  const valsExcl = allYrs.map(y => {
+    const v = DB.rate[y];
+    return (v && v.exclude != null) ? Number(v.exclude) : null;
+  });
+  const valsIncl = allYrs.map(y => {
+    const v = DB.rate[y];
+    return (v && v.include != null) ? Number(v.include) : null;
+  });
   const hasIncl = valsIncl.some(v => v !== null);
+
+  const validVals = valsExcl.filter(v => v !== null);
+  const yMin = validVals.length ? Math.floor(Math.min(...validVals)) - 3 : 55;
+  const yMax = validVals.length ? Math.ceil(Math.max(...validVals)) + 3 : 80;
   const lastIdx = allYrs.length - 1;
 
-  // y축 범위: 유효값 기준으로 여유있게 설정
-  const allVals = [...valsExcl, ...valsIncl].filter(v => v !== null && !isNaN(Number(v)));
-  const minVal = allVals.length ? Math.max(0, Math.floor(Math.min(...allVals)) - 5) : 55;
-  const maxVal = allVals.length ? Math.ceil(Math.max(...allVals)) + 5 : 80;
-  console.log('[rate] years:', allYrs, 'vals:', valsExcl, 'range:', minVal, '~', maxVal);
-
-  const canvas = document.getElementById('rateChart');
-  const ctx = canvas.getContext('2d');
+  const ctx = document.getElementById('rateChart').getContext('2d');
   if (charts.rate) charts.rate.destroy();
 
-  const grad = ctx.createLinearGradient(0, 0, 0, 200);
-  grad.addColorStop(0, 'rgba(19,101,254,0.12)');
+  const grad = ctx.createLinearGradient(0, 0, 0, 250);
+  grad.addColorStop(0, 'rgba(19,101,254,0.15)');
   grad.addColorStop(1, 'rgba(19,101,254,0)');
 
   const datasets = [{
@@ -682,7 +687,7 @@ function renderRateChart() {
     data: valsExcl,
     borderColor: '#1365FE',
     backgroundColor: grad,
-    borderWidth: 2,
+    borderWidth: 2.5,
     pointBackgroundColor: '#1365FE',
     pointBorderColor: '#fff',
     pointBorderWidth: 2,
@@ -699,7 +704,7 @@ function renderRateChart() {
       borderColor: '#8b5cf6',
       backgroundColor: 'transparent',
       borderWidth: 2,
-      borderDash: [5, 3],
+      borderDash: [5, 4],
       pointBackgroundColor: '#8b5cf6',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
@@ -716,7 +721,7 @@ function renderRateChart() {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      layout: { padding: { top: 30, right: 20, left: 8, bottom: 8 } },
+      layout: { padding: { top: 40, right: 16, left: 0, bottom: 0 } },
       plugins: {
         legend: {
           display: true,
@@ -725,26 +730,31 @@ function renderRateChart() {
           labels: {
             color: '#6b7280',
             font: { size: 11, family: "'Pretendard',sans-serif" },
-            boxWidth: 24, boxHeight: 2,
-            usePointStyle: false, padding: 16
+            boxWidth: 24, boxHeight: 2, padding: 16
           }
         },
         tooltip: {
           backgroundColor: '#fff',
           borderColor: '#e5eaf5',
           borderWidth: 1,
-          titleColor: '#111',
+          titleColor: '#111827',
           bodyColor: '#6b7280',
-          callbacks: { label: c => ` ${c.dataset.label}: ${c.parsed.y?.toFixed(2)}%` }
+          padding: 10,
+          callbacks: {
+            label: c => ` ${c.dataset.label}: ${c.parsed.y != null ? c.parsed.y.toFixed(2) : '-'}%`
+          }
         }
       },
       scales: {
-        x: { grid: { color: GRID }, ticks: { color: '#9ca3af' } },
+        x: {
+          grid: { color: 'rgba(243,244,246,1)' },
+          ticks: { color: '#9ca3af', font: { size: 11 } }
+        },
         y: {
-          grid: { color: GRID },
-          ticks: { color: '#9ca3af', callback: v => v + '%' },
-          min: minVal,
-          max: maxVal
+          grid: { color: 'rgba(243,244,246,1)' },
+          ticks: { color: '#9ca3af', callback: v => v + '%', font: { size: 11 } },
+          min: yMin,
+          max: yMax
         }
       }
     },
@@ -754,34 +764,33 @@ function renderRateChart() {
         const { ctx, data } = chart;
         data.datasets.forEach((ds, di) => {
           const meta = chart.getDatasetMeta(di);
-          if (meta.hidden) return;
-          ds.data.forEach((val, i) => {
-            if (val === null || val === undefined) return;
-            const pt = meta.data[i];
-            if (!pt) return;
-            const x = pt.x, y = pt.y;
-            const isLast = (i === lastIdx);
-            if (!isLast) return; // 마지막 포인트만 라벨 표시
-            const label = val.toFixed(2) + '%';
-            const color = di === 0 ? '#1365FE' : '#8b5cf6';
-            ctx.save();
-            ctx.font = 'bold 12px "Pretendard",sans-serif';
-            const tw = ctx.measureText(label).width;
-            const pad = 6, bh = 22, bw = tw + pad * 2;
-            let bx = x - bw / 2, by = y - bh - 10;
-            if (by < 4) by = y + 6;
-            if (bx < 4) bx = 4;
-            if (bx + bw > chart.width - 4) bx = chart.width - 4 - bw;
-            ctx.fillStyle = color;
-            if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 4);
-            else ctx.rect(bx, by, bw, bh);
-            ctx.fill();
-            ctx.fillStyle = '#fff';
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(label, bx + bw / 2, by + bh / 2);
-            ctx.restore();
-          });
+          if (!meta || meta.hidden) return;
+          const val = ds.data[lastIdx];
+          if (val == null) return;
+          const pt = meta.data[lastIdx];
+          if (!pt) return;
+          const x = pt.x, y = pt.y;
+          const label = Number(val).toFixed(2) + '%';
+          const color = di === 0 ? '#1365FE' : '#8b5cf6';
+          ctx.save();
+          ctx.font = 'bold 11px "Pretendard",sans-serif';
+          const tw = ctx.measureText(label).width;
+          const pad = 5, bh = 20, bw = tw + pad * 2;
+          let bx = x - bw / 2;
+          let by = y - bh - 8;
+          if (by < 2) by = y + 6;
+          if (bx < 2) bx = 2;
+          if (bx + bw > chart.width - 2) bx = chart.width - 2 - bw;
+          ctx.fillStyle = color;
+          ctx.beginPath();
+          if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 4);
+          else ctx.rect(bx, by, bw, bh);
+          ctx.fill();
+          ctx.fillStyle = '#fff';
+          ctx.textAlign = 'center';
+          ctx.textBaseline = 'middle';
+          ctx.fillText(label, bx + bw / 2, by + bh / 2);
+          ctx.restore();
         });
       }
     }]
