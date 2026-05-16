@@ -318,8 +318,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('track','정년트랙',this)">정년트랙</span>
           <span class="fchip" onclick="setFilter('track','비정년트랙',this)">비정년트랙</span>
         </div>
-        <div style="position:relative;height:180px"><canvas id="trackDonutChart"></canvas></div>
-        <div class="legend" id="trackDonutLegend"></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="position:relative;height:180px;flex:0 0 180px"><canvas id="trackDonutChart"></canvas></div>
+          <div class="legend" id="trackDonutLegend" style="flex:1"></div>
+        </div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>비정년트랙별 현황</div></div>
@@ -330,8 +332,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('non_tenure','산학협력전담',this)">산학협력</span>
           <span class="fchip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
         </div>
-        <div style="position:relative;height:180px"><canvas id="nonTenureDonutChart"></canvas></div>
-        <div class="legend" id="nonTenureDonutLegend"></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="position:relative;height:180px;flex:0 0 180px"><canvas id="nonTenureDonutChart"></canvas></div>
+          <div class="legend" id="nonTenureDonutLegend" style="flex:1"></div>
+        </div>
       </div>
     </div>
 
@@ -933,8 +937,9 @@ function renderHeatmap(s) {
     </tr></thead>
     <tbody>`;
 
-  TEN.forEach(t=>{
-    html+=`<tr><th class="row-header">${t}</th>`;
+  const TEN_LBL={'5년 미만':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년 초과':'▲ 30년'};
+  [...TEN].reverse().forEach(t=>{
+    html+=`<tr><th class="row-header">${TEN_LBL[t]||t}</th>`;
     AGE.forEach(ag=>{
       const v=heatmap[ag]?.[t]||0;
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
@@ -946,9 +951,10 @@ function renderHeatmap(s) {
     html+='</tr>';
   });
 
+  const AGE_LBL={'30세 미만':'▼ 30세','30세-40세':'▼ 40세','40세-50세':'▼ 50세','50세-60세':'▼ 60세','60세 초과':'▲ 60세'};
   html+=`<tr>
     <th class="row-header" style="min-width:70px"></th>
-    ${AGE.map(a=>`<th style="min-width:44px;width:44px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${a}</th>`).join('')}
+    ${AGE.map(a=>`<th style="min-width:44px;width:44px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${AGE_LBL[a]||a}</th>`).join('')}
   </tr>`;
 
   html+='</tbody></table></div>';
