@@ -301,7 +301,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
         <div style="position:relative;height:300px"><canvas id="rateChart"></canvas></div>
         <p style="margin-top:10px;font-size:11px;color:#f59e0b;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px">
-          ※ 전임교원 확보율은 의학계열을 제외하고 산출하며, 매 학년도별 4월 1일 고등교육통계조사 기준임
+          💡 출처: 고등교육통계조사(매 학년도 4월 1일 기준)
         </p>
       </div>
     </div>
@@ -794,16 +794,21 @@ function renderRateChart() {
             if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 4);
             else ctx.rect(bx, by, bw, bh);
             if (isLast) {
+              ctx.beginPath();
+              if (ctx.roundRect) ctx.roundRect(bx, by, bw, bh, 4);
+              else ctx.rect(bx, by, bw, bh);
               ctx.fillStyle = color; ctx.fill();
               ctx.fillStyle = '#fff';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'middle';
+              ctx.fillText(label, bx + bw / 2, by + bh / 2);
             } else {
-              ctx.fillStyle = '#fff'; ctx.fill();
-              ctx.strokeStyle = color; ctx.lineWidth = 1.5; ctx.stroke();
-              ctx.fillStyle = '#111827';
+              // 말풍선 없이 텍스트만
+              ctx.fillStyle = di === 0 ? '#1365FE' : '#9ca3af';
+              ctx.textAlign = 'center';
+              ctx.textBaseline = 'bottom';
+              ctx.fillText(label, x, y - 4);
             }
-            ctx.textAlign = 'center';
-            ctx.textBaseline = 'middle';
-            ctx.fillText(label, bx + bw / 2, by + bh / 2);
             ctx.restore();
           });
         });
@@ -851,9 +856,46 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   const tot=values.reduce((a,b)=>a+b,0), bt=s.total||1;
   const ctx=document.getElementById(cid).getContext('2d');
   if(charts[cid])charts[cid].destroy();
+  const stkPlugin={id:'stkRound_'+cid,afterDraw(chart){
+    const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
+    const barH=(bottom-top)*0.42;
+    const cy=(top+bottom)/2;
+    const avail=(right-left)*0.92;
+    let x=left;
+    c.clearRect(left,top,right-left,bottom-top);
+    labels.forEach((l,i)=>{
+      if(!values[i]){return;}
+      const w=tot>0?(values[i]/tot)*avail:0;
+      if(w<1)return;
+      const rad=Math.min(barH/2,7);
+      c.save();
+      c.beginPath();
+      c.moveTo(x+rad,cy-barH/2);
+      c.lineTo(x+w-rad,cy-barH/2);
+      c.arcTo(x+w,cy-barH/2,x+w,cy,rad);
+      c.lineTo(x+w,cy+barH/2-rad);
+      c.arcTo(x+w,cy+barH/2,x+w-rad,cy+barH/2,rad);
+      c.lineTo(x+rad,cy+barH/2);
+      c.arcTo(x,cy+barH/2,x,cy,rad);
+      c.lineTo(x,cy-barH/2+rad);
+      c.arcTo(x,cy-barH/2,x+rad,cy-barH/2,rad);
+      c.closePath();
+      c.fillStyle=colors[i];
+      c.fill();
+      if(i<labels.length-1&&w>2){
+        c.strokeStyle='#fff';c.lineWidth=2.5;
+        c.beginPath();c.moveTo(x+w,cy-barH/2);c.lineTo(x+w,cy+barH/2);c.stroke();
+      }
+      c.restore();
+      x+=w;
+    });
+  }};
   charts[cid]=new Chart(ctx,{
-    type:'bar',data:{labels:[''],datasets:labels.map((l,i)=>({label:l,data:[values[i]],backgroundColor:colors[i],borderWidth:2,borderColor:'#fff',borderRadius:6,borderSkipped:false}))},
-    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>{const pct=bt>0?(c.parsed.x/bt*100).toFixed(2):'0.00';return ` ${c.dataset.label}: ${c.parsed.x}명 (${pct}%)`;}}},},scales:{x:{stacked:true,display:false,max:tot*1.08},y:{stacked:true,display:false}}}
+    type:'bar',data:{labels:[''],datasets:[{data:[tot],backgroundColor:'transparent',borderWidth:0}]},
+    options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
+      plugins:{legend:{display:false},tooltip:{enabled:false}},
+      scales:{x:{display:false,max:tot},y:{display:false}}},
+    plugins:[stkPlugin]
   });
   document.getElementById(lid).innerHTML = `<div style="display:grid;grid-template-columns:repeat(${labels.length},1fr);gap:0;margin-top:12px">
     ${labels.map((l,i)=>{
@@ -921,43 +963,31 @@ function renderHisto(cid, dataObj, colors, total) {
           c.stroke();
         }
 
-        // 호 끝점 좌표 (12시 = -90°에서 시작)
-        const ex=cx+r*Math.cos(endAngle);
-        const ey=cy+r*Math.sin(endAngle);
+        // 12시 시작점 좌표
+        const sx=cx+r*Math.cos(startAngle);
+        const sy=cy+r*Math.sin(startAngle);
 
-        // 끝점에 원형 아이콘
+        // 시작점에 원형 화살표 아이콘
         c.beginPath();
-        c.arc(ex,ey,barH/2+1,0,Math.PI*2);
+        c.arc(sx,sy,barH/2+1,0,Math.PI*2);
         c.fillStyle='#fff';
         c.fill();
         c.strokeStyle=color;
         c.lineWidth=2;
         c.stroke();
-
-        // 화살표
-        c.save();
-        c.translate(ex,ey);
-        const arrowAngle=endAngle+Math.PI/2;
-        c.rotate(arrowAngle);
         c.fillStyle=color;
-        c.font=`bold ${Math.max(barH*0.6,8)}px 'Pretendard',sans-serif`;
+        c.font=`bold ${Math.max(barH*0.55,7)}px 'Pretendard',sans-serif`;
         c.textAlign='center';
         c.textBaseline='middle';
-        c.fillText('→',0,0);
-        c.restore();
+        c.fillText('→',sx,sy);
 
-        // 레이블: 12시 방향(-90°) 시작점 좌측에 표시
-        const sx=cx+r*Math.cos(startAngle);
-        const sy=cy+r*Math.sin(startAngle);
-        const fs=Math.max(Math.min(barH*0.7,12),9);
+        // 레이블: 시작점 좌측에 한 줄로 표시
+        const fs=Math.max(Math.min(barH*0.7,11),9);
         c.font=`600 ${fs}px 'Pretendard',sans-serif`;
         c.fillStyle='#374151';
         c.textAlign='right';
         c.textBaseline='middle';
-        c.fillText(`${label}`, sx-barH/2-6, sy);
-        c.font=`400 ${fs-1}px 'Pretendard',sans-serif`;
-        c.fillStyle='#6b7280';
-        c.fillText(`${values[i]}명 / ${pct}%`, sx-barH/2-6, sy+fs);
+        c.fillText(`${label}  ${values[i]}명  ${pct}%`, sx-barH/2-8, sy);
       });
       c.restore();
     }
