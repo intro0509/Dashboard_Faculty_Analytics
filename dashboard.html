@@ -103,10 +103,10 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 
 /* HISTO */
 .histo-wrap{display:flex;flex-direction:column;gap:6px}
-.histo-row{display:grid;grid-template-columns:72px 1fr 52px 56px;align-items:center;gap:6px}
+.histo-row{display:grid;grid-template-columns:72px 1fr 52px 56px;align-items:center;gap:6px;min-height:26px}
 .histo-lbl{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
-.bar-bg{height:8px;background:#f0f4ff;border-radius:4px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;transition:width 1s ease;width:0%}
+.bar-bg{height:18px;background:#f0f4ff;border-radius:9px;overflow:hidden}
+.bar-fill{height:100%;border-radius:9px;transition:width 1s ease;width:0%}
 .histo-cnt{font-size:12px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
 .histo-pct{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
 
@@ -858,7 +858,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   if(charts[cid])charts[cid].destroy();
   const stkPlugin={id:'stkRound_'+cid,afterDraw(chart){
     const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
-    const barH=(bottom-top)*0.42;
+    const barH=(bottom-top)*0.82; // 도넛 굵기와 동일
     const cy=(top+bottom)/2;
     const avail=(right-left)*0.92;
     let x=left;
@@ -931,7 +931,7 @@ function renderHisto(cid, dataObj, colors, total) {
       const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
       const cx=(left+right)/2, cy=(top+bottom)/2;
       const outerR=Math.min((right-left),(bottom-top))/2*0.72;
-      const barH=Math.min(outerR/n*0.65, 18);
+      const barH=Math.min(outerR/Math.min(n,5)*0.65, 18); // 최대 5개 기준 굵기
       const gap=outerR/n;
 
       c.save();
@@ -1218,7 +1218,7 @@ function squarify(items, x, y, w, h) {
 function renderCollege(s){
   const colleges=s.colleges||{}, total=s.total||1;
   const el=document.getElementById('collegeTable');
-  const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,10);
   if(!sorted.length){el.innerHTML='<p style="color:#9ca3af;font-size:12px;padding:20px;text-align:center">데이터 없음</p>';return;}
 
   const W=el.offsetWidth||400, H=360;
