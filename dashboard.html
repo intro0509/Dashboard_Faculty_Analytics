@@ -670,9 +670,10 @@ function renderRateChart() {
   });
   const hasIncl = valsIncl.some(v => v !== null);
 
-  const validVals = valsExcl.filter(v => v !== null);
-  const yMin = validVals.length ? Math.floor(Math.min(...validVals)) - 3 : 55;
-  const yMax = validVals.length ? Math.ceil(Math.max(...validVals)) + 3 : 80;
+  // 두 라인 모두 포함해서 y축 범위 계산
+  const validVals = [...valsExcl, ...valsIncl].filter(v => v !== null);
+  const yMin = validVals.length ? Math.floor(Math.min(...validVals)) - 2 : 55;
+  const yMax = validVals.length ? Math.ceil(Math.max(...validVals)) + 2 : 80;
   const lastIdx = allYrs.length - 1;
 
   const ctx = document.getElementById('rateChart').getContext('2d');
@@ -698,18 +699,20 @@ function renderRateChart() {
   }];
 
   if (hasIncl) {
+    const grad2 = ctx.createLinearGradient(0, 0, 0, 250);
+    grad2.addColorStop(0, 'rgba(16,185,129,0.1)');
+    grad2.addColorStop(1, 'rgba(16,185,129,0)');
     datasets.push({
       label: '의학계열 포함',
       data: valsIncl,
-      borderColor: '#8b5cf6',
-      backgroundColor: 'transparent',
-      borderWidth: 2,
-      borderDash: [5, 4],
-      pointBackgroundColor: '#8b5cf6',
+      borderColor: '#10b981',
+      backgroundColor: grad2,
+      borderWidth: 2.5,
+      pointBackgroundColor: '#10b981',
       pointBorderColor: '#fff',
       pointBorderWidth: 2,
       pointRadius: 4,
-      fill: false,
+      fill: true,
       tension: 0.4,
       spanGaps: true
     });
@@ -771,7 +774,7 @@ function renderRateChart() {
           if (!pt) return;
           const x = pt.x, y = pt.y;
           const label = Number(val).toFixed(2) + '%';
-          const color = di === 0 ? '#1365FE' : '#8b5cf6';
+          const color = di === 0 ? '#1365FE' : '#10b981';
           ctx.save();
           ctx.font = 'bold 11px "Pretendard",sans-serif';
           const tw = ctx.measureText(label).width;
