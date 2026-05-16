@@ -680,7 +680,8 @@ function renderRateChart() {
   if (charts.rate) charts.rate.destroy();
 
   const grad = ctx.createLinearGradient(0, 0, 0, 250);
-  grad.addColorStop(0, 'rgba(19,101,254,0.15)');
+  grad.addColorStop(0, 'rgba(19,101,254,0.25)');
+  grad.addColorStop(0.6, 'rgba(19,101,254,0.08)');
   grad.addColorStop(1, 'rgba(19,101,254,0)');
 
   const datasets = [{
@@ -695,26 +696,29 @@ function renderRateChart() {
     pointRadius: 4,
     fill: true,
     tension: 0,
-    spanGaps: true
+    spanGaps: true,
+    order: 1
   }];
 
   if (hasIncl) {
     const grad2 = ctx.createLinearGradient(0, 0, 0, 250);
-    grad2.addColorStop(0, 'rgba(16,185,129,0.1)');
-    grad2.addColorStop(1, 'rgba(16,185,129,0)');
+    grad2.addColorStop(0, 'rgba(156,163,175,0.15)');
+    grad2.addColorStop(0.6, 'rgba(156,163,175,0.05)');
+    grad2.addColorStop(1, 'rgba(156,163,175,0)');
     datasets.push({
       label: '의학계열 포함',
       data: valsIncl,
-      borderColor: '#10b981',
+      borderColor: '#d1d5db',
       backgroundColor: grad2,
-      borderWidth: 2.5,
-      pointBackgroundColor: '#10b981',
+      borderWidth: 1.5,
+      pointBackgroundColor: '#d1d5db',
       pointBorderColor: '#fff',
-      pointBorderWidth: 2,
-      pointRadius: 4,
+      pointBorderWidth: 1.5,
+      pointRadius: 3,
       fill: true,
       tension: 0,
-      spanGaps: true
+      spanGaps: true,
+      order: 2
     });
   }
 
@@ -755,7 +759,7 @@ function renderRateChart() {
         },
         y: {
           grid: { color: 'rgba(243,244,246,1)' },
-          ticks: { color: '#9ca3af', callback: v => v + '%', font: { size: 11 } },
+          ticks: { display: false },
           min: yMin,
           max: yMax
         }
@@ -774,7 +778,7 @@ function renderRateChart() {
           if (!pt) return;
           const x = pt.x, y = pt.y;
           const label = Number(val).toFixed(2) + '%';
-          const color = di === 0 ? '#1365FE' : '#10b981';
+          const color = di === 0 ? '#1365FE' : '#9ca3af';
           ctx.save();
           ctx.font = 'bold 11px "Pretendard",sans-serif';
           const tw = ctx.measureText(label).width;
