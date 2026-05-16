@@ -344,13 +344,13 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>직급별 현황</div></div>
 
-        <div style="position:relative;height:28px;margin:4px 0"><canvas id="rankChart"></canvas></div>
+        <div style="position:relative;height:44px;margin:4px 0"><canvas id="rankChart"></canvas></div>
         <div class="legend" id="rankLegend" style="margin-top:10px"></div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#8b5cf6"></div>성별 현황</div></div>
 
-        <div style="position:relative;height:28px;margin:4px 0"><canvas id="genderChart"></canvas></div>
+        <div style="position:relative;height:44px;margin:4px 0"><canvas id="genderChart"></canvas></div>
         <div class="legend" id="genderLegend" style="margin-top:10px"></div>
       </div>
     </div>
@@ -848,7 +848,7 @@ function renderDonut(cid,lid,labels,values,colors,total){
   });
   document.getElementById(lid).innerHTML=labels.map((l,i)=>{
     const cnt=values[i]||0,pct=tot>0?(cnt/tot*100).toFixed(2):'0.00';
-    return `<div class="lg-row"><div class="lg-dot" style="background:${colors[i]}"></div><span class="lg-name">${l}</span><span class="lg-cnt">${cnt}명</span><span class="lg-pct">(${pct}%)</span></div>`;
+    return `<div class="lg-row"><div class="lg-dot" style="background:${colors[i]}"></div><span class="lg-name" style="color:#6b7280">${l}</span><span class="lg-cnt" style="font-weight:700;color:#111827">${cnt}명</span><span class="lg-pct" style="color:#c4c9d4">(${pct}%)</span></div>`;
   }).join('');
 }
 function renderTrackDonut(s){
@@ -872,7 +872,9 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   if(charts[cid])charts[cid].destroy();
   const stkPlugin={id:'stkRound_'+cid,afterDraw(chart){
     const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
-    const barH=Math.min((bottom-top)*0.55, 28); // 막대 두께 제한
+    // 도넛 cutout=68%, 캔버스 H=180px → 링 두께 ≈ (180/2*0.85)*0.32*2 ≈ 24px
+    // 막대도 동일하게 22px 고정
+    const barH=22;
     const cy=(top+bottom)/2; // 정확한 가운데
     const totalW=(right-left);
     const avail=totalW*0.92;
@@ -984,9 +986,10 @@ function renderHisto(cid, dataObj, colors, total) {
       const cx=right-chartZoneW/2;
       const cy=(top+bottom)/2;
       const outerR=Math.min(chartZoneW, H)/2*0.88;
-      const barH=Math.min(outerR/Math.min(n,5)*0.65, 18);
-      const fixedN=Math.max(n,7);
+      // 재직기간(7항목)·연령(5항목) 동일 두께: fixedN=7 기준 고정
+      const fixedN=7;
       const gap=outerR/fixedN*1.35;
+      const barH=Math.min(outerR/fixedN*0.65, 16);
       const prog=charts['_anim_'+cid]||1;
       const iconR=barH/2+1;
 
@@ -1032,31 +1035,31 @@ function renderHisto(cid, dataObj, colors, total) {
         c.textAlign='center'; c.textBaseline='middle';
         c.fillText('→',sx,sy);
 
-        // 레이블: 해당 항목 sy 높이에 맞춰 왼쪽에 배치
+        // 레이블: 12시 방향 시작점(sy) 높이에 맞춰 왼쪽 정렬 배치
         c.globalAlpha=Math.min(prog*1.5,1);
-        const lx=left; // 왼쪽 시작
-        const lw=sx-iconR-lx-8; // 사용 가능 너비
+        const lx=left; // 왼쪽 시작 (왼쪽 정렬)
+        // sy = 12시 방향 시작점의 y좌표 → 각 항목 높이에 맞춤
+        const lineH=13; // 줄 간격
 
-        // 항목명 (회색, 14px, 400)
+        // 항목명 (회색, 11px, 400)
         c.font=`400 11px 'Pretendard',sans-serif`;
         c.fillStyle='#6b7280';
         c.textAlign='left';
         c.textBaseline='middle';
-        c.fillText(label, lx, sy-7);
+        c.fillText(label, lx, sy-lineH*0.55);
 
-        // 인원수 (굵은 검정, 13px, 700)
+        // 인원수 (굵은 검정, 13px, 700) + 비율 (연한 회색, 11px, 400) 같은 줄
         c.font=`700 13px 'Pretendard',sans-serif`;
         c.fillStyle='#111827';
-        c.fillText(`${values[i]}명`, lx, sy+7);
+        c.textAlign='left';
+        c.textBaseline='middle';
+        const cntTxt=`${values[i]}명`;
+        c.fillText(cntTxt, lx, sy+lineH*0.55);
+        const cntW=c.measureText(cntTxt).width;
 
-        // 비율 (연한 회색, 11px, 400)
         c.font=`400 11px 'Pretendard',sans-serif`;
         c.fillStyle='#9ca3af';
-        // 인원수 너비 계산 후 비율 배치
-        c.font=`700 13px 'Pretendard',sans-serif`;
-        const cntW=c.measureText(`${values[i]}명`).width;
-        c.font=`400 11px 'Pretendard',sans-serif`;
-        c.fillText(` (${pct}%)`, lx+cntW, sy+7);
+        c.fillText(` (${pct}%)`, lx+cntW, sy+lineH*0.55);
 
         c.globalAlpha=1;
       });
@@ -1217,7 +1220,7 @@ function renderHeatmap(s) {
 function renderCollege(s){
   const colleges=s.colleges||{}, total=s.total||1;
   const el=document.getElementById('collegeTable');
-  const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
+  const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,10);
   if(!sorted.length){el.innerHTML='<p style="color:#9ca3af;font-size:12px;padding:20px;text-align:center">데이터 없음</p>';return;}
   const max=sorted[0]?.[1]||1;
   const html=sorted.map(([name,cnt])=>{
