@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>동아대학교 교원관리 시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/chartjs-chart-treemap@2.3.0/build/chartjs-chart-treemap.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
@@ -107,7 +106,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .histo-row{display:grid;grid-template-columns:72px 1fr 52px 56px;align-items:center;gap:6px}
 .histo-lbl{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
 .bar-bg{height:8px;background:#f0f4ff;border-radius:4px;overflow:hidden}
-.bar-fill{height:100%;border-radius:4px;transition:width 1.2s ease;width:0}
+.bar-fill{height:100%;border-radius:4px;transition:width 1s ease;width:0%}
 .histo-cnt{font-size:12px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
 .histo-pct{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
 
@@ -378,7 +377,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-        <div style="position:relative;height:280px"><canvas id="collegeTreemap"></canvas></div>
+        <div class="college-scroll" id="collegeTable"></div>
       </div>
     </div>
 
@@ -920,6 +919,7 @@ function renderHeatmap(s) {
   const TEN=['5년 미만','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
   const heatmap=s.heatmap||{};
   const total=s.total||1;
+  if(!Object.keys(heatmap).length){document.getElementById('heatmapWrap').innerHTML='<p style="color:#9ca3af;font-size:12px;padding:20px">히트맵 데이터 없음</p>';return;}
 
   let maxVal=0;
   AGE.forEach(a=>TEN.forEach(t=>{const v=heatmap[a]?.[t]||0;if(v>maxVal)maxVal=v;}));
@@ -990,82 +990,34 @@ function renderHeatmap(s) {
   }
 }
 
-// COLLEGE TREEMAP
+// COLLEGE
 function renderCollege(s){
   const colleges=s.colleges||{}, total=s.total||1;
   const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
-  if(!sorted.length) return;
-
-  const ctx=document.getElementById('collegeTreemap').getContext('2d');
-  if(charts.college) charts.college.destroy();
-
-  // 파란 계열 색상 팔레트
-  const palette=['#1365FE','#1a6fff','#2979ff','#4285ff','#5c96ff','#75a8ff','#8ebaff','#a7ccff','#c0deff','#d9f0ff'];
-
-  const treeData=sorted.map(([name,cnt],i)=>({
-    name, cnt, pct:(cnt/total*100).toFixed(1), v:cnt
-  }));
-
-  charts.college=new Chart(ctx,{
-    type:'treemap',
-    data:{
-      datasets:[{
-        label:'단과대학',
-        tree: treeData,
-        key:'v',
-        backgroundColor(ctx){
-          if(ctx.type!=='data') return 'transparent';
-          return palette[ctx.dataIndex % palette.length];
-        },
-        borderColor:'#fff',
-        borderWidth:2,
-        borderRadius:6,
-        labels:{
-          display:true,
-          formatter(ctx){
-            if(ctx.type!=='data') return '';
-            const d=ctx.raw._data;
-            return [d.name, `${d.cnt}명`, `(${d.pct}%)`];
-          },
-          color:'#fff',
-          font:[
-            {size:11,weight:'600',family:"'Pretendard',sans-serif"},
-            {size:12,weight:'700',family:"'Pretendard',sans-serif"},
-            {size:10,family:"'Pretendard',sans-serif"},
-          ],
-          position:'middle',
-          align:'center',
-          overflow:'fit',
-        }
-      }]
-    },
-    options:{
-      responsive:true,
-      maintainAspectRatio:false,
-      plugins:{
-        legend:{display:false},
-        tooltip:{
-          backgroundColor:'#fff',
-          borderColor:'#e5eaf5',
-          borderWidth:1,
-          titleColor:'#111827',
-          bodyColor:'#6b7280',
-          callbacks:{
-            title(items){return items[0]?.raw?._data?.name||'';},
-            label(item){
-              const d=item.raw._data;
-              return [`${d.cnt}명 (${d.pct}%)`];
-            }
-          }
-        }
-      }
-    }
-  });;
+  if(!sorted.length){document.getElementById('collegeTable').innerHTML='<p style="text-align:center;padding:20px;color:#9ca3af;font-size:12px">데이터 없음</p>';return;}
+  const max=sorted[0]?.[1]||1;
+  const html=sorted.map(([name,cnt])=>{
+    const pct=(cnt/total*100).toFixed(1);
+    const barPct=(cnt/max*100).toFixed(1);
+    return `<div class="histo-row">
+      <div class="histo-lbl">${name}</div>
+      <div class="bar-bg"><div class="bar-fill" style="background:#1365FE" data-target="${barPct}"></div></div>
+      <span class="histo-cnt">${cnt}명</span>
+      <span class="histo-pct">(${pct}%)</span>
+    </div>`;
+  }).join('');
+  document.getElementById('collegeTable').innerHTML=`<div style="display:flex;flex-direction:column;gap:6px">${html}</div>`;
 
 }
 
 function animateBars(){
-  setTimeout(()=>document.querySelectorAll('.bar-fill[data-target],.retire-bar[data-target]').forEach(el=>{el.style.width=el.dataset.target+'%';}),100);
+  requestAnimationFrame(()=>{
+    setTimeout(()=>{
+      document.querySelectorAll('.bar-fill[data-target]').forEach(el=>{
+        el.style.width=el.dataset.target+'%';
+      });
+    },50);
+  });
 }
 
 loadData();
