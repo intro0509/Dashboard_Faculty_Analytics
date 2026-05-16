@@ -890,34 +890,45 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
       x+=w;
     });
   }};
-  // hover 툴팁
+  // hover 툴팁 (도넛 차트 스타일)
   const tooltipPlugin={id:'stkTooltip_'+cid,afterDraw(chart){
     const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
     const tip=chart._stkTip;
     if(!tip)return;
-    const fs=12, pad=8, bh=28;
+    const pad=10, bh=32, titleH=14, bodyH=16;
     c.save();
-    c.font=`500 ${fs}px 'Pretendard',sans-serif`;
-    const tw=c.measureText(tip.text).width;
+    c.font=`600 12px 'Pretendard',sans-serif`;
+    const tw=Math.max(c.measureText(tip.label).width, c.measureText(tip.body).width);
     const bw=tw+pad*2;
-    let bx=tip.x-bw/2, by=tip.y-bh-8;
+    let bx=tip.x-bw/2, by=tip.y-bh-12;
     if(bx<0)bx=0;
     if(bx+bw>chart.width)bx=chart.width-bw;
     if(by<0)by=tip.y+8;
+    // 배경
     c.fillStyle='#fff';
     c.strokeStyle='#e5eaf5';
     c.lineWidth=1;
-    c.shadowColor='rgba(0,0,0,0.08)';
-    c.shadowBlur=8;
+    c.shadowColor='rgba(0,0,0,0.1)';
+    c.shadowBlur=10;
     c.beginPath();
-    if(c.roundRect)c.roundRect(bx,by,bw,bh,6);
-    else c.rect(bx,by,bw,bh);
+    if(c.roundRect)c.roundRect(bx,by,bw,bh+titleH,6);
+    else c.rect(bx,by,bw,bh+titleH);
     c.fill();c.stroke();
     c.shadowBlur=0;
+    // 제목
+    c.font=`600 11px 'Pretendard',sans-serif`;
     c.fillStyle='#111827';
-    c.textAlign='center';
-    c.textBaseline='middle';
-    c.fillText(tip.text,bx+bw/2,by+bh/2);
+    c.textAlign='left';
+    c.textBaseline='top';
+    c.fillText(tip.label,bx+pad,by+8);
+    // 구분선
+    c.strokeStyle='#f3f4f6';
+    c.lineWidth=1;
+    c.beginPath();c.moveTo(bx+1,by+titleH+8);c.lineTo(bx+bw-1,by+titleH+8);c.stroke();
+    // 본문
+    c.font=`500 11px 'Pretendard',sans-serif`;
+    c.fillStyle='#6b7280';
+    c.fillText(tip.body,bx+pad,by+titleH+12);
     c.restore();
   }};
 
@@ -945,7 +956,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
       const w=tot>0?(values[i]/tot)*avail:0;
       if(mx>=x&&mx<=x+w){
         const pct=bt>0?(values[i]/bt*100).toFixed(2):'0.00';
-        chartInst._stkTip={x:x+w/2,y:cy2-barH2/2,text:`${labels[i]}: ${values[i]}명 (${pct}%)`};
+        chartInst._stkTip={x:x+w/2,y:cy2-barH2/2,label:labels[i],body:`${values[i]}명 (${pct}%)`};
         chartInst.update('none');
         return;
       }
@@ -1044,42 +1055,14 @@ function renderHisto(cid, dataObj, colors, total) {
         c.textBaseline='middle';
         c.fillText('→',sx,sy);
 
-        // 레이블: 시작점 좌측에 한 줄로, 도넛 범례 서식 적용
+        // 레이블: 시작점 좌측에 한 줄로 표시 (▼ 5년 / 00명 / 0.0%)
+        const lx=sx-iconR-8;
+        const fullLbl=`${label}  /  ${values[i]}명  /  ${pct}%`;
+        c.font=`500 11px 'Pretendard',sans-serif`;
+        c.fillStyle='#374151';
         c.textAlign='right';
         c.textBaseline='middle';
-        // 범례명 (진하게, #111827)
-        c.font=`600 12px 'Pretendard',sans-serif`;
-        c.fillStyle='#6b7280';
-        const nameStr=label;
-        const cntStr=`${values[i]}명`;
-        const pctStr=`${pct}%`;
-        const fullStr=`${nameStr}  /  ${cntStr}  /  ${pctStr}`;
-        c.fillStyle='#6b7280';
-        const tw1=c.measureText(`${nameStr}  /  `).width;
-        const tw2=c.measureText(`${cntStr}  /  `).width;
-        const tw3=c.measureText(pctStr).width;
-        const totalW=tw1+tw2+tw3;
-        const lx=sx-iconR-6;
-        // 범례명
-        c.font=`500 11px 'Pretendard',sans-serif`;
-        c.fillStyle='#6b7280';
-        c.textAlign='right';
-        c.fillText(`${nameStr}`, lx-tw2-tw3, sy);
-        // 구분자
-        c.fillStyle='#d1d5db';
-        c.fillText(`  /  `, lx-tw2-tw3+c.measureText(nameStr).width+c.measureText('  /  ').width/2, sy);
-        // 인원수 (굵게, 진한색)
-        c.font=`700 12px 'Pretendard',sans-serif`;
-        c.fillStyle='#111827';
-        c.fillText(`${cntStr}`, lx-tw3, sy);
-        // 구분자
-        c.font=`500 11px 'Pretendard',sans-serif`;
-        c.fillStyle='#d1d5db';
-        c.fillText(`  /  `, lx-tw3+c.measureText(cntStr).width/2, sy);
-        // 비율 (연한색)
-        c.font=`400 11px 'Pretendard',sans-serif`;
-        c.fillStyle='#9ca3af';
-        c.fillText(`${pctStr}`, lx, sy);
+        c.fillText(fullLbl, lx, sy);
       });
       c.restore();
     }
@@ -1171,7 +1154,8 @@ function renderHeatmap(s) {
       const v=heatmap[ag]?.[t]||0;
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
-      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:40px" title="${ag} × ${t}: ${v}명 (${pct}%)">
+      const agLbl=AGE_LBL[ag]||ag, tLbl=TEN_LBL[t]||t;
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:40px" title="${agLbl} × ${tLbl}: ${v}명 (${pct}%)">
         ${v?`<div class="cell-cnt">${v}명</div><div class="cell-pct">(${pct}%)</div>`:''}
       </td>`;
     });
@@ -1326,7 +1310,7 @@ function renderCollege(s){
       transition:filter .2s;
       " onmouseover="this.style.filter='brightness(0.95)'"
          onmouseout="this.style.filter=''"
-         title="${t.name}: ${t.cnt}명 (${t.pct}%)">
+         title="${t.name}&#10;${t.cnt}명 (${t.pct}%)">
       <div style="font-size:${fs}px;font-weight:700;color:${textCol};text-align:center;padding:2px 4px;line-height:1.3;word-break:keep-all">${t.name}</div>
       ${showCnt?`<div style="font-size:${fs+1}px;font-weight:800;color:${textCol}">${t.cnt}명</div>`:''}
       ${showPct?`<div style="font-size:${fs-1}px;color:${textColSub}">(${t.pct}%)</div>`:''}
