@@ -638,11 +638,7 @@ async function renderAll() {
   document.getElementById('filterTotal').textContent = s.total.toLocaleString()+'명';
   animateBars();
   document.getElementById('footer').textContent = `동아대학교 전임교원 현황 대시보드 · ${currentYear}학년도 기준 · 업데이트: ${DB.meta.updated}`;
-  // 차트 fade-in 애니메이션
-  ['tenureHisto','ageHisto','heatmapWrap','collegeTable'].forEach(id=>{
-    const el=document.getElementById(id);
-    if(el){el.style.animation='none';el.offsetHeight;el.style.animation='fadeIn .6s ease both';}
-  });
+
 }
 
 // KPI
@@ -866,14 +862,15 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
   if(charts[cid])charts[cid].destroy();
   const stkPlugin={id:'stkRound_'+cid,afterDraw(chart){
     const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
-    const barH=(bottom-top)*0.82; // 도넛 굵기와 동일
+    const barH=(bottom-top)*0.82;
     const cy=(top+bottom)/2;
     const avail=(right-left)*0.92;
+    const prog=charts['_sanim_'+cid]||1;
     let x=left;
     c.clearRect(left,top,right-left,bottom-top);
     labels.forEach((l,i)=>{
       if(!values[i]){return;}
-      const w=tot>0?(values[i]/tot)*avail:0;
+      const w=(tot>0?(values[i]/tot)*avail:0)*prog;
       if(w<1)return;
       const rad=Math.min(barH/2,7);
       c.save();
@@ -898,9 +895,13 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
       x+=w;
     });
   }};
-  // 툴팁 없음
+  // 막대 차오르는 애니메이션
+  let stkAnimProg=0;
+  if(!charts['_sanim_'+cid])charts['_sanim_'+cid]=0;
   const tooltipPlugin={id:'stkTooltip_'+cid};
+  const stkAnimPlugin={id:'stkAnim_'+cid,beforeDatasetsDraw(){return false;}};
 
+  charts['_sanim_'+cid]=0;
   const chartInst=new Chart(ctx,{
     type:'bar',data:{labels:[''],datasets:[{data:[tot],backgroundColor:'transparent',borderWidth:0}]},
     options:{responsive:true,maintainAspectRatio:false,indexAxis:'y',
@@ -908,6 +909,20 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
       scales:{x:{display:false,max:tot},y:{display:false}}},
     plugins:[stkPlugin,tooltipPlugin]});
   charts[cid]=chartInst;
+  // 막대 차오르는 애니메이션
+  (function(){
+    let start=null;
+    const dur=700;
+    function step(ts){
+      if(!start)start=ts;
+      const p=Math.min((ts-start)/dur,1);
+      charts['_sanim_'+cid]=1-(1-p)**3;
+      chartInst.update('none');
+      if(p<1)requestAnimationFrame(step);
+      else charts['_sanim_'+cid]=1;
+    }
+    requestAnimationFrame(step);
+  })();
 
 
 
@@ -942,28 +957,45 @@ function renderHisto(cid, dataObj, colors, total) {
 
   // 커스텀 플러그인으로 직접 그리기
   const maxAngle = Math.PI * 3 / 2; // 270°
+
+  // 애니메이션 상태
+  if(!charts['_anim_'+cid]) charts['_anim_'+cid]=0;
+  let animStart=null;
+  const animDuration=900;
+
   const plugin={
     id:'radialBar_'+cid,
     afterDraw(chart){
       const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
       const cx=(left+right)/2, cy=(top+bottom)/2;
       const outerR=Math.min((right-left),(bottom-top))/2*0.72;
-      const barH=Math.min(outerR/Math.min(n,5)*0.65, 18); // 최대 5개 기준 굵기
+      const barH=Math.min(outerR/Math.min(n,5)*0.65, 18);
       const fixedN=Math.max(n,7);
-      const gap=outerR/fixedN*1.35; // 항목 간 여백 넓히기
+      const gap=outerR/fixedN*1.35;
+      const prog=charts['_anim_'+cid]||1;
+      const iconR=barH/2+1;
+      const maxR=outerR;
+
+      // tabular 정렬용 열 너비 계산
+      c.font=`500 11px 'Pretendard',sans-serif`;
+      const labelW=Math.max(...labels.map(l=>c.measureText(l).width));
+      const cntW=Math.max(...values.map(v=>c.measureText(`${v}명`).width));
+      const pctArr=values.map((_,i)=>tot>0?(values[i]/tot*100).toFixed(1)+'%':'0.0%');
+      const pctW=Math.max(...pctArr.map(p=>c.measureText(p).width));
+      const colGap=8;
+      const fixedRx=cx-maxR-iconR-14;
 
       c.save();
-
       labels.forEach((label,i)=>{
         const ratio=values[i]/max;
         const r=outerR-(i*gap);
         if(r<8)return;
         const startAngle=-Math.PI/2;
-        const endAngle=startAngle+(maxAngle*ratio);
+        const animatedAngle=startAngle+(maxAngle*ratio*prog);
         const color=colors[i%colors.length];
-        const pct=tot>0?(values[i]/tot*100).toFixed(1):'0.0';
+        const pct=pctArr[i];
 
-        // 배경 호 (270°까지만)
+        // 배경 호 270°
         c.beginPath();
         c.arc(cx,cy,r,startAngle,startAngle+maxAngle);
         c.strokeStyle='#f0f4ff';
@@ -971,52 +1003,79 @@ function renderHisto(cid, dataObj, colors, total) {
         c.lineCap='round';
         c.stroke();
 
-        // 데이터 호 (270° 기준 비율)
+        // 데이터 호 (애니메이션)
         if(ratio>0){
           c.beginPath();
-          c.arc(cx,cy,r,startAngle,endAngle);
+          c.arc(cx,cy,r,startAngle,animatedAngle);
           c.strokeStyle=color;
           c.lineWidth=barH;
           c.lineCap='round';
           c.stroke();
         }
 
-        // 12시 시작점 좌표
+        // 12시 시작점
         const sx=cx+r*Math.cos(startAngle);
         const sy=cy+r*Math.sin(startAngle);
 
-        // 시작점에 원형 화살표 아이콘
-        const iconR=barH/2+1;
+        // 원형 화살표 아이콘
         c.beginPath();
         c.arc(sx,sy,iconR,0,Math.PI*2);
-        c.fillStyle='#fff';
-        c.fill();
-        c.strokeStyle=color;
-        c.lineWidth=1.5;
-        c.stroke();
+        c.fillStyle='#fff'; c.fill();
+        c.strokeStyle=color; c.lineWidth=1.5; c.stroke();
         c.fillStyle=color;
         c.font=`bold ${Math.max(barH*0.5,7)}px 'Pretendard',sans-serif`;
-        c.textAlign='center';
-        c.textBaseline='middle';
+        c.textAlign='center'; c.textBaseline='middle';
         c.fillText('→',sx,sy);
 
-        // 레이블: 시작점 좌측에 한 줄로 표시 (▼ 5년 / 00명 / 0.0%)
-        // 레이블 왼쪽 정렬: 가장 큰 호(i=0)의 시작점 기준
-        const maxR=outerR; // 최대 반지름
-        const fixedLx=cx-maxR-iconR-12; // 고정 x 위치
-        const fullLbl=`${label}  /  ${values[i]}명  /  ${pct}%`;
-        c.font=`500 11px 'Pretendard',sans-serif`;
-        c.fillStyle='#374151';
-        c.textAlign='right';
+        // 레이블 tabular 정렬 (우측→좌측)
+        c.globalAlpha=Math.min(prog*1.5,1);
         c.textBaseline='middle';
-        c.fillText(fullLbl, fixedLx, sy);
+
+        // 비율 (우측 끝)
+        c.font=`500 11px 'Pretendard',sans-serif`;
+        c.fillStyle='#9ca3af'; c.textAlign='right';
+        c.fillText(pct, fixedRx, sy);
+
+        // 구분자
+        c.fillStyle='#d1d5db';
+        c.fillText(' /', fixedRx-pctW, sy);
+
+        // 인원수
+        c.font=`700 11px 'Pretendard',sans-serif`;
+        c.fillStyle='#111827';
+        c.fillText(`${values[i]}명`, fixedRx-pctW-colGap-cntW, sy);
+
+        // 구분자
+        c.font=`500 11px 'Pretendard',sans-serif`;
+        c.fillStyle='#d1d5db';
+        c.fillText(' /', fixedRx-pctW-colGap-cntW-colGap, sy);
+
+        // 항목명 (좌측)
+        c.fillStyle='#6b7280';
+        c.fillText(label, fixedRx-pctW-colGap-cntW-colGap*2-labelW, sy);
+
+        c.globalAlpha=1;
       });
       c.restore();
     }
   };
 
+  // 애니메이션 실행 함수
+  function runRadialAnim(chart){
+    animStart=null;
+    function step(ts){
+      if(!animStart)animStart=ts;
+      const p=Math.min((ts-animStart)/animDuration,1);
+      charts['_anim_'+cid]=1-(1-p)**3;
+      chart.update('none');
+      if(p<1)requestAnimationFrame(step);
+      else charts['_anim_'+cid]=1;
+    }
+    requestAnimationFrame(step);
+  }
   // 빈 차트에 플러그인 붙이기
-  charts[cid]=new Chart(ctx,{
+  charts['_anim_'+cid]=0;
+  const chartInst2=new Chart(ctx,{
     type:'doughnut',
     data:{labels:[],datasets:[{data:[]}]},
     options:{
@@ -1025,6 +1084,8 @@ function renderHisto(cid, dataObj, colors, total) {
     },
     plugins:[plugin]
   });
+  charts[cid]=chartInst2;
+  runRadialAnim(chartInst2);
 }
 
 // RETIRE (5개년 histo-row 스타일)
@@ -1123,7 +1184,17 @@ function renderHeatmap(s) {
   </div>`;
 
   // 범례를 card-hd 우측에 삽입
-  document.getElementById('heatmapWrap').innerHTML=html;
+  const hmEl=document.getElementById('heatmapWrap');
+  hmEl.style.opacity='0';
+  hmEl.innerHTML=html;
+  // 색상 진해지는 효과
+  let hmP=0;
+  const hmStep=()=>{
+    hmP=Math.min(hmP+0.06,1);
+    hmEl.style.opacity=String(hmP);
+    if(hmP<1)requestAnimationFrame(hmStep);
+  };
+  requestAnimationFrame(hmStep);
   // 카드 헤더에 범례 추가
   const hmCard=document.getElementById('heatmapWrap').closest('.card');
   if(hmCard){
@@ -1232,7 +1303,11 @@ function renderCollege(s){
   el.style.overflow='hidden';
 
   const maxCnt=data[0]?.cnt||1;
-  el.innerHTML=tiles.map((t,i)=>{
+  // 큰 셀부터 순서대로 등장 (면적 기준 정렬)
+  const tilesWithIdx=tiles.map((t,i)=>({...t,_i:i})).sort((a,b)=>b.w*b.h-a.w*a.h);
+  el.innerHTML=tilesWithIdx.map((t,renderI)=>{
+    const i=t._i;
+    const delay=renderI*40;
     const fs=t.w>80&&t.h>50?11:t.w>50&&t.h>35?10:9;
     const showCnt=t.w>60&&t.h>45;
     const showPct=t.w>60&&t.h>60;
@@ -1254,6 +1329,9 @@ function renderCollege(s){
       display:flex;flex-direction:column;
       align-items:center;justify-content:center;
       overflow:hidden;cursor:default;
+      animation:fadeIn 0.4s ease both;
+      animation-delay:${delay}ms;
+      opacity:0;
       transition:filter .2s;
       " onmouseover="this.style.filter='brightness(0.95)'"
          onmouseout="this.style.filter=''"
