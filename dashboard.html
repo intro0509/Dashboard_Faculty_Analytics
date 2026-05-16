@@ -952,8 +952,8 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
     }
     chartInst._stkTip=null;chartInst.update('none');
   };
-  canvas.onmouseleave=function(){chartInst._stkTip=null;chartInst.update('none');
-  });
+  canvas.onmouseleave=function(){chartInst._stkTip=null;chartInst.update('none');};
+
   document.getElementById(lid).innerHTML = `<div style="display:grid;grid-template-columns:repeat(${labels.length},1fr);gap:0;margin-top:12px">
     ${labels.map((l,i)=>{
       const cnt=values[i],pct=bt>0?(cnt/bt*100).toFixed(2):'0.00';
