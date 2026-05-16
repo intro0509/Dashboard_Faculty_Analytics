@@ -979,100 +979,101 @@ function renderHisto(cid, dataObj, colors, total) {
     afterDraw(chart){
       const{ctx:c,chartArea:{left,top,right,bottom}}=chart;
       const W=right-left, H=bottom-top;
-      // 왼쪽 60% 레이블, 오른쪽 40% 차트
-      const chartZoneW=W*0.48;
-      const cx=right-chartZoneW/2;
-      const cy=(top+bottom)/2;
-      const outerR=Math.min(chartZoneW, H)/2*0.88;
-      const barH=Math.min(outerR/Math.min(n,5)*0.65, 18);
-      const fixedN=Math.max(n,7);
-      const gap=outerR/fixedN*1.35;
-      const prog=charts['_anim_'+cid]||1;
-      const iconR=barH/2+1;
+
+      // 차트존: 오른쪽 45% / 레이블존: 왼쪽 55%
+      const chartZoneW = W * 0.45;
+      const cx = right - chartZoneW * 0.5;   // 차트 중심 = 오른쪽 영역 중앙
+      const cy = (top + bottom) / 2;
+      const outerR = Math.min(chartZoneW, H) / 2 * 0.88;
+
+      // 재직기간(7)·연령(5) 모두 fixedN=7 기준으로 동일 두께
+      const fixedN = 7;
+      const arcGap = outerR / fixedN * 1.35;
+      const barH = Math.min(outerR / fixedN * 0.65, 16);
+      const iconR = barH / 2 + 1;
+      const prog = charts['_anim_'+cid] || 1;
 
       c.save();
-      labels.forEach((label,i)=>{
-        const ratio=values[i]/max;
-        const r=outerR-(i*gap);
-        if(r<8)return;
-        const startAngle=-Math.PI/2;
-        const animatedAngle=startAngle+(maxAngle*ratio*prog);
-        const color=colors[i%colors.length];
-        const pct=tot>0?(values[i]/tot*100).toFixed(1):'0.0';
+      labels.forEach((label, i) => {
+        const ratio = values[i] / max;
+        const r = outerR - (i * arcGap);
+        if(r < 8) return;
+        const startAngle = -Math.PI / 2;
+        const animatedAngle = startAngle + (maxAngle * ratio * prog);
+        const color = colors[i % colors.length];
+        const pct = tot > 0 ? (values[i] / tot * 100).toFixed(1) : '0.0';
 
         // 배경 호
         c.beginPath();
-        c.arc(cx,cy,r,startAngle,startAngle+maxAngle);
-        c.strokeStyle='#f0f4ff';
-        c.lineWidth=barH;
-        c.lineCap='round';
+        c.arc(cx, cy, r, startAngle, startAngle + maxAngle);
+        c.strokeStyle = '#f0f4ff';
+        c.lineWidth = barH;
+        c.lineCap = 'round';
         c.stroke();
 
         // 데이터 호 (애니메이션)
-        if(ratio>0){
+        if(ratio > 0){
           c.beginPath();
-          c.arc(cx,cy,r,startAngle,animatedAngle);
-          c.strokeStyle=color;
-          c.lineWidth=barH;
-          c.lineCap='round';
+          c.arc(cx, cy, r, startAngle, animatedAngle);
+          c.strokeStyle = color;
+          c.lineWidth = barH;
+          c.lineCap = 'round';
           c.stroke();
         }
 
-        // 12시 시작점
-        const sx=cx+r*Math.cos(startAngle);
-        const sy=cy+r*Math.sin(startAngle);
+        // 12시 방향 시작점 (아이콘 위치)
+        const sx = cx + r * Math.cos(startAngle);
+        const sy = cy + r * Math.sin(startAngle);
 
-        // 원형 화살표 아이콘
+        // 아이콘
         c.beginPath();
-        c.arc(sx,sy,iconR,0,Math.PI*2);
-        c.fillStyle='#fff'; c.fill();
-        c.strokeStyle=color; c.lineWidth=1.5; c.stroke();
-        c.fillStyle=color;
-        c.font=`bold ${Math.max(barH*0.5,7)}px 'Pretendard',sans-serif`;
-        c.textAlign='center'; c.textBaseline='middle';
-        c.fillText('→',sx,sy);
+        c.arc(sx, sy, iconR, 0, Math.PI * 2);
+        c.fillStyle = '#fff'; c.fill();
+        c.strokeStyle = color; c.lineWidth = 1.5; c.stroke();
+        c.fillStyle = color;
+        c.font = `bold ${Math.max(barH * 0.5, 7)}px 'Pretendard',sans-serif`;
+        c.textAlign = 'center'; c.textBaseline = 'middle';
+        c.fillText('→', sx, sy);
 
-        // 레이블: 한 줄에 [항목명] [인원] [비율] — 아이콘 직전까지 오른쪽 정렬로 촘촘하게
-        c.globalAlpha=Math.min(prog*1.5,1);
-        c.textBaseline='middle';
-        c.textAlign='left';
+        // 레이블: [항목명] [인원] [비율] 한 줄, 아이콘 왼쪽 끝에서 역산 배치
+        c.globalAlpha = Math.min(prog * 1.5, 1);
+        c.textBaseline = 'middle';
+        c.textAlign = 'left';
 
-        // 각 텍스트 너비 측정
-        c.font=`400 11px 'Pretendard',sans-serif`;
+        c.font = `400 11px 'Pretendard',sans-serif`;
         const labelW = c.measureText(label).width;
 
-        c.font=`700 12px 'Pretendard',sans-serif`;
+        c.font = `700 12px 'Pretendard',sans-serif`;
         const cntTxt = `${values[i]}명`;
-        const cntW2 = c.measureText(cntTxt).width;
+        const cntW = c.measureText(cntTxt).width;
 
-        c.font=`400 11px 'Pretendard',sans-serif`;
+        c.font = `400 11px 'Pretendard',sans-serif`;
         const pctTxt = `(${pct}%)`;
         const pctW = c.measureText(pctTxt).width;
 
-        // 아이콘 왼쪽 끝에서 역산 배치 (colGap = 열 사이 간격)
+        // 오른쪽 기준점: 아이콘 왼쪽 바로 앞
         const colGap = 8;
-        const rightEdge = sx - iconR - 6;
-
+        const rightEdge = sx - iconR - 5;
         const pctX   = rightEdge - pctW;
-        const cntX   = pctX - colGap - cntW2;
+        const cntX   = pctX - colGap - cntW;
         const labelX = cntX - colGap - labelW;
 
-        // 항목명 (회색, 11px)
-        c.font=`400 11px 'Pretendard',sans-serif`;
-        c.fillStyle='#6b7280';
+        // 항목명 (회색)
+        c.font = `400 11px 'Pretendard',sans-serif`;
+        c.fillStyle = '#6b7280';
         c.fillText(label, labelX, sy);
 
-        // 인원수 (굵은 검정, 12px)
-        c.font=`700 12px 'Pretendard',sans-serif`;
-        c.fillStyle='#111827';
+        // 인원수 (굵은 검정)
+        c.font = `700 12px 'Pretendard',sans-serif`;
+        c.fillStyle = '#111827';
         c.fillText(cntTxt, cntX, sy);
 
-        // 비율 (연한 회색, 11px)
-        c.font=`400 11px 'Pretendard',sans-serif`;
-        c.fillStyle='#9ca3af';
+        // 비율 (연한 회색)
+        c.font = `400 11px 'Pretendard',sans-serif`;
+        c.fillStyle = '#9ca3af';
         c.fillText(pctTxt, pctX, sy);
 
-        c.globalAlpha=1;
+        c.globalAlpha = 1;
       });
       c.restore();
     }
