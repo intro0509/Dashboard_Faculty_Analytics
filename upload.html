@@ -255,15 +255,18 @@ function onSheetChange() {
 // ── 파생 컬럼 계산 함수 ──
 function calcTenureGroup(qStr) {
   if (!qStr) return null;
+  // 형식: "년/월/일" 또는 "년 개월" 등
   const slashMatch = qStr.match(/^(\d+)\//);
   const yearMatch = qStr.match(/^(\d+)년/);
   const yr = slashMatch ? parseInt(slashMatch[1]) : yearMatch ? parseInt(yearMatch[1]) : NaN;
   if (isNaN(yr)) return null;
   if (yr < 5)  return '5년 미만';
-  if (yr < 15) return '5년-15년';
-  if (yr < 25) return '15년-25년';
-  if (yr < 35) return '25년-35년';
-  return '35년 초과';
+  if (yr < 10) return '5년-10년';
+  if (yr < 15) return '10년-15년';
+  if (yr < 20) return '15년-20년';
+  if (yr < 25) return '20년-25년';
+  if (yr < 30) return '25년-30년';
+  return '30년 초과';
 }
 
 function calcAgeGroup(age) {
@@ -339,7 +342,7 @@ async function processFile() {
         headerIdx = i;
         // 확보율 열 동적 탐색 (못찾으면 기본값 C,D열 사용)
         row.forEach((cell, idx) => {
-          const s = String(cell||'').replace(/\s/g,''); // 줄바꿈/공백 모두 제거
+          const s = String(cell||'').replace(/[\s\n\r]/g,''); // 줄바꿈/공백 모두 제거
           if (s.includes('확보율') && s.includes('제외')) rateColIdx = idx;
           if (s.includes('확보율') && s.includes('포함')) rateIncColIdx = idx;
         });
@@ -360,19 +363,24 @@ async function processFile() {
 
     // ── 확보율 데이터 읽기 (B열=학년도, C열=제외, D열=포함) ──
     const rateData = {};
-    for (let i = headerIdx + 1; i < rawRows.length; i++) {
+    for (let i = 0; i < rawRows.length; i++) {
       const row = rawRows[i];
       if (!row) continue;
-      const yr = String(row[1]||'').trim(); // B열: 학년도
+      // B열(인덱스1): 학년도 — 숫자 또는 문자열 모두 처리
+      const yrRaw = row[1];
+      if (yrRaw === null || yrRaw === undefined || yrRaw === '') continue;
+      const yr = String(yrRaw).trim().replace(/\.0$/, '');
       if (!yr.match(/^\d{4}$/)) continue;
       const exclRaw = row[rateColIdx];
       const inclRaw = row[rateIncColIdx];
       const excl = (exclRaw !== null && exclRaw !== undefined && exclRaw !== '') ? parseFloat(exclRaw) : null;
       const incl = (inclRaw !== null && inclRaw !== undefined && inclRaw !== '') ? parseFloat(inclRaw) : null;
-      rateData[yr] = {
-        exclude: (excl !== null && !isNaN(excl)) ? excl : null,
-        include: (incl !== null && !isNaN(incl)) ? incl : null
-      };
+      if (excl !== null || incl !== null) {
+        rateData[yr] = {
+          exclude: (excl !== null && !isNaN(excl)) ? excl : null,
+          include: (incl !== null && !isNaN(incl)) ? incl : null
+        };
+      }
     }
     log(`✅ 확보율 데이터: ${Object.keys(rateData).length}개년 (${Object.keys(rateData).sort().join(', ')})`, 'log-ok');
 
@@ -389,12 +397,10 @@ async function processFile() {
         // Q열(재직기간) → 재직기간대 자동 계산
         const qVal = rec['재직기간'] || rec['재직기간_수정'] || '';
         rec['재직기간대'] = calcTenureGroup(String(qVal));
-        rec['재직기간대_상세'] = calcTenureGroupDetail(String(qVal));
 
         // U열(연령) → 연령대 자동 계산
         const uVal = parseInt(rec['연령']);
         rec['연령대'] = calcAgeGroup(uVal);
-        rec['연령대_상세'] = calcAgeGroupDetail(uVal);
 
         // Y열(정년퇴직예정일) → 학년도-학기 자동 계산
         const yVal = rec['정년퇴직예정일'];
@@ -419,42 +425,8 @@ async function processFile() {
 
     // ── 기본 집계 함수 ──
     const AGE_ORDER=['30세 미만','30세-40세','40세-50세','50세-60세','60세 초과'];
-    const TENURE_ORDER=['5년 미만','5년-15년','15년-25년','25년-35년','35년 초과'];
+    const TENURE_ORDER=['5년 미만','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년 초과'];
     const NON_TENURE_LIST=['강의전담','연구전담','산학협력전담','외국인'];
-
-    // 히트맵 전용 세분화 구간
-    const HEATMAP_AGE_ORDER=['30세 미만','30세-35세','35세-40세','40세-45세','45세-50세','50세-55세','55세-60세','60세-65세','65세 초과'];
-    const HEATMAP_TENURE_ORDER=['3년 미만','3년-5년','5년-10년','10년-15년','15년-20년','20년-25년','25년-30년','30년-35년','35년 초과'];
-
-    function calcAgeGroupDetail(age) {
-      if (isNaN(age)) return null;
-      if (age < 30) return '30세 미만';
-      if (age < 35) return '30세-35세';
-      if (age < 40) return '35세-40세';
-      if (age < 45) return '40세-45세';
-      if (age < 50) return '45세-50세';
-      if (age < 55) return '50세-55세';
-      if (age < 60) return '55세-60세';
-      if (age < 65) return '60세-65세';
-      return '65세 초과';
-    }
-
-    function calcTenureGroupDetail(qStr) {
-      if (!qStr) return null;
-      const slashMatch = qStr.match(/^(\d+)\//);
-      const yearMatch = qStr.match(/^(\d+)년/);
-      const yr = slashMatch ? parseInt(slashMatch[1]) : yearMatch ? parseInt(yearMatch[1]) : NaN;
-      if (isNaN(yr)) return null;
-      if (yr < 3)  return '3년 미만';
-      if (yr < 5)  return '3년-5년';
-      if (yr < 10) return '5년-10년';
-      if (yr < 15) return '10년-15년';
-      if (yr < 20) return '15년-20년';
-      if (yr < 25) return '20년-25년';
-      if (yr < 30) return '25년-30년';
-      if (yr < 35) return '30년-35년';
-      return '35년 초과';
-    }
 
     function makeRoster(rows) {
       return rows.map(r => {
@@ -468,11 +440,11 @@ async function processFile() {
       });
     }
 
-    function buildHeatmap(rows) {
+    function buildHeatmap(rows, ageOrder, tenureOrder) {
       const hm={};
-      HEATMAP_AGE_ORDER.forEach(a=>{hm[a]={};HEATMAP_TENURE_ORDER.forEach(t=>{hm[a][t]=0;});});
+      ageOrder.forEach(a=>{hm[a]={};tenureOrder.forEach(t=>{hm[a][t]=0;});});
       rows.forEach(r=>{
-        const ag=r['연령대_상세'], tg=r['재직기간대_상세'];
+        const ag=r['연령대'], tg=r['재직기간대'];
         if(ag in hm && tg in hm[ag]) hm[ag][tg]++;
       });
       return hm;
@@ -507,7 +479,7 @@ async function processFile() {
         assoc:rows.filter(r=>r['직급']==='부교수').length,
         asst:rows.filter(r=>r['직급']==='조교수').length,
         tracks,ages,tenure_dist:tenureDist,retire,colleges,
-        heatmap:buildHeatmap(rows)
+        heatmap:buildHeatmap(rows,AGE_ORDER,TENURE_ORDER)
       };
     }
 
@@ -644,9 +616,7 @@ async function processFile() {
           rank: ['전체','교수','부교수','조교수'],
           gender: ['전체','남자','여자'],
           age: ['전체',...AGE_ORDER],
-          tenure: ['전체',...TENURE_ORDER],
-          heatmap_age: HEATMAP_AGE_ORDER,
-          heatmap_tenure: HEATMAP_TENURE_ORDER
+          tenure: ['전체',...TENURE_ORDER]
         }
       },
       rate: rateData,
