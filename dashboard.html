@@ -988,63 +988,71 @@ function renderHeatmap(s) {
 }
 
 // COLLEGE TREEMAP (Squarified, pure JS)
-function squarify(data, x, y, w, h) {
-  if (!data.length) return [];
-  const total = data.reduce((s, d) => s + d.v, 0);
+function squarify(items, x, y, w, h) {
   const result = [];
-  function worst(row, w) {
-    const s = row.reduce((a, d) => a + d.v, 0);
-    const max = Math.max(...row.map(d => d.v));
-    const min = Math.min(...row.map(d => d.v));
-    return Math.max((w * w * max) / (s * s), (s * s) / (w * w * min));
-  }
-  function layoutRow(row, x, y, w, h, horiz) {
-    const s = row.reduce((a, d) => a + d.v, 0);
-    let pos = horiz ? x : y;
-    row.forEach(d => {
-      const ratio = d.v / s;
+  const total = items.reduce((s, d) => s + d.v, 0);
+  if (!total) return result;
+
+  // 넓이 기준으로 픽셀 면적 할당
+  const scaled = items.map(d => ({...d, area: d.v / total * w * h}));
+
+  function layoutStrip(strip, sx, sy, sw, sh, horiz) {
+    const stripTotal = strip.reduce((s, d) => s + d.area, 0);
+    let pos = 0;
+    strip.forEach(d => {
+      const ratio = d.area / stripTotal;
       if (horiz) {
-        result.push({...d, x, y: pos, w, h: ratio * h});
-        pos += ratio * h;
+        result.push({...d, x: sx, y: sy + pos, w: sw, h: ratio * sh});
+        pos += ratio * sh;
       } else {
-        result.push({...d, x: pos, y, w: ratio * w, h});
-        pos += ratio * w;
+        result.push({...d, x: sx + pos, y: sy, w: ratio * sw, h: sh});
+        pos += ratio * sw;
       }
     });
   }
-  function tile(data, x, y, w, h) {
-    if (!data.length) return;
-    if (data.length === 1) {
-      result.push({...data[0], x, y, w, h});
+
+  function worst(strip, dim) {
+    const s = strip.reduce((a, d) => a + d.area, 0);
+    const maxA = Math.max(...strip.map(d => d.area));
+    const minA = Math.min(...strip.map(d => d.area));
+    const r1 = (dim * dim * maxA) / (s * s);
+    const r2 = (s * s) / (dim * dim * minA);
+    return Math.max(r1, r2);
+  }
+
+  function layout(items, sx, sy, sw, sh) {
+    if (!items.length) return;
+    if (items.length === 1) {
+      result.push({...items[0], x: sx, y: sy, w: sw, h: sh});
       return;
     }
-    const horiz = w < h;
-    const scale = (w * h) / data.reduce((s, d) => s + d.v, 0);
-    const scaled = data.map(d => ({...d, v: d.v * scale}));
-    let row = [], rest = [...scaled];
-    let cx = x, cy = y, cw = w, ch = h;
-    while (rest.length) {
-      const d = rest[0];
-      const newRow = [...row, d];
-      const dim = horiz ? cw : ch;
-      if (!row.length || worst(row, dim) >= worst(newRow, dim)) {
-        row = newRow;
-        rest.shift();
+    const horiz = sw > sh; // 가로가 더 길면 세로로 스트립
+    const dim = horiz ? sh : sw;
+    let strip = [];
+    let i = 0;
+    while (i < items.length) {
+      const candidate = [...strip, items[i]];
+      if (!strip.length || worst(strip, dim) >= worst(candidate, dim)) {
+        strip = candidate;
+        i++;
       } else {
-        const s = row.reduce((a, d) => a + d.v, 0);
-        const dim2 = horiz ? ch : cw;
-        const used = s / (horiz ? cw : ch);
-        layoutRow(row, cx, cy, horiz ? cw : used, horiz ? used : ch, horiz);
-        if (horiz) { cy += used; ch -= used; }
-        else { cx += used; cw -= used; }
-        row = [];
+        break;
       }
     }
-    if (row.length) {
-      layoutRow(row, cx, cy, cw, ch, horiz);
+    const stripArea = strip.reduce((s, d) => s + d.area, 0);
+    const totalArea = sw * sh;
+    if (horiz) {
+      const stripW = stripArea / sh;
+      layoutStrip(strip, sx, sy, stripW, sh, true);
+      layout(items.slice(strip.length), sx + stripW, sy, sw - stripW, sh);
+    } else {
+      const stripH = stripArea / sw;
+      layoutStrip(strip, sx, sy, sw, stripH, false);
+      layout(items.slice(strip.length), sx, sy + stripH, sw, sh - stripH);
     }
   }
-  tile(data.map(d => ({...d, v: d.v / total})), x, y, w, h);
+
+  layout(scaled, x, y, w, h);
   return result;
 }
 
