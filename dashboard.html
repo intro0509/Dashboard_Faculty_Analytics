@@ -384,13 +384,19 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <!-- Row3 Col1: 재직기간별 -->
       <div class="card" style="grid-column:1;grid-row:3">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
-        <div style="position:relative;height:280px"><canvas id="tenureHisto"></canvas></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="position:relative;height:240px;flex:0 0 auto;width:min(220px,50%)"><canvas id="tenureHisto"></canvas></div>
+          <div id="tenureHistoLegend" style="flex:1"></div>
+        </div>
       </div>
 
       <!-- Row3 Col2: 연령별 -->
       <div class="card" style="grid-column:2;grid-row:3">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
-        <div style="position:relative;height:280px"><canvas id="ageHisto"></canvas></div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="position:relative;height:240px;flex:0 0 auto;width:min(220px,50%)"><canvas id="ageHisto"></canvas></div>
+          <div id="ageHistoLegend" style="flex:1"></div>
+        </div>
       </div>
 
       <!-- Row3 Col3: 연령×재직기간 -->
@@ -661,8 +667,8 @@ async function renderAll() {
   renderNTDonut(getSummaryForNT(currentYear));
   renderStkBar('rankChart','rankLegend',['교수','부교수','조교수'],[s.prof,s.assoc,s.asst],RANK_COLORS,s,'rank');
   renderStkBar('genderChart','genderLegend',['남자','여자'],[s.male,s.female],GENDER_COLORS,s,'gender');
-  renderHisto('tenureHisto', s.tenure_dist, TENURE_COLORS, s.total);
-  renderHisto('ageHisto', s.ages, AGE_COLORS, s.total);
+  renderHisto('tenureHisto', s.tenure_dist, TENURE_COLORS, s.total, 'tenureHistoLegend');
+  renderHisto('ageHisto', s.ages, AGE_COLORS, s.total, 'ageHistoLegend');
   renderRetire(s);
   renderCollege(s);
   renderHeatmap(s);
@@ -1076,7 +1082,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
 // RADIAL BAR CHART (재직기간/연령) - 12시 방향 시작, 레이블 좌측
 const TENURE_LBL={'5년 미만':'▼ 5년','5년-15년':'▼ 15년','15년-25년':'▼ 25년','25년-35년':'▼ 35년','35년 초과':'▲ 35년'};
 const AGE_LBL2={'30세 미만':'▼ 30세','30세-40세':'▼ 40세','40세-50세':'▼ 50세','50세-60세':'▼ 60세','60세 초과':'▲ 60세'};
-function renderHisto(cid, dataObj, colors, total) {
+function renderHisto(cid, dataObj, colors, total, legendId) {
   const rawLabels=Object.keys(dataObj), values=Object.values(dataObj);
   const labels=rawLabels.map(l=>TENURE_LBL[l]||AGE_LBL2[l]||l);
   const tot=total||values.reduce((a,b)=>a+b,0);
@@ -1143,29 +1149,6 @@ function renderHisto(cid, dataObj, colors, total) {
         // 레이블 y = 12시 방향
         const sy = cy - r;
 
-        // 레이블: 고정 3열 탭, 한 줄 배치
-        c.globalAlpha = Math.min(prog * 1.5, 1);
-        c.textBaseline = 'middle';
-
-        // 열1: 항목명 (회색, 11px)
-        c.font = `400 11px 'Pretendard',sans-serif`;
-        c.fillStyle = '#6b7280';
-        c.textAlign = 'left';
-        c.fillText(label, col1Left, sy);
-
-        // 열2: 인원 (굵은 검정, 12px) - 우측 고정 정렬
-        c.font = `700 12px 'Pretendard',sans-serif`;
-        c.fillStyle = '#111827';
-        c.textAlign = 'right';
-        c.fillText(`${values[i]}명`, col2Right, sy);
-
-        // 열3: 비율 (연한 회색, 11px) - 인원 바로 옆
-        c.font = `400 11px 'Pretendard',sans-serif`;
-        c.fillStyle = '#9ca3af';
-        c.textAlign = 'left';
-        const cntW = c.measureText(`${values[i]}명`).width;
-        c.fillText(`(${pct}%)`, col2Right - cntW + 2, sy);
-
         c.globalAlpha = 1;
       });
       c.restore();
@@ -1197,6 +1180,27 @@ function renderHisto(cid, dataObj, colors, total) {
   });
   charts[cid]=chartInst2;
   runRadialAnim(chartInst2);
+
+  // 외부 범례: 3행×2열 그리드 (직급별/트랙별 현황과 동일 스타일)
+  if (legendId) {
+    const legendEl = document.getElementById(legendId);
+    if (legendEl) {
+      legendEl.innerHTML = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0">
+        ${labels.map((l, i) => {
+          const cnt = values[i] || 0;
+          const pct = tot > 0 ? (cnt / tot * 100).toFixed(1) : '0.0';
+          return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;text-align:center">
+            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280">
+              <div style="width:9px;height:9px;border-radius:2px;background:${colors[i % colors.length]};flex-shrink:0"></div>
+              <span>${l}</span>
+            </div>
+            <div style="font-size:14px;font-weight:700;color:#111827">${cnt}명</div>
+            <div style="font-size:11px;color:#9ca3af">${pct}%</div>
+          </div>`;
+        }).join('')}
+      </div>`;
+    }
+  }
 }
 
 // RETIRE (5개년 histo-row 스타일)
