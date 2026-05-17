@@ -8,7 +8,10 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;color:#111827;font-size:14px;min-width:1100px;overflow-x:auto}
+html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;color:#111827;font-size:14px;overflow-x:hidden}
+
+/* SCALE ROOT */
+#scaleRoot{width:1400px;transform-origin:top left;position:relative;}
 
 /* TOPNAV */
 .topnav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5eaf5;height:56px;display:flex;align-items:center;padding:0 28px;gap:0;min-width:1100px}
@@ -230,6 +233,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 
 <!-- 전임교원 현황 -->
 <div id="page-faculty" class="page active">
+<div id="scaleRoot">
 <div class="dash-wrap">
   <div id="loadingState" class="loading-wrap">
     <div class="spinner"></div>
@@ -396,8 +400,9 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 
     <footer id="footer">동아대학교 전임교원 현황 대시보드</footer>
   </div>
-</div>
-</div>
+</div><!-- /dash-wrap -->
+</div><!-- /scaleRoot -->
+</div><!-- /page-faculty -->
 
 <!-- 준비중 페이지들 -->
 <div id="page-recruit" class="page">
@@ -1296,6 +1301,40 @@ function renderCollege(s){
 
 
 loadData();
+
+// 반응형 스케일: 1100px~1600px 범위에서만 비례 축소/확대
+const SCALE_BASE = 1400; // 기준 너비
+const SCALE_MIN  = 1100; // 이 이하에서는 스크롤 허용
+const SCALE_MAX  = 1600; // 이 이상에서는 더 커지지 않음
+
+function applyScale() {
+  const root = document.getElementById('scaleRoot');
+  if (!root) return;
+  const vw = window.innerWidth;
+  let scale;
+  if (vw < SCALE_MIN) {
+    // 1100px 미만: 1100 기준으로 고정, 가로 스크롤 허용
+    scale = SCALE_MIN / SCALE_BASE;
+    document.body.style.overflowX = 'auto';
+  } else if (vw > SCALE_MAX) {
+    // 1600px 초과: 1600 기준으로 고정, 더 커지지 않음
+    scale = SCALE_MAX / SCALE_BASE;
+    document.body.style.overflowX = 'hidden';
+  } else {
+    // 1100~1600px: 화면 너비에 비례해서 scale
+    scale = vw / SCALE_BASE;
+    document.body.style.overflowX = 'hidden';
+  }
+  root.style.transform = `scale(${scale})`;
+  root.style.width = SCALE_BASE + 'px';
+  // 스케일된 높이만큼 부모 높이 보정 (스크롤 정상 작동)
+  root.parentElement.style.height = (root.scrollHeight * scale) + 'px';
+}
+
+applyScale();
+window.addEventListener('resize', applyScale);
+// 데이터 로드 후 차트 렌더링 완료 시점에 높이 재계산
+setTimeout(applyScale, 800);
 </script>
 </body>
 </html>
