@@ -1,6 +1,6 @@
 {
   "meta": {
-    "updated": "2026-05-17 09:11:15",
+    "updated": "2026-05-17 09:40:13",
     "source": "RAWDATA.xlsx",
     "years": [
       "2022",
@@ -92,7 +92,48 @@
       ]
     }
   },
-  "rate": {},
+  "rate": {
+    "2017": {
+      "exclude": 69.57,
+      "include": 75.37
+    },
+    "2018": {
+      "exclude": 68.76,
+      "include": 75.37
+    },
+    "2019": {
+      "exclude": 66.46,
+      "include": 75.37
+    },
+    "2020": {
+      "exclude": 66.46,
+      "include": 75.37
+    },
+    "2021": {
+      "exclude": 68.92,
+      "include": 75.37
+    },
+    "2022": {
+      "exclude": 69.46,
+      "include": 75.37
+    },
+    "2023": {
+      "exclude": 69.7,
+      "include": 75.37
+    },
+    "2024": {
+      "exclude": 67.1,
+      "include": 75.37
+    },
+    "2025": {
+      "exclude": 65.1,
+      "include": 75.37
+    },
+    "2026": {
+      "exclude": 65.14,
+      "include": 75.37
+    }
+  },
   "retire_trends": {
     "2022": {
       "include": {
