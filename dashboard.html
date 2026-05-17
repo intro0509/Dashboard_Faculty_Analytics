@@ -702,9 +702,9 @@ function renderRateChart() {
   if (charts.rate) charts.rate.destroy();
 
   const grad = ctx.createLinearGradient(0, 0, 0, 250);
-  grad.addColorStop(0, 'rgba(19,101,254,0.5)');
-  grad.addColorStop(0.5, 'rgba(19,101,254,0.2)');
-  grad.addColorStop(1, 'rgba(19,101,254,0.02)');
+  grad.addColorStop(0, 'rgba(19,101,254,0.2)');
+  grad.addColorStop(0.5, 'rgba(19,101,254,0.07)');
+  grad.addColorStop(1, 'rgba(19,101,254,0.01)');
 
   const datasets = [{
     label: '의학계열 제외',
@@ -781,9 +781,8 @@ function renderRateChart() {
             color: '#9ca3af',
             font: { size: 11 },
             callback: function(val, idx) {
-              // 더미 포인트(첫번째·마지막) x축 레이블 숨김
               const lbl = labels[idx];
-              return lbl === '' ? '' : lbl;
+              return lbl === '' ? '' : lbl + '학년도';
             }
           },
           offset: false,
@@ -792,7 +791,12 @@ function renderRateChart() {
         y: {
           grid: {
             display: true,
-            color: 'rgba(209,213,219,0.4)',
+            color: function(ctx) {
+              const v = Math.round(ctx.tick.value);
+              // 최솟값·최댓값 눈금선 제거
+              if (v === yMin || v === yMax) return 'transparent';
+              return 'rgba(209,213,219,0.4)';
+            }
           },
           border: { display: false, dash: [4, 4] },
           ticks: {
@@ -802,7 +806,6 @@ function renderRateChart() {
             stepSize: 5,
             callback: v => {
               const rv = Math.round(v);
-              // 최솟값·최댓값 숨김, 5% 단위만 표시
               if (rv === yMin || rv === yMax) return '';
               if (rv % 5 !== 0) return '';
               return rv + '%';
