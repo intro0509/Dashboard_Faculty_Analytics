@@ -367,30 +367,37 @@ async function processFile() {
     log(`📊 확보율 열: C열(${rateColIdx+1}번째), D열(${rateIncColIdx+1}번째)`, '');
     setProgress(20);
 
-    // ── 확보율 데이터 읽기: 열 위치를 동적으로 탐색 ──
+    // ── 확보율 데이터 읽기: 확보율 헤더 행을 찾아 동적으로 열 탐색 ──
     const rateData = {};
-    // 헤더 행에서 확보율 열 인덱스 재탐색 (전체 행 기준)
-    let rateYrColIdx = -1; // 학년도 열
+    let rateHeaderRow = -1;
+    let rateYrColIdx = -1;
+
     for (let i = 0; i < rawRows.length; i++) {
       const row = rawRows[i];
       if (!row) continue;
-      // 이 행에서 확보율 헤더 찾기
+      // 이 행에서 확보율(제외) 헤더 찾기
+      let foundExcl = -1, foundIncl = -1, foundYr = -1;
       for (let j = 0; j < row.length; j++) {
         const s = String(row[j]||'').replace(/[\s\r\n]/g,'');
-        if (s === '학년도') rateYrColIdx = j;
-        if (s.includes('확보율') && s.includes('제외')) rateColIdx = j;
-        if (s.includes('확보율') && s.includes('포함')) rateIncColIdx = j;
+        if (s === '학년도' && foundYr < 0) foundYr = j; // 첫번째 학년도만
+        if (s.includes('확보율') && s.includes('제외')) foundExcl = j;
+        if (s.includes('확보율') && s.includes('포함')) foundIncl = j;
       }
-      // 학년도 + 확보율 열을 모두 찾았으면 다음 행부터 데이터 읽기
-      if (rateYrColIdx >= 0 && rateColIdx >= 0) {
-        log(`📊 확보율 열 재탐색: 학년도=${rateYrColIdx}, 제외=${rateColIdx}, 포함=${rateIncColIdx}`, '');
-        // 이 행 다음부터 데이터 읽기
+      // 확보율 헤더가 있고, 학년도가 확보율보다 앞에 있는 행
+      if (foundExcl >= 0 && foundYr >= 0 && foundYr < foundExcl) {
+        rateHeaderRow = i;
+        rateYrColIdx = foundYr;
+        rateColIdx = foundExcl;
+        rateIncColIdx = foundIncl >= 0 ? foundIncl : foundExcl + 1;
+        log(`📊 확보율 열 탐색: 학년도=${rateYrColIdx}, 제외=${rateColIdx}, 포함=${rateIncColIdx}`, '');
+        // 다음 행부터 데이터 읽기
         for (let k = i + 1; k < rawRows.length; k++) {
           const r = rawRows[k];
           if (!r) continue;
           const yrRaw = r[rateYrColIdx];
           if (yrRaw === null || yrRaw === undefined || yrRaw === '') continue;
-          const yr = String(Math.round(Number(String(yrRaw).replace(/[^0-9.]/g,''))));
+          const yrNum = parseFloat(String(yrRaw).replace(/[^0-9.]/g,''));
+          const yr = String(Math.round(yrNum));
           if (!yr.match(/^\d{4}$/)) continue;
           const exclRaw = r[rateColIdx];
           const inclRaw = r[rateIncColIdx];
