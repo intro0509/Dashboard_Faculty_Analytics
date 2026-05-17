@@ -459,19 +459,10 @@ async function loadData() {
 async function initDashboard() {
   document.getElementById('loadingState').style.display='none';
   document.getElementById('dashContent').style.display='block';
-  document.getElementById('lastUpdate').textContent = DB.meta.updated||'-';
-  document.getElementById('dataSource').textContent = DB.meta.source||'dashboard_data.json';
-  try {
-    fetch('dashboard_data.json',{method:'HEAD'}).then(res=>{
-      const lm=res.headers.get('Last-Modified');
-      if(lm){const d=new Date(lm);document.getElementById('githubUpdate').textContent=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');}
-    });
-  } catch(e){}
   const sel=document.getElementById('yearSelect');
   DB.meta.years.slice().reverse().forEach(yr=>{const o=document.createElement('option');o.value=yr;o.textContent=yr+'학년도';sel.appendChild(o);});
   currentYear=DB.meta.years[DB.meta.years.length-1];
   sel.value=currentYear;
-  document.getElementById('headerMeta').textContent=`RAWDATA 기반 · ${DB.meta.years.length}개년 데이터`;
   document.getElementById('nonTenureFilter').classList.add('disabled-bar');
   document.getElementById('nonTenureFilterCard').classList.add('disabled-bar');
   await renderAll();
