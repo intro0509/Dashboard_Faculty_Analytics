@@ -98,16 +98,16 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 
 /* LEGEND */
 .legend{display:flex;flex-direction:column;gap:6px;margin-top:10px}
-.lg-row{display:flex;align-items:center;gap:7px;font-size:12px}
+.lg-row{display:grid;grid-template-columns:auto 1fr auto auto;align-items:center;gap:4px;font-size:12px}
 .lg-dot{width:9px;height:9px;border-radius:2px;flex-shrink:0}
 .lg-name{color:#6b7280}
-.lg-cnt{font-weight:700;color:#111827;font-size:13px}
-.lg-pct{color:#9ca3af;font-size:11px}
+.lg-cnt{font-weight:700;color:#111827;font-size:13px;text-align:right;min-width:48px}
+.lg-pct{color:#9ca3af;font-size:11px;text-align:left}
 
 /* HISTO */
 .histo-wrap{display:flex;flex-direction:column;gap:6px}
-.histo-row{display:grid;grid-template-columns:72px 1fr auto;align-items:center;gap:6px;min-height:26px}
-.histo-lbl{font-size:12px;color:#9ca3af;text-align:right;white-space:nowrap}
+.histo-row{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:6px;min-height:26px}
+.histo-lbl{font-size:12px;color:#374151;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden}
 .bar-fill{height:100%;border-radius:8px;transition:width 1s ease;width:0%}
 .histo-cnt{font-size:13px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
@@ -474,8 +474,8 @@ const TRACK_COLORS=['#1365FE','#BFDBFE'];
 const NT_COLORS=['#1365FE','#60A5FA','#93C5FD','#BFDBFE'];
 const RANK_COLORS=['#1365FE','#60A5FA','#BFDBFE'];
 const GENDER_COLORS=['#1365FE','#BFDBFE'];
-const AGE_COLORS=['#1e40af','#2563eb','#3b82f6','#60a5fa','#93c5fd'];
-const TENURE_COLORS=['#1e40af','#1d4ed8','#2563eb','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'];
+const AGE_COLORS=['#93c5fd','#60a5fa','#3b82f6','#2563eb','#1365FE'];
+const TENURE_COLORS=['#bfdbfe','#93c5fd','#60a5fa','#3b82f6','#2563eb','#1d4ed8','#1365FE'];
 
 // LOAD
 async function loadData() {
@@ -1154,17 +1154,18 @@ function renderHisto(cid, dataObj, colors, total) {
         c.textAlign = 'left';
         c.fillText(label, col1Left, sy);
 
-        // 열2: 인원 (굵은 검정, 12px)
+        // 열2: 인원 (굵은 검정, 12px) - 우측 고정 정렬
         c.font = `700 12px 'Pretendard',sans-serif`;
         c.fillStyle = '#111827';
         c.textAlign = 'right';
         c.fillText(`${values[i]}명`, col2Right, sy);
 
-        // 열3: 비율 (연한 회색, 11px)
+        // 열3: 비율 (연한 회색, 11px) - 인원 바로 옆
         c.font = `400 11px 'Pretendard',sans-serif`;
         c.fillStyle = '#9ca3af';
-        c.textAlign = 'right';
-        c.fillText(`(${pct}%)`, col3Right, sy);
+        c.textAlign = 'left';
+        const cntW = c.measureText(`${values[i]}명`).width;
+        c.fillText(`(${pct}%)`, col2Right - cntW + 2, sy);
 
         c.globalAlpha = 1;
       });
