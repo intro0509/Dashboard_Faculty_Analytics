@@ -126,7 +126,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .college-table tr:last-child td{border-bottom:none}
 .col-num{font-weight:700;color:#111827;text-align:right}
 .col-pct{color:#9ca3af;font-size:11px;text-align:right}
-.col-bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden;width:80px}
+.col-bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden;width:60px;min-width:40px}
 .col-bar{height:100%;background:#1365FE;border-radius:8px;transition:width 1s ease}
 
 /* LOADING */
@@ -180,10 +180,10 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .heatmap-table{border-collapse:separate;border-spacing:3px;width:auto;margin:0}
 .heatmap-table th{font-size:10px;color:#9ca3af;font-weight:500;padding:3px 6px;text-align:center;white-space:nowrap}
 .heatmap-table th.row-header{text-align:right;min-width:70px;font-size:10px}
-.heatmap-cell{border-radius:5px;width:40px;height:40px;text-align:center;vertical-align:middle;font-size:10px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell{border-radius:5px;width:34px;height:34px;text-align:center;vertical-align:middle;font-size:9px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
-.heatmap-cell .cell-cnt{font-size:12px;font-weight:700}
-.heatmap-cell .cell-pct{font-size:10px;opacity:.8}
+.heatmap-cell .cell-cnt{font-size:10px;font-weight:700}
+.heatmap-cell .cell-pct{font-size:9px;opacity:.8}
 
 footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
@@ -316,7 +316,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     </div>
 
     <!-- 메인 차트 그리드: 3열 기반 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px">
 
       <!-- Row1 Col1: 트랙별 -->
       <div class="card">
@@ -1214,7 +1214,7 @@ function renderHeatmap(s) {
   let html=`<div style="overflow-x:auto"><table class="heatmap-table">
     <thead><tr>
       <th class="row-header" style="min-width:70px"></th>
-      ${TEN.map(()=>`<th style="min-width:40px;width:40px"></th>`).join('')}
+      ${TEN.map(()=>`<th style="min-width:34px;width:34px"></th>`).join('')}
     </tr></thead>
     <tbody>`;
 
@@ -1225,7 +1225,7 @@ function renderHeatmap(s) {
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
       const agLbl=AGE_LBL[ag]||ag, tLbl=TEN_LBL[t]||t;
-      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:40px" title="">
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:34px" title="">
         ${v?`<div class="cell-cnt">${v}명</div><div class="cell-pct">(${pct}%)</div>`:''}
       </td>`;
     });
@@ -1234,7 +1234,7 @@ function renderHeatmap(s) {
 
   html+=`<tr>
     <th class="row-header" style="min-width:70px"></th>
-    ${TEN.map(t=>`<th style="min-width:40px;width:40px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${TEN_LBL[t]||t}</th>`).join('')}
+    ${TEN.map(t=>`<th style="min-width:34px;width:34px;font-size:10px;color:#9ca3af;font-weight:500;padding:4px 2px;text-align:center;white-space:nowrap">${TEN_LBL[t]||t}</th>`).join('')}
   </tr>`;
 
   html+='</tbody></table></div>';
