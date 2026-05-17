@@ -385,7 +385,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div class="card" style="grid-column:1;grid-row:3">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="position:relative;height:240px;flex:0 0 auto;width:min(220px,50%)"><canvas id="tenureHisto"></canvas></div>
+          <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="tenureHisto"></canvas></div>
           <div id="tenureHistoLegend" style="flex:1"></div>
         </div>
       </div>
@@ -394,7 +394,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div class="card" style="grid-column:2;grid-row:3">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
         <div style="display:flex;align-items:center;gap:8px">
-          <div style="position:relative;height:240px;flex:0 0 auto;width:min(220px,50%)"><canvas id="ageHisto"></canvas></div>
+          <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="ageHisto"></canvas></div>
           <div id="ageHistoLegend" style="flex:1"></div>
         </div>
       </div>
@@ -960,7 +960,6 @@ function renderDonut(cid,lid,labels,values,colors,total){
       ctx.font='11px "Pretendard",sans-serif';ctx.fillStyle='#9ca3af';ctx.fillText('명',cx,cy+10);ctx.restore();
     }}]
   });
-  // 트랙별: 1행2열, 비정년트랙별: 2행2열 (직급별 현황과 동일 스타일)
   const cols = labels.length <= 2 ? labels.length : 2;
   const rows = Math.ceil(labels.length / cols);
   document.getElementById(lid).innerHTML=`<div style="display:grid;grid-template-columns:repeat(${cols},1fr);gap:0;margin-top:8px">
@@ -971,8 +970,7 @@ function renderDonut(cid,lid,labels,values,colors,total){
           <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
           <span>${l}</span>
         </div>
-        <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명</div>
-        <div style="font-size:12px;color:#9ca3af">${pct}%</div>
+        <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
       </div>`;
     }).join('')}
   </div>`;
@@ -1072,8 +1070,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
           <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
           <span>${l}</span>
         </div>
-        <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명</div>
-        <div style="font-size:12px;color:#9ca3af">${pct}%</div>
+        <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
       </div>`;
     }).join('')}
   </div>`;
@@ -1190,12 +1187,11 @@ function renderHisto(cid, dataObj, colors, total, legendId) {
           const cnt = values[i] || 0;
           const pct = tot > 0 ? (cnt / tot * 100).toFixed(1) : '0.0';
           return `<div style="display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;text-align:center">
-            <div style="display:flex;align-items:center;gap:5px;font-size:11px;color:#6b7280">
+            <div style="display:flex;align-items:center;gap:5px;font-size:12px;color:#6b7280">
               <div style="width:9px;height:9px;border-radius:2px;background:${colors[i % colors.length]};flex-shrink:0"></div>
               <span>${l}</span>
             </div>
-            <div style="font-size:14px;font-weight:700;color:#111827">${cnt}명</div>
-            <div style="font-size:11px;color:#9ca3af">${pct}%</div>
+            <div style="font-size:13px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:11px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
           </div>`;
         }).join('')}
       </div>`;
