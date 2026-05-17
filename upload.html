@@ -369,6 +369,9 @@ async function processFile() {
 
     // ── 확보율 데이터 읽기 (B열=학년도, C열=제외, D열=포함) ──
     const rateData = {};
+    // 디버그: B열 첫 15행 값 확인
+    const debugRows = rawRows.slice(0, 15).map((r,i) => `행${i+1}:B=${JSON.stringify(r?r[1]:null)},C=${JSON.stringify(r?r[rateColIdx]:null)}`);
+    log(`🔍 B열 샘플: ${debugRows.join(' | ')}`, '');
     for (let i = 0; i < rawRows.length; i++) {
       const row = rawRows[i];
       if (!row) continue;
