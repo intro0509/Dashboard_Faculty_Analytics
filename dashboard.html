@@ -11,7 +11,7 @@
 html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;color:#111827;font-size:14px;overflow-x:hidden}
 
 /* SCALE ROOT */
-#scaleRoot{width:1400px;transform-origin:top left;position:relative;}
+#scaleRoot{width:1600px;transform-origin:top left;position:relative;}
 
 /* TOPNAV */
 .topnav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5eaf5;height:72px;display:flex;align-items:center;padding:0 36px;gap:0;min-width:1100px}
@@ -66,7 +66,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .fchip.on{background:#1365FE;border-color:#1365FE;color:#fff;font-weight:600}
 .fsep{color:#e5eaf5;font-size:16px;margin:0 2px}
 .filter-total{margin-left:auto;font-size:13px;font-weight:700;color:#1365FE;white-space:nowrap}
-.filter-reset-btn{padding:4px 10px;border-radius:8px;font-size:11px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer;font-family:'Pretendard',sans-serif}
+.filter-reset-btn{padding:4px 10px;border-radius:8px;font-size:11px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer;font-family:'Pretendard',sans-serif;white-space:nowrap;flex-shrink:0}
 .disabled-bar{opacity:.4;pointer-events:none}
 
 /* KPI */
@@ -1345,9 +1345,9 @@ function renderCollege(s){
 loadData();
 
 // 반응형 스케일: 1100px~1600px 범위에서만 비례 축소/확대
-const SCALE_BASE = 1400; // 기준 너비
-const SCALE_MIN  = 1100; // 이 이하에서는 스크롤 허용
-const SCALE_MAX  = 1600; // 이 이상에서는 더 커지지 않음
+const SCALE_BASE = 1600; // 기준 너비
+const SCALE_MIN  = 1200; // 이 이하에서는 스크롤 허용
+const SCALE_MAX  = 1800; // 이 이상에서는 더 커지지 않음
 
 function applyScale() {
   const root = document.getElementById('scaleRoot');
