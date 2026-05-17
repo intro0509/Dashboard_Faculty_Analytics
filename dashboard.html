@@ -107,10 +107,10 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 /* HISTO */
 .histo-wrap{display:flex;flex-direction:column;gap:6px}
 .histo-row{display:grid;grid-template-columns:72px 1fr 52px 56px;align-items:center;gap:6px;min-height:26px}
-.histo-lbl{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
+.histo-lbl{font-size:12px;color:#9ca3af;text-align:right;white-space:nowrap}
 .bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden}
 .bar-fill{height:100%;border-radius:8px;transition:width 1s ease;width:0%}
-.histo-cnt{font-size:12px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
+.histo-cnt{font-size:13px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
 .histo-pct{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
 
 /* RETIRE */
@@ -127,7 +127,8 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .college-table th{text-align:left;padding:6px 8px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;font-size:11px}
 .college-table td{padding:7px 8px;border-bottom:1px solid #f9fafb;color:#374151}
 .college-table tr:last-child td{border-bottom:none}
-.col-num{font-weight:700;color:#111827;text-align:right}
+.col-num{font-weight:700;color:#111827;text-align:right;font-size:13px}
+.col-name{font-size:12px;color:#374151}
 .col-pct{color:#9ca3af;font-size:11px;text-align:right}
 .col-bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden;width:60px;min-width:40px}
 .col-bar{height:100%;background:#1365FE;border-radius:8px;transition:width 1s ease}
@@ -337,7 +338,6 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         </div>
       </div>
       <button class="filter-reset-btn" onclick="resetAllFilters()">✕ 초기화</button>
-      <span class="filter-total" id="filterTotal">-</span>
     </div>
 
     <!-- 메인 차트 그리드: 3열 기반 -->
@@ -908,7 +908,7 @@ function renderRateChart() {
             const x = pt.x, y = pt.y;
             const isLast = (i === realLastIdx);
             const label = Number(val).toFixed(1) + '%';
-            const lastFontSize = 18;
+            const lastFontSize = 15;
             const otherFontSize = 11;
             const fontSize = isLast ? lastFontSize : otherFontSize;
             const pad = isLast ? 10 : 5;
