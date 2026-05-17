@@ -135,28 +135,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 @keyframes spin{to{transform:rotate(360deg)}}
 .loading-txt{font-size:13px;color:#9ca3af}
 
-/* TOP HEADER AREA */
-.top-header{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;align-items:stretch}
-.top-header-left{display:flex;flex-direction:column;gap:14px}
-.title-card{background:#fff;border-radius:14px;padding:20px 22px;border:1px solid #e5eaf5}
-.title-card h1{font-size:22px;font-weight:800;color:#111827;margin-bottom:4px}
-.title-card p{font-size:13px;color:#9ca3af}
-.kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.kpi-card-sm{background:#fff;border-radius:14px;padding:16px 18px;border:1px solid #e5eaf5;position:relative;overflow:hidden;transition:transform .2s,box-shadow .2s}
-.kpi-card-sm:hover{transform:translateY(-2px);box-shadow:0 4px 20px rgba(19,101,254,.08)}
-.kpi-card-sm::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:var(--kc,#1365FE);border-radius:14px 14px 0 0}
-.kpi-card-sm .kpi-icon-wrap{width:32px;height:32px;border-radius:9px;background:var(--ki,#EBF1FF);display:flex;align-items:center;justify-content:center;margin-bottom:10px}
-.kpi-card-sm .kpi-icon-wrap svg{width:15px;height:15px}
-.kpi-card-sm .kpi-lbl{font-size:11px;color:#9ca3af;font-weight:500;margin-bottom:4px}
-.kpi-card-sm .kpi-num{font-size:24px;font-weight:800;color:#111827;line-height:1}
-.kpi-card-sm .kpi-num small{font-size:12px;font-weight:400;color:#9ca3af;margin-left:2px}
-.kpi-card-sm .kpi-delta{font-size:11px;margin-top:4px}
-.rate-card{background:#fff;border-radius:14px;padding:18px;border:1px solid #e5eaf5}
-
-/* EXPORT BTN */
-.export-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9px;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;border:1px solid #e5eaf5;background:#fff;color:#374151;font-weight:500;transition:all .15s}
-.export-btn:hover{border-color:#1365FE;color:#1365FE;background:#f5f7ff}
-.export-btn svg{width:14px;height:14px}
+/* COMING SOON */
 .coming-wrap{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ffffff 0%,#f0f5ff 60%,#DBE8FE 100%)}
 .coming-card{background:#fff;border-radius:20px;border:1px solid #e5eaf5;padding:48px;text-align:center;max-width:480px}
 .coming-icon{width:64px;height:64px;border-radius:16px;background:#EBF1FF;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
@@ -204,25 +183,28 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
   </a>
   <div class="nav-tabs">
     <button class="nav-tab active" onclick="showPage('faculty',this)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-      Overview
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
+      전임교원 현황
     </button>
     <button class="nav-tab disabled" onclick="showPage('recruit',this)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      Staffing <span class="nav-badge">준비중</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
+      전임교원 충원 <span class="nav-badge">준비중</span>
     </button>
     <button class="nav-tab disabled" onclick="showPage('coming1',this)">
-      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-      Recruitment <span class="nav-badge">준비중</span>
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>
+      준비중 1 <span class="nav-badge">준비중</span>
+    </button>
+    <button class="nav-tab disabled" onclick="showPage('coming2',this)">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+      준비중 2 <span class="nav-badge">준비중</span>
     </button>
   </div>
   <div class="nav-right">
-    <button class="export-btn" onclick="showExportMenu(this)">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-      Export
-    </button>
-    <div class="nav-icon-btn" title="검색">
+    <div class="nav-icon-btn">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    </div>
+    <div class="nav-icon-btn">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9M13.73 21a2 2 0 01-3.46 0"/></svg>
     </div>
     <div class="nav-avatar">관리</div>
   </div>
@@ -236,48 +218,27 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="loading-txt">dashboard_data.json 불러오는 중...</div>
   </div>
   <div id="dashContent" style="display:none">
-
-    <!-- 상단: 제목+KPI(좌) | 확보율추이(우) -->
-    <div class="top-header">
-      <div class="top-header-left">
-        <!-- 제목 영역 -->
-        <div class="title-card">
-          <h1>제목</h1>
-          <p>소제목</p>
-        </div>
-        <!-- KPI 3개 -->
-        <div class="kpi-row">
-          <div class="kpi-card-sm" style="--kc:#1365FE;--ki:#EBF1FF">
-            <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#1365FE" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
-            <div class="kpi-lbl">전임교원</div>
-            <div class="kpi-num" id="kpiTotal">-<small>명</small></div>
-            <div class="kpi-delta" id="kpiTotalDelta"></div>
-          </div>
-          <div class="kpi-card-sm" style="--kc:#0ea5e9;--ki:#e0f2fe">
-            <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/></svg></div>
-            <div class="kpi-lbl">정년트랙</div>
-            <div class="kpi-num" id="kpiTenure">-<small>명</small></div>
-            <div class="kpi-delta" id="kpiTenureDelta"></div>
-          </div>
-          <div class="kpi-card-sm" style="--kc:#f59e0b;--ki:#fef3c7">
-            <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg></div>
-            <div class="kpi-lbl">비정년트랙</div>
-            <div class="kpi-num" id="kpiNonTenure">-<small>명</small></div>
-            <div class="kpi-delta" id="kpiNonTenureDelta"></div>
-          </div>
-        </div>
+    <div class="page-hd">
+      <div class="page-hd-left">
+        <h1>전임교원 현황 대시보드</h1>
+        <p id="headerMeta">데이터 로딩 중...</p>
       </div>
-      <!-- 확보율 추이 -->
-      <div class="rate-card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
-        <div style="position:relative;height:220px"><canvas id="rateChart"></canvas></div>
-        <p style="margin-top:8px;font-size:11px;color:#111827;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:6px">
-          💡 출처: 고등교육통계조사(매 학년도 4월 1일 기준)
-        </p>
+      <div class="page-hd-right">
+        <button class="med-btn active" id="btnExclude" onclick="setMedical('exclude')">의학계열 제외</button>
+        <button class="med-btn" id="btnInclude" onclick="setMedical('include')">의학계열 포함</button>
+        <button class="action-btn view" onclick="openRosterTab()">📋 새 탭으로 보기</button>
+        <button class="action-btn dl" onclick="downloadRosterExcel()">⬇ 엑셀 다운로드</button>
       </div>
     </div>
 
-    <!-- 필터바 -->
+    <div class="status-bar">
+      <div class="status-dot"></div>
+      <span class="status-txt">데이터 소스: <strong id="dataSource">dashboard_data.json</strong></span>
+      <span class="status-txt">데이터 생성: <strong id="lastUpdate">-</strong></span>
+      <span class="status-txt">GitHub 업데이트: <strong id="githubUpdate">-</strong></span>
+      <span style="margin-left:auto;font-size:11px;color:#1365FE">💡 데이터 갱신은 <strong>upload.html</strong>에서 진행하세요</span>
+    </div>
+
     <div class="filter-bar">
       <div class="filter-section">
         <span class="filter-label">학년도</span>
@@ -303,20 +264,53 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
         </div>
       </div>
-      <span class="fsep">|</span>
-      <div class="filter-section">
-        <span class="filter-label">의학계열</span>
-        <div style="display:flex;gap:4px">
-          <span class="fchip on" id="btnExclude" onclick="setMedical('exclude')">제외</span>
-          <span class="fchip" id="btnInclude" onclick="setMedical('include')">포함</span>
-        </div>
-      </div>
+
       <button class="filter-reset-btn" onclick="resetAllFilters()">✕ 초기화</button>
       <span class="filter-total" id="filterTotal">-</span>
     </div>
 
-    <!-- 트랙별 | 비정년트랙별 | 단과대학별 -->
-    <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+    <!-- KPI -->
+    <div class="kpi-grid">
+      <div class="kpi-card" style="--kc:#1365FE;--ki:#EBF1FF">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#1365FE" stroke-width="1.8"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg></div>
+        <div class="kpi-lbl">전임교원 수</div>
+        <div class="kpi-num" id="kpiTotal">-<small>명</small></div>
+        <div class="kpi-sub" id="kpiTrackSub">-</div>
+        <div class="kpi-delta" id="kpiTotalDelta"></div>
+      </div>
+      <div class="kpi-card" style="--kc:#0ea5e9;--ki:#e0f2fe">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#0ea5e9" stroke-width="1.8"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg></div>
+        <div class="kpi-lbl" id="rateLabel">확보율</div>
+        <div class="kpi-num" id="kpiRate">-<small>%</small></div>
+        <div class="kpi-delta" id="kpiRateDelta"></div>
+      </div>
+      <div class="kpi-card" style="--kc:#f59e0b;--ki:#fef3c7">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#f59e0b" stroke-width="1.8"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg></div>
+        <div class="kpi-lbl">정년퇴직 예정자 현황</div>
+        <div class="kpi-num" id="kpiRetire">-<small>명</small></div>
+        <div class="kpi-sub" id="kpiRetireSub">-</div>
+      </div>
+      <div class="kpi-card" style="--kc:#8b5cf6;--ki:#ede9fe">
+        <div class="kpi-icon-wrap"><svg viewBox="0 0 24 24" fill="none" stroke="#8b5cf6" stroke-width="1.8"><circle cx="12" cy="8" r="4"/><path d="M6 20v-2a6 6 0 0112 0v2"/></svg></div>
+        <div class="kpi-lbl">여성 비율</div>
+        <div class="kpi-num" id="kpiFemale">-<small>%</small></div>
+        <div class="kpi-sub" id="kpiGenderSub">-</div>
+      </div>
+    </div>
+
+    <!-- 확보율 추이 -->
+    <div class="grid-full">
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
+        <div style="position:relative;height:300px"><canvas id="rateChart"></canvas></div>
+        <p style="margin-top:10px;font-size:11px;color:#111827;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px">
+          💡 출처: 고등교육통계조사(매 학년도 4월 1일 기준)
+        </p>
+      </div>
+    </div>
+
+    <!-- 트랙별 | 비정년트랙별 -->
+    <div class="grid-2">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot"></div>트랙별 현황</div></div>
         <div class="card-fbar" id="trackFilterCard">
@@ -324,8 +318,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('track','정년트랙',this)">정년트랙</span>
           <span class="fchip" onclick="setFilter('track','비정년트랙',this)">비정년트랙</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="position:relative;height:160px;flex:0 0 160px"><canvas id="trackDonutChart"></canvas></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="position:relative;height:180px;flex:0 0 180px"><canvas id="trackDonutChart"></canvas></div>
           <div class="legend" id="trackDonutLegend" style="flex:1"></div>
         </div>
       </div>
@@ -338,14 +332,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('non_tenure','산학협력전담',this)">산학협력</span>
           <span class="fchip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
         </div>
-        <div style="display:flex;align-items:center;gap:12px">
-          <div style="position:relative;height:160px;flex:0 0 160px"><canvas id="nonTenureDonutChart"></canvas></div>
+        <div style="display:flex;align-items:center;gap:16px">
+          <div style="position:relative;height:180px;flex:0 0 180px"><canvas id="nonTenureDonutChart"></canvas></div>
           <div class="legend" id="nonTenureDonutLegend" style="flex:1"></div>
         </div>
-      </div>
-      <div class="card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-        <div class="college-scroll" id="collegeTable"></div>
       </div>
     </div>
 
@@ -353,11 +343,13 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="grid-2">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>직급별 현황</div></div>
+
         <div style="position:relative;height:28px;margin:4px 0"><canvas id="rankChart"></canvas></div>
         <div class="legend" id="rankLegend" style="margin-top:10px"></div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#8b5cf6"></div>성별 현황</div></div>
+
         <div style="position:relative;height:28px;margin:4px 0"><canvas id="genderChart"></canvas></div>
         <div class="legend" id="genderLegend" style="margin-top:10px"></div>
       </div>
@@ -367,24 +359,35 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="grid-2">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
-        <div style="position:relative;height:280px"><canvas id="tenureHisto"></canvas></div>
+
+        <div style="position:relative;height:300px"><canvas id="tenureHisto"></canvas></div>
       </div>
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
-        <div style="position:relative;height:280px"><canvas id="ageHisto"></canvas></div>
+
+        <div style="position:relative;height:300px"><canvas id="ageHisto"></canvas></div>
       </div>
     </div>
 
-    <!-- 정년퇴직 예정자 | 히트맵 -->
-    <div class="grid-2" style="margin-bottom:14px">
+    <!-- 퇴직예정 | 단과대학 -->
+    <div class="grid-2">
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
         <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
       </div>
       <div class="card">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
+        <div class="college-scroll" id="collegeTable"></div>
+      </div>
+    </div>
+
+    <!-- 히트맵: 연령대 x 재직기간 -->
+    <div class="grid-2" style="margin-bottom:14px">
+      <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
         <div id="heatmapWrap"></div>
       </div>
+      <div></div>
     </div>
 
     <footer id="footer">동아대학교 전임교원 현황 대시보드</footer>
@@ -608,8 +611,8 @@ async function onYearChange() {
 }
 async function setMedical(mode) {
   currentMedical = mode;
-  document.getElementById('btnExclude').classList.toggle('on', mode==='exclude');
-  document.getElementById('btnInclude').classList.toggle('on', mode==='include');
+  document.getElementById('btnExclude').classList.toggle('active', mode==='exclude');
+  document.getElementById('btnInclude').classList.toggle('active', mode==='include');
   rawRecordsCache = {};
   await renderAll();
 }
@@ -651,51 +654,20 @@ async function renderAll() {
 
 // KPI
 function renderKPI(s) {
-  const yrs = DB.meta.years, idx = yrs.indexOf(currentYear);
-  const prev = idx > 0 ? getSummary(yrs[idx-1]) : null;
-
-  // 전임교원 총계
   document.getElementById('kpiTotal').innerHTML = `${s.total}<small>명</small>`;
-  if (prev) {
-    const d = s.total - prev.total, cls = d>0?'up':d<0?'dn':'';
-    document.getElementById('kpiTotalDelta').innerHTML = `<span class="${cls}">${d>0?'+':''}${d}명 vs ${yrs[idx-1]}년</span>`;
-  }
-
-  // 정년트랙
-  document.getElementById('kpiTenure').innerHTML = `${s.tenure_track}<small>명</small>`;
-  if (prev) {
-    const d = s.tenure_track - prev.tenure_track, cls = d>0?'up':d<0?'dn':'';
-    document.getElementById('kpiTenureDelta').innerHTML = `<span class="${cls}">${d>0?'+':''}${d}명 vs ${yrs[idx-1]}년</span>`;
-  }
-
-  // 비정년트랙
-  document.getElementById('kpiNonTenure').innerHTML = `${s.non_tenure}<small>명</small>`;
-  if (prev) {
-    const d = s.non_tenure - prev.non_tenure, cls = d>0?'up':d<0?'dn':'';
-    document.getElementById('kpiNonTenureDelta').innerHTML = `<span class="${cls}">${d>0?'+':''}${d}명 vs ${yrs[idx-1]}년</span>`;
-  }
-}
-
-// Export 드롭다운 메뉴
-function showExportMenu(btn) {
-  let menu = document.getElementById('exportMenu');
-  if (menu) { menu.remove(); return; }
-  menu = document.createElement('div');
-  menu.id = 'exportMenu';
-  menu.style.cssText = 'position:fixed;z-index:999;background:#fff;border:1px solid #e5eaf5;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:6px;min-width:160px;';
-  const rect = btn.getBoundingClientRect();
-  menu.style.top = (rect.bottom + 6) + 'px';
-  menu.style.right = (window.innerWidth - rect.right) + 'px';
-  menu.innerHTML = `
-    <div onclick="openRosterTab();document.getElementById('exportMenu').remove()" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:#374151;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background=''">
-      📋 새 탭으로 보기
-    </div>
-    <div onclick="downloadRosterExcel();document.getElementById('exportMenu').remove()" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:#374151;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background=''">
-      ⬇ 엑셀 다운로드
-    </div>
-  `;
-  document.body.appendChild(menu);
-  setTimeout(() => document.addEventListener('click', function h(e){ if(!menu.contains(e.target)&&e.target!==btn){menu.remove();document.removeEventListener('click',h);}}, ), 0);
+  document.getElementById('kpiTrackSub').innerHTML = `정년트랙 <strong style="color:#111">${s.tenure_track}</strong> · 비정년 <strong style="color:#111">${s.non_tenure}</strong>`;
+  const yrs=DB.meta.years, idx=yrs.indexOf(currentYear);
+  if(idx>0){const prev=getSummary(yrs[idx-1]);if(prev){const d=s.total-prev.total,cls=d>0?'up':d<0?'dn':'';document.getElementById('kpiTotalDelta').innerHTML=`<span class="${cls}">${d>0?'+':''}${d}명 vs ${yrs[idx-1]}년</span>`;}}
+  const rk=currentMedical==='exclude'?'exclude':'include', ro=DB.rate[currentYear], rv=ro?(ro[rk]??ro.exclude):null;
+  document.getElementById('rateLabel').textContent=currentMedical==='exclude'?'확보율 (의학 제외)':'확보율 (의학 포함)';
+  document.getElementById('kpiRate').innerHTML=rv?`${rv.toFixed(2)}<small>%</small>`:`–<small>%</small>`;
+  if(idx>0){const pr=DB.rate[yrs[idx-1]];const pv=pr?(pr[rk]??pr.exclude):null;if(rv&&pv){const d=(rv-pv).toFixed(2),cls=d>0?'up':d<0?'dn':'';document.getElementById('kpiRateDelta').innerHTML=`<span class="${cls}">${d>0?'+':''}${d}%p vs ${yrs[idx-1]}년</span>`;}}
+  const r=s.retire;
+  document.getElementById('kpiRetire').innerHTML=`${r['퇴직예정(-)'||0]||0}<small>명</small>`;
+  document.getElementById('kpiRetireSub').innerHTML=`차년 <strong style="color:#111">${r['퇴직예정(+1)']||0}</strong>명 · +2년 <strong style="color:#111">${r['퇴직예정(+2)']||0}</strong>명`;
+  const fp=s.total>0?(s.female/s.total*100).toFixed(1):'–';
+  document.getElementById('kpiFemale').innerHTML=`${fp}<small>%</small>`;
+  document.getElementById('kpiGenderSub').innerHTML=`여자 <strong style="color:#111">${s.female}</strong>명 / 남자 <strong style="color:#111">${s.male}</strong>명`;
 }
 
 // RATE CHART (의학제외/포함 2개 라인)
