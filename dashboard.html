@@ -685,11 +685,18 @@ function renderRateChart() {
   });
   const hasIncl = valsIncl.some(v => v !== null);
 
-  // 두 라인 모두 포함해서 y축 범위 계산
+  // 두 라인 모두 포함해서 y축 범위 계산 (버림-3, 올림+2)
   const validVals = [...valsExcl, ...valsIncl].filter(v => v !== null);
-  const yMin = validVals.length ? Math.floor(Math.min(...validVals)) - 2 : 55;
-  const yMax = validVals.length ? Math.round(Math.max(...validVals)) + 1 : 80;
-  const lastIdx = allYrs.length - 1;
+  const yMin = validVals.length ? Math.floor(Math.min(...validVals)) - 3 : 55;
+  const yMax = validVals.length ? Math.ceil(Math.max(...validVals)) + 2 : 80;
+
+  // 더미 포인트 추가 (좌우 여백 + 그래프 연장선)
+  const firstExcl = valsExcl[0], lastExcl = valsExcl[valsExcl.length - 1];
+  const firstIncl = valsIncl[0], lastIncl = valsIncl[valsIncl.length - 1];
+  const labels = ['', ...allYrs, ''];
+  const dataExcl = [firstExcl, ...valsExcl, lastExcl];
+  const dataIncl = [firstIncl, ...valsIncl, lastIncl];
+  const lastIdx = labels.length - 1; // 마지막 실제 데이터는 lastIdx-1
 
   const ctx = document.getElementById('rateChart').getContext('2d');
   if (charts.rate) charts.rate.destroy();
@@ -701,7 +708,7 @@ function renderRateChart() {
 
   const datasets = [{
     label: '의학계열 제외',
-    data: valsExcl,
+    data: dataExcl,
     borderColor: '#1365FE',
     backgroundColor: grad,
     borderWidth: 2.5,
@@ -719,7 +726,7 @@ function renderRateChart() {
   if (hasIncl) {
     datasets.push({
       label: '의학계열 포함',
-      data: valsIncl,
+      data: dataIncl,
       borderColor: '#d1d5db',
       backgroundColor: 'transparent',
       borderWidth: 1.5,
@@ -738,7 +745,7 @@ function renderRateChart() {
 
   charts.rate = new Chart(ctx, {
     type: 'line',
-    data: { labels: allYrs, datasets },
+    data: { labels, datasets },
     options: {
       responsive: true,
       maintainAspectRatio: false,
@@ -770,7 +777,15 @@ function renderRateChart() {
       scales: {
         x: {
           grid: { display: false },
-          ticks: { color: '#9ca3af', font: { size: 11 } },
+          ticks: {
+            color: '#9ca3af',
+            font: { size: 11 },
+            callback: function(val, idx) {
+              // 더미 포인트(첫번째·마지막) x축 레이블 숨김
+              const lbl = labels[idx];
+              return lbl === '' ? '' : lbl;
+            }
+          },
           offset: false,
           bounds: 'data'
         },
@@ -785,7 +800,13 @@ function renderRateChart() {
             color: '#9ca3af',
             font: { size: 11 },
             stepSize: 5,
-            callback: v => Math.round(v) + '%'
+            callback: v => {
+              const rv = Math.round(v);
+              // 최솟값·최댓값 숨김, 5% 단위만 표시
+              if (rv === yMin || rv === yMax) return '';
+              if (rv % 5 !== 0) return '';
+              return rv + '%';
+            }
           },
           min: yMin,
           max: yMax
@@ -796,16 +817,19 @@ function renderRateChart() {
       id: 'rateLabels',
       afterDatasetsDraw(chart) {
         const { ctx, data } = chart;
+        const realLastIdx = labels.length - 2; // 실제 마지막 데이터 인덱스
         data.datasets.forEach((ds, di) => {
           const meta = chart.getDatasetMeta(di);
           if (!meta || meta.hidden) return;
           const color = di === 0 ? '#1365FE' : '#9ca3af';
           ds.data.forEach((val, i) => {
+            // 더미 포인트(첫번째·마지막) 레이블 숨김
+            if (i === 0 || i === labels.length - 1) return;
             if (val == null) return;
             const pt = meta.data[i];
             if (!pt) return;
             const x = pt.x, y = pt.y;
-            const isLast = (i === lastIdx);
+            const isLast = (i === realLastIdx);
             const label = Number(val).toFixed(1) + '%';
             const lastFontSize = 18;
             const otherFontSize = 11;
@@ -820,7 +844,6 @@ function renderRateChart() {
             let by = y - bh - 8;
             if (by < 2) by = y + 6;
             if (bx < 2) bx = 2;
-            // 범례 영역 침범 방지: 우측 끝에서 범례 높이(약 36px) 아래로 내림
             const legendH = 36;
             if (bx + bw > chart.width - 2) {
               bx = chart.width - 2 - bw;
@@ -839,7 +862,6 @@ function renderRateChart() {
               ctx.textBaseline = 'middle';
               ctx.fillText(label, bx + bw / 2, by + bh / 2);
             } else {
-              // 말풍선 없이 텍스트만 (간격 추가)
               ctx.fillStyle = di === 0 ? '#1365FE' : '#9ca3af';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'bottom';
