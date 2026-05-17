@@ -315,8 +315,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <span class="filter-total" id="filterTotal">-</span>
     </div>
 
-    <!-- 트랙별 | 비정년트랙별 | 단과대학별 -->
+    <!-- 메인 차트 그리드: 3열 기반 -->
     <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px">
+
+      <!-- Row1 Col1: 트랙별 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot"></div>트랙별 현황</div></div>
         <div class="card-fbar" id="trackFilterCard">
@@ -329,6 +331,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <div class="legend" id="trackDonutLegend" style="flex:1"></div>
         </div>
       </div>
+
+      <!-- Row1 Col2: 비정년트랙별 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>비정년트랙별 현황</div></div>
         <div class="card-fbar disabled-bar" id="nonTenureFilterCard">
@@ -343,48 +347,51 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <div class="legend" id="nonTenureDonutLegend" style="flex:1"></div>
         </div>
       </div>
-      <div class="card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-        <div class="college-scroll" id="collegeTable"></div>
-      </div>
-    </div>
 
-    <!-- 직급별 | 성별 -->
-    <div class="grid-2">
+      <!-- Row1~2 Col3: 단과대학별 (2행 span) -->
+      <div class="card" style="grid-row: span 2">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
+        <div class="college-scroll" id="collegeTable" style="max-height:420px"></div>
+      </div>
+
+      <!-- Row2 Col1: 직급별 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>직급별 현황</div></div>
         <div style="position:relative;height:28px;margin:4px 0"><canvas id="rankChart"></canvas></div>
         <div class="legend" id="rankLegend" style="margin-top:10px"></div>
       </div>
+
+      <!-- Row2 Col2: 성별 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#8b5cf6"></div>성별 현황</div></div>
         <div style="position:relative;height:28px;margin:4px 0"><canvas id="genderChart"></canvas></div>
         <div class="legend" id="genderLegend" style="margin-top:10px"></div>
       </div>
-    </div>
 
-    <!-- 재직기간 | 연령대 -->
-    <div class="grid-2">
+      <!-- Row3 Col1: 재직기간별 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
         <div style="position:relative;height:280px"><canvas id="tenureHisto"></canvas></div>
       </div>
+
+      <!-- Row3 Col2: 연령별 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
         <div style="position:relative;height:280px"><canvas id="ageHisto"></canvas></div>
       </div>
-    </div>
 
-    <!-- 정년퇴직 예정자 | 히트맵 -->
-    <div class="grid-2" style="margin-bottom:14px">
-      <div class="card">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
-        <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
-      </div>
+      <!-- Row3 Col3: 연령×재직기간 -->
       <div class="card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
         <div id="heatmapWrap"></div>
       </div>
+
+      <!-- Row4 Col1: 정년퇴직 예정자 -->
+      <div class="card">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
+        <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
+      </div>
+
     </div>
 
     <footer id="footer">동아대학교 전임교원 현황 대시보드</footer>
