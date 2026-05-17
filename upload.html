@@ -215,7 +215,7 @@ function handleFile(file) {
   const reader = new FileReader();
   reader.onload = e => {
     try {
-      workbook = XLSX.read(e.target.result, { type: 'array', cellDates: true });
+      workbook = XLSX.read(e.target.result, { type: 'array', cellDates: false });
       populateSheetPicker();
     } catch(err) {
       alert('파일을 읽을 수 없습니다: ' + err.message);
@@ -275,10 +275,19 @@ function calcAgeGroup(age) {
   return '60세 초과';
 }
 
+function excelSerialToDate(serial) {
+  // 엑셀 날짜 시리얼 → JS Date 변환 (1900년 기준)
+  if (typeof serial === 'number') {
+    const date = new Date((serial - 25569) * 86400 * 1000);
+    return date;
+  }
+  return new Date(serial);
+}
+
 function calcRetireLabel(yVal) {
   if (!yVal) return null;
   try {
-    const d = new Date(yVal);
+    const d = typeof yVal === 'number' ? excelSerialToDate(yVal) : new Date(yVal);
     if (isNaN(d.getTime())) return null;
     // 2월 이하 퇴직 → 전년도 2학기
     if (d.getMonth() < 3) return `${d.getFullYear() - 1}학년도 2학기`;
