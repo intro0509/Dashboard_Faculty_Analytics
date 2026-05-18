@@ -1497,19 +1497,21 @@ function applyScale() {
   root.style.transformOrigin = 'top center';
 
   requestAnimationFrame(() => {
-    const rootRect = root.getBoundingClientRect();
-    const wrapperRect = wrapper.getBoundingClientRect();
-    const leftPad = rootRect.left - wrapperRect.left + 28 * scale;
-    const rightPad = wrapperRect.right - rootRect.right + 28 * scale;
-    nav.style.paddingLeft = `${leftPad}px`;
-    nav.style.paddingRight = `${rightPad}px`;
-  });
+    try {
+      const rootRect = root.getBoundingClientRect();
+      const wrapperRect = wrapper.getBoundingClientRect();
+      const leftPad = rootRect.left - wrapperRect.left + 28 * scale;
+      const rightPad = wrapperRect.right - rootRect.right + 28 * scale;
+      nav.style.paddingLeft = `${leftPad}px`;
+      nav.style.paddingRight = `${rightPad}px`;
+    } catch(e) { console.warn('nav padding error:', e); }
 
-  // wrapper 높이: transform 적용 후 실제 높이 계산
-  setTimeout(() => {
-    const contentH = root.scrollHeight * scale;
-    wrapper.style.height = (navH + contentH + 16) + 'px';
-  }, 50);
+    // wrapper 높이: scaleRoot 실제 높이 + navH + 하단 여백
+    try {
+      const contentH = root.scrollHeight * scale;
+      wrapper.style.height = (navH + contentH + 16) + 'px';
+    } catch(e) { console.warn('wrapper height error:', e); }
+  });
 }
 
 applyScale();
