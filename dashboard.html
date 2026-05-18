@@ -17,7 +17,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 #scaleRoot{width:1920px;transform-origin:top center;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
+.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;border-radius:0;position:relative}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 20px;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:4px}
 .logo{display:flex;align-items:center;gap:10px;margin-right:20px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1486,15 +1486,8 @@ function applyScale() {
     scale = wrapperW / SCALE_BASE;
   }
 
-  // topnav: wrapper 안에서 scale 적용
-  nav.style.transform = `scale(${scale})`;
-  nav.style.width = SCALE_BASE + 'px';
-  nav.style.transformOrigin = 'top center';
-  // topnav 높이 보정 (scale 후 실제 높이)
-  const navH = 84 * scale;
-  nav.style.marginBottom = `${navH - 84}px`;
-
-  // nav-right: position:fixed로 고정 (별도 조정 불필요)
+  // topnav: scale 없이 appWrapper 너비에 맞게 자연 배치
+  const navH = 84;
 
   // scaleRoot: topnav 아래에 배치
   root.style.transform = `scale(${scale})`;
