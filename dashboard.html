@@ -186,7 +186,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .heatmap-table{border-collapse:separate;border-spacing:2px;width:100%;margin:0 auto}
 .heatmap-table th{font-size:12px;color:#9ca3af;font-weight:500;padding:2px 4px;text-align:center;white-space:nowrap}
 .heatmap-table th.row-header{text-align:right;min-width:52px;width:52px;font-size:12px}
-.heatmap-cell{border-radius:4px;width:45px;height:45px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell{border-radius:4px;width:55px;height:55px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
 .heatmap-cell .cell-cnt{font-size:10px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:8px;opacity:.8}
@@ -399,21 +399,27 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         </div>
       </div>
 
-      <!-- Row3 Col3: 연령×재직기간 -->
+      <!-- Row3 Col3: 정년퇴직 예정자 (Row3으로 이동) -->
       <div class="card" style="grid-column:3;grid-row:3">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
-        <div id="heatmapWrap" style="overflow-x:auto"></div>
-      </div>
-
-      <!-- Row4 Col1: 정년퇴직 예정자 -->
-      <div class="card" style="grid-column:1;grid-row:4">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
         <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
       </div>
 
+      <!-- Row4 Col1+2: 연령×재직기간 -->
+      <div class="card" style="grid-column:1/3;grid-row:4">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
+        <div id="heatmapWrap" style="overflow-x:auto"></div>
+      </div>
+
+      <!-- Row4 Col3: 빈 공간 -->
+
     </div>
 
-    <footer id="footer">동아대학교 전임교원 현황 대시보드</footer>
+    <footer id="footer" style="text-align:center;font-size:12px;font-weight:600;color:#dc2626;padding:16px 0 8px;display:flex;align-items:center;justify-content:center;gap:6px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      본 자료는 동아대학교 내부 공유자료이므로 무단으로 자료를 복사, 편집, 공유 할 수 없습니다.
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+    </footer>
   </div>
 </div><!-- /dash-wrap -->
 </div><!-- /scaleRoot -->
@@ -674,7 +680,6 @@ async function renderAll() {
   renderHeatmap(s);
   document.getElementById('filterTotal').textContent = s.total.toLocaleString()+'명';
   animateBars();
-  document.getElementById('footer').textContent = `동아대학교 전임교원 현황 대시보드 · ${currentYear}학년도 기준 · 업데이트: ${DB.meta.updated}`;
   setTimeout(adjustCollegeHeight, 150);
 
 }
