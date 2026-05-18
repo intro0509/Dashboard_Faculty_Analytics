@@ -27,10 +27,8 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .nav-tabs{display:flex;align-items:stretch;gap:4px;flex:1}
 .nav-tab{display:flex;align-items:center;gap:6px;padding:0 20px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:'Pretendard',sans-serif;white-space:nowrap}
 .nav-tab:hover{background:#ebebeb;color:#374151}
-.nav-tab.active{background:#F6F6F6;color:#374151;font-weight:700;border-radius:8px 8px 0 0;margin-bottom:-4px;margin-top:6px;padding-bottom:4px;position:relative;}
-.nav-tab.active::before,.nav-tab.active::after{content:'';position:absolute;bottom:0;width:10px;height:10px;background:#F6F6F6;}
-.nav-tab.active::before{left:-10px;border-radius:0 0 8px 0;box-shadow:4px 4px 0 4px #ffffff;}
-.nav-tab.active::after{right:-10px;border-radius:0 0 0 8px;box-shadow:-4px 4px 0 4px #ffffff;}
+.nav-tab.active{background:transparent;color:#374151;font-weight:700;position:relative;z-index:1;}
+.nav-tab.active .tab-svg{position:absolute;inset:0;width:100%;height:100%;z-index:-1;}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
@@ -536,11 +534,74 @@ function sendMailToAdmin() {
   }
 }
 
+// SVG 탭 모양 생성 함수
+function drawTabSVG(tab) {
+  // 기존 SVG 제거
+  const old = tab.querySelector('.tab-svg');
+  if (old) old.remove();
+
+  const w = tab.offsetWidth;
+  const h = tab.offsetHeight;
+  const r = 10; // 상단 모서리 둥글기
+  const cr = 8; // 하단 오목 곡선 반지름
+  const mt = 6; // 상단 여백 (오목 들어가는 부분)
+
+  // 마름모꼴 SVG path:
+  // 상단 좌우 오목, 하단 좌우 역방향 곡선
+  const path = `
+    M ${cr} ${h}
+    Q 0 ${h} 0 ${h - cr}
+    L 0 ${mt + r}
+    Q 0 ${mt} ${r} ${mt}
+    L ${w - r} ${mt}
+    Q ${w} ${mt} ${w} ${mt + r}
+    L ${w} ${h - cr}
+    Q ${w} ${h} ${w - cr} ${h}
+    Z
+  `.trim();
+
+  const svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+  svg.setAttribute('class', 'tab-svg');
+  svg.setAttribute('viewBox', `0 0 ${w} ${h}`);
+  svg.setAttribute('preserveAspectRatio', 'none');
+  svg.style.cssText = `position:absolute;inset:0;width:100%;height:100%;z-index:-1;overflow:visible`;
+
+  const pathEl = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  pathEl.setAttribute('d', path);
+  pathEl.setAttribute('fill', '#F6F6F6');
+
+  // 하단 좌우 역방향 오목 곡선 (concave corners)
+  const leftConcave = `M 0 ${h} Q ${cr} ${h} ${cr} ${h - cr} L ${cr} ${h} Z`;
+  const rightConcave = `M ${w} ${h} Q ${w - cr} ${h} ${w - cr} ${h - cr} L ${w - cr} ${h} Z`;
+
+  const lPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  lPath.setAttribute('d', leftConcave);
+  lPath.setAttribute('fill', '#ffffff');
+
+  const rPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+  rPath.setAttribute('d', rightConcave);
+  rPath.setAttribute('fill', '#ffffff');
+
+  svg.appendChild(pathEl);
+  svg.appendChild(lPath);
+  svg.appendChild(rPath);
+  tab.appendChild(svg);
+}
+
+function updateTabSVG() {
+  document.querySelectorAll('.nav-tab').forEach(t => {
+    const old = t.querySelector('.tab-svg');
+    if (old) old.remove();
+  });
+  const active = document.querySelector('.nav-tab.active');
+  if (active) drawTabSVG(active);
+}
+
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
   document.getElementById('page-' + id).classList.add('active');
-  if (el) el.classList.add('active');
+  if (el) { el.classList.add('active'); setTimeout(() => drawTabSVG(el), 0); }
 }
 
 // STATE
@@ -1523,8 +1584,8 @@ function applyScale() {
 }
 
 applyScale();
-window.addEventListener('resize', () => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); });
-setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); }, 800);
+window.addEventListener('resize', () => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); updateTabSVG(); });
+setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); updateTabSVG(); }, 800);
 
 // 히트맵 카드 높이를 Row3+gap+Row4 합계로 동적 설정
 function adjustHeatmapHeight() {
