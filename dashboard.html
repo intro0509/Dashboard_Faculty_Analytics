@@ -17,7 +17,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 #scaleRoot{width:1920px;transform-origin:top center;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:72px;display:flex;align-items:center;padding:0 36px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
+.topnav{z-index:100;background:transparent;height:72px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 20px;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:4px}
 .logo{display:flex;align-items:center;gap:10px;margin-right:20px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -31,7 +31,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
-.nav-right{position:absolute;top:0;right:36px;height:72px;display:flex;align-items:center;gap:10px;z-index:200}
+.nav-right{display:flex;align-items:center;gap:10px;z-index:200;margin-left:auto}
 .nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5eaf5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;transition:all .15s}
 .nav-icon-btn:hover{border-color:#1365FE;color:#1365FE}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
@@ -230,7 +230,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     </div>
     <div class="nav-icon-btn" onclick="goAdmin()" title="관리자 페이지" style="width:auto;padding:0 12px;gap:6px">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
-      <span style="font-size:13px;font-weight:500;font-family:'Pretendard',sans-serif">관리</span>
+      <span style="font-size:13px;font-weight:500;font-family:'Pretendard',sans-serif">Upload</span>
     </div>
   </div>
 </nav>
@@ -480,12 +480,41 @@ Chart.defaults.color = '#9ca3af';
 
 // PAGE NAV
 function goAdmin() {
-  const pw = prompt('관리자 비밀번호를 입력하세요.');
-  if (pw === null) return;
+  // 기존 모달 제거
+  const existing = document.getElementById('adminModal');
+  if (existing) existing.remove();
+
+  const modal = document.createElement('div');
+  modal.id = 'adminModal';
+  modal.style.cssText = 'position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.4);display:flex;align-items:center;justify-content:center;font-family:Pretendard,sans-serif';
+  modal.innerHTML = `
+    <div style="background:#fff;border-radius:16px;padding:28px 32px;width:320px;box-shadow:0 8px 32px rgba(0,0,0,0.15)">
+      <div style="font-size:16px;font-weight:700;color:#111827;margin-bottom:6px">관리자 인증</div>
+      <div style="font-size:13px;color:#9ca3af;margin-bottom:20px">비밀번호를 입력하세요.</div>
+      <input id="adminPwInput" type="password" placeholder="비밀번호" style="width:100%;box-sizing:border-box;padding:10px 14px;border:1px solid #e5eaf5;border-radius:10px;font-size:14px;font-family:Pretendard,sans-serif;outline:none;margin-bottom:8px">
+      <div id="adminPwError" style="font-size:12px;color:#dc2626;min-height:18px;margin-bottom:12px"></div>
+      <div style="display:flex;gap:8px;justify-content:flex-end">
+        <button onclick="document.getElementById('adminModal').remove()" style="padding:8px 18px;border-radius:8px;border:1px solid #e5eaf5;background:#f9fafb;color:#6b7280;font-size:13px;font-family:Pretendard,sans-serif;cursor:pointer">취소</button>
+        <button onclick="checkAdminPw()" style="padding:8px 18px;border-radius:8px;border:none;background:#1365FE;color:#fff;font-size:13px;font-family:Pretendard,sans-serif;cursor:pointer;font-weight:600">확인</button>
+      </div>
+    </div>`;
+  document.body.appendChild(modal);
+
+  const input = document.getElementById('adminPwInput');
+  input.focus();
+  input.addEventListener('keydown', e => { if (e.key === 'Enter') checkAdminPw(); });
+  modal.addEventListener('click', e => { if (e.target === modal) modal.remove(); });
+}
+
+function checkAdminPw() {
+  const pw = document.getElementById('adminPwInput').value;
   if (pw === 'ryanrhk#6104') {
-    window.location.href = 'upload.html';
+    document.getElementById('adminModal').remove();
+    window.open('upload.html', '_blank');
   } else {
-    alert('비밀번호가 올바르지 않습니다.');
+    document.getElementById('adminPwError').textContent = '비밀번호가 올바르지 않습니다.';
+    document.getElementById('adminPwInput').value = '';
+    document.getElementById('adminPwInput').focus();
   }
 }
 
