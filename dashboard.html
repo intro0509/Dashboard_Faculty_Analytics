@@ -25,15 +25,15 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .logo-text{font-size:14px;font-weight:700;color:#111827;white-space:nowrap}
 .logo-text span{color:#1365FE}
 .nav-tabs{display:flex;align-items:center;gap:2px;flex:1}
-.nav-tab{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;color:#6b7280;cursor:pointer;transition:all .15s;border:none;background:#F6F6F6;font-family:'Pretendard',sans-serif;white-space:nowrap}
+.nav-tab{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer;transition:all .15s;border:none;background:#F6F6F6;font-family:'Pretendard',sans-serif;white-space:nowrap}
 .nav-tab:hover{background:#f5f7ff;color:#1365FE}
 .nav-tab.active{background:#EBF1FF;color:#1365FE;font-weight:600}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
 .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
-.nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5eaf5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;transition:all .15s}
-.nav-icon-btn:hover{border-color:#1365FE;color:#1365FE}
+.nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5eaf5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#374151;transition:all .15s}
+.nav-icon-btn:hover{border-color:#374151;background:#374151;color:#fff}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
 
 /* PAGE */
@@ -94,7 +94,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .grid-3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;margin-bottom:14px}
 
 /* CARD */
-.card{background:#fff;border-radius:14px;padding:18px;transition:box-shadow .2s}
+.card{background:#F6F6F6;border-radius:14px;padding:18px;transition:box-shadow .2s}
 .card:hover{box-shadow:0 2px 12px rgba(19,101,254,.06)}
 .card-hd{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
 .card-title{font-size:15px;font-weight:700;color:#111827;display:flex;align-items:center;gap:7px}
@@ -150,11 +150,11 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .title-card{background:#F6F6F6;border-radius:14px;padding:20px 22px}
 .title-card h1{font-size:22px;font-weight:800;color:#111827;margin-bottom:4px}
 .title-card p{font-size:13px;color:#9ca3af}
-.rate-card{background:#F6F6F6;border-radius:14px;padding:18px;display:flex;flex-direction:column}
+.rate-card{background:#ffffff;border-radius:14px;padding:18px;display:flex;flex-direction:column}
 
 /* KPI ROW - 레퍼런스 스타일 */
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
-.kpi-card-sm{background:#F6F6F6;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:box-shadow .2s}
+.kpi-card-sm{background:#ffffff;border-radius:14px;padding:14px 16px;display:flex;align-items:center;gap:12px;transition:box-shadow .2s}
 .kpi-card-sm:hover{box-shadow:0 4px 20px rgba(19,101,254,.08)}
 .kpi-icon-box{width:44px;height:44px;border-radius:10px;background:#111827;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .kpi-icon-box svg{width:22px;height:22px}
@@ -166,7 +166,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 /* EXPORT BTN */
 .export-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9px;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;border:1px solid #e5eaf5;background:#fff;color:#374151;font-weight:500;transition:all .15s}
-.export-btn:hover{border-color:#1365FE;color:#1365FE;background:#f5f7ff}
+.export-btn:hover{border-color:#374151;background:#374151;color:#fff}
 .export-btn svg{width:14px;height:14px}
 .coming-wrap{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:#F6F6F6}
 .coming-card{background:#fff;border-radius:20px;border:1px solid #e5eaf5;padding:48px;text-align:center;max-width:480px}
@@ -210,13 +210,13 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
       Overview
     </button>
-    <button class="nav-tab disabled" onclick="showPage('recruit',this)">
+    <button class="nav-tab" onclick="showPage('recruit',this)">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg>
-      Staffing <span class="nav-badge">준비중</span>
+      Staffing
     </button>
-    <button class="nav-tab disabled" onclick="showPage('coming1',this)">
+    <button class="nav-tab" onclick="showPage('coming1',this)">
       <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><line x1="19" y1="8" x2="19" y2="14"/><line x1="22" y1="11" x2="16" y2="11"/></svg>
-      Recruitment <span class="nav-badge">준비중</span>
+      Recruitment
     </button>
   </div>
   </div><!-- /nav-group -->
