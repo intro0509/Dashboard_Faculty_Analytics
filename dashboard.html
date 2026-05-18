@@ -379,10 +379,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         </div>
 
         <!-- Row3: 2열 서브그리드 (COL1:히트맵 / COL2:재직기간+연령) -->
-        <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
+        <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch">
 
           <!-- COL1: 연령×재직기간 (높이 독립) -->
-          <div class="card" id="card-heatmap" style="overflow:hidden">
+          <div class="card" id="card-heatmap" style="overflow-y:auto;overflow-x:hidden">
             <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
             <div id="heatmapWrap" style="overflow-x:auto"></div>
           </div>
