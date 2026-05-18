@@ -81,7 +81,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .kpi-num small{font-size:13px;font-weight:400;color:#9ca3af;margin-left:2px}
 .kpi-sub{font-size:11px;color:#9ca3af;margin-top:5px}
 .kpi-delta{font-size:11px;margin-top:3px}
-.up{color:#16a34a}.dn{color:#dc2626}
+.up{color:#1365FE}.dn{color:#FF0000}
 
 /* GRID */
 .grid-full{margin-bottom:14px}
@@ -217,8 +217,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
     </button>
-    <div class="nav-icon-btn" title="검색">
-      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <div class="nav-icon-btn" title="관리자에게 메일 보내기" onclick="sendMailToAdmin()">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
     </div>
     <div class="nav-avatar">관리</div>
   </div>
@@ -309,12 +309,12 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <!-- 필터바 -->
     <div class="filter-bar">
       <div class="filter-section">
-        <span class="filter-label">학년도</span>
+        <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>학년도</span>
         <div id="yearFilter" style="display:flex;gap:4px"></div>
       </div>
       <span class="fsep" style="margin:0 8px">|</span>
       <div class="filter-section">
-        <span class="filter-label">트랙</span>
+        <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>트랙</span>
         <div id="trackFilter" style="display:flex;gap:4px">
           <span class="fchip on" onclick="setFilter('track','전체',this)">전체</span>
           <span class="fchip" onclick="setFilter('track','정년트랙',this)">정년트랙</span>
@@ -323,7 +323,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       </div>
       <span class="fsep" style="margin:0 8px">|</span>
       <div class="filter-section">
-        <span class="filter-label">비정년트랙</span>
+        <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>비정년트랙</span>
         <div id="nonTenureFilter" style="display:flex;gap:4px" class="disabled-bar">
           <span class="fchip on" onclick="setFilter('non_tenure','전체',this)">전체</span>
           <span class="fchip" onclick="setFilter('non_tenure','강의전담',this)">강의전담</span>
@@ -334,7 +334,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       </div>
       <span class="fsep" style="margin:0 8px">|</span>
       <div class="filter-section">
-        <span class="filter-label">의학계열</span>
+        <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>의학계열</span>
         <div style="display:flex;gap:4px">
           <span class="fchip on" id="btnExclude" onclick="setMedical('exclude')">제외</span>
           <span class="fchip" id="btnInclude" onclick="setMedical('include')">포함</span>
@@ -468,6 +468,12 @@ Chart.defaults.font.size = 11;
 Chart.defaults.color = '#9ca3af';
 
 // PAGE NAV
+function sendMailToAdmin() {
+  if (confirm('관리자에게 메일을 보내시겠습니까?')) {
+    window.location.href = 'mailto:intro0509@dau.ac.kr';
+  }
+}
+
 function showPage(id, el) {
   document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
   document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
