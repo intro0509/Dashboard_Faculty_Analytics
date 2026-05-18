@@ -410,7 +410,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
           <div class="college-scroll" id="collegeTable" style="max-height:500px"></div>
         </div>
-        <div class="card" id="card-heatmap" style="overflow:hidden">
+        <div class="card" id="card-heatmap">
           <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
           <div id="heatmapWrap" style="overflow-x:auto"></div>
         </div>
@@ -683,7 +683,8 @@ async function renderAll() {
   renderHeatmap(s);
   document.getElementById('filterTotal').textContent = s.total.toLocaleString()+'명';
   animateBars();
-
+  setTimeout(adjustCollegeHeight, 150);
+  setTimeout(adjustHeatmapHeight, 150);
 
 }
 
@@ -1392,10 +1393,30 @@ function applyScale() {
 }
 
 applyScale();
-window.addEventListener('resize', () => { applyScale(); });
-setTimeout(() => { applyScale(); }, 800);
+window.addEventListener('resize', () => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); });
+setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); }, 800);
 
-
+// 히트맵 카드 높이를 Row3+gap+Row4 합계로 동적 설정
+function adjustHeatmapHeight() {
+  const cardTenure = document.getElementById('card-tenure');
+  const cardRetire = document.getElementById('card-retire');
+  const cardHeatmap = document.getElementById('card-heatmap');
+  if (!cardTenure || !cardRetire || !cardHeatmap) return;
+  const gap = 14;
+  const totalH = cardTenure.offsetHeight + gap + cardRetire.offsetHeight;
+  cardHeatmap.style.height = totalH + 'px';
+}
+function adjustCollegeHeight() {
+  const cardTrack = document.getElementById('card-track');
+  const cardRank = document.getElementById('card-rank');
+  const cardCollege = document.getElementById('card-college');
+  if (!cardTrack || !cardRank || !cardCollege) return;
+  const gap = 14;
+  const totalH = cardTrack.offsetHeight + gap + cardRank.offsetHeight;
+  cardCollege.style.height = totalH + 'px';
+  const scroll = cardCollege.querySelector('.college-scroll');
+  if (scroll) scroll.style.maxHeight = (totalH - 60) + 'px';
+}
 </script>
 </body>
 </html>
