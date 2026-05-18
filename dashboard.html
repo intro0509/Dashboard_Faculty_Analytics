@@ -751,7 +751,8 @@ async function renderAll() {
   renderRetire(s);
   renderCollege(s);
   renderHeatmap(s);
-  document.getElementById('filterTotal').textContent = s.total.toLocaleString()+'명';
+  const filterTotalEl = document.getElementById('filterTotal');
+  if (filterTotalEl) filterTotalEl.textContent = s.total.toLocaleString()+'명';
   animateBars();
   setTimeout(adjustCollegeHeight, 150);
   setTimeout(adjustHeatmapHeight, 150);
