@@ -17,21 +17,21 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 #scaleRoot{width:1920px;transform-origin:top center;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:72px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
-.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 20px;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:4px}
-.logo{display:flex;align-items:center;gap:10px;margin-right:20px;text-decoration:none;flex-shrink:0}
+.topnav{z-index:100;background:transparent;height:100px;display:flex;align-items:flex-end;padding:0 28px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
+.nav-group{display:flex;align-items:center;background:transparent;padding:0;height:100%;gap:0}
+.logo{display:flex;align-items:center;gap:10px;margin-right:32px;text-decoration:none;flex-shrink:0;padding-bottom:12px}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
 .logo-text{font-size:14px;font-weight:700;color:#111827;white-space:nowrap}
 .logo-text span{color:#1365FE}
-.nav-tabs{display:flex;align-items:center;gap:2px;flex:1}
-.nav-tab{display:flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-size:13px;color:#6b7280;cursor:pointer;transition:all .15s;border:none;background:#F6F6F6;font-family:'Pretendard',sans-serif;white-space:nowrap}
-.nav-tab:hover{background:#f5f7ff;color:#1365FE}
-.nav-tab.active{background:#EBF1FF;color:#1365FE;font-weight:600}
+.nav-tabs{display:flex;align-items:flex-end;gap:4px;height:100%}
+.nav-tab{display:flex;align-items:center;gap:6px;padding:10px 28px;border-radius:14px 14px 0 0;font-size:13px;color:#6b7280;cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:'Pretendard',sans-serif;white-space:nowrap;height:52px}
+.nav-tab:hover{background:rgba(255,255,255,0.6);color:#1365FE}
+.nav-tab.active{background:#ffffff;color:#1365FE;font-weight:700;box-shadow:0 -2px 8px rgba(19,101,254,0.06)}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
-.nav-right{display:flex;align-items:center;gap:10px;z-index:200;margin-left:auto}
+.nav-right{position:absolute;bottom:12px;right:28px;display:flex;align-items:center;gap:10px;z-index:200}
 .nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5eaf5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#6b7280;transition:all .15s}
 .nav-icon-btn:hover{border-color:#1365FE;color:#1365FE}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
@@ -219,7 +219,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     </button>
   </div>
   </div><!-- /nav-group -->
-  <div class="nav-right">
+</nav>
+<div class="nav-right">
     <button class="export-btn" onclick="showExportMenu(this)">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
@@ -233,7 +234,6 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <span style="font-size:13px;font-weight:500;font-family:'Pretendard',sans-serif">Upload</span>
     </div>
   </div>
-</nav>
 
 <!-- 전임교원 현황 -->
 <div id="page-faculty" class="page active">
@@ -249,9 +249,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <div class="top-header">
       <!-- 좌: 제목(상단) + KPI 3개(하단) -->
       <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px">
-        <div class="title-card">
-          <h1>제목</h1>
-          <p>소제목</p>
+        <div style="padding:4px 2px 18px">
+          <h1 style="font-size:22px;font-weight:800;color:#111827;margin-bottom:6px">Integrated Faculty Analytics Dashboard</h1>
+          <p style="font-size:13px;color:#9ca3af;line-height:1.6">Unified insights into faculty composition, coverage,<br>and workforce distribution.</p>
+        </div>
         </div>
         <div class="kpi-row">
           <div class="kpi-card-sm">
