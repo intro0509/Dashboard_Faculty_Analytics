@@ -186,7 +186,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .heatmap-table{border-collapse:separate;border-spacing:2px;width:100%;margin:0 auto}
 .heatmap-table th{font-size:12px;color:#9ca3af;font-weight:500;padding:2px 4px;text-align:center;white-space:nowrap}
 .heatmap-table th.row-header{text-align:right;min-width:52px;width:52px;font-size:12px}
-.heatmap-cell{border-radius:4px;width:30px;height:30px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell{border-radius:4px;width:45px;height:45px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
 .heatmap-cell .cell-cnt{font-size:10px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:8px;opacity:.8}
@@ -297,7 +297,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div class="rate-card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
         <div style="position:relative;height:220px"><canvas id="rateChart"></canvas></div>
-        <p style="margin-top:14px;font-size:11px;color:#111827;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px">
+        <p style="margin-top:14px;font-size:11px;color:#111827;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px;text-align:center">
           💡 출처: 고등교육통계조사(매 학년도 4월 1일 기준)
         </p>
       </div>
@@ -951,8 +951,8 @@ function renderDonut(cid,lid,labels,values,colors,total){
   if(charts[cid])charts[cid].destroy();
   const tot=total||values.reduce((a,b)=>a+b,0);
   charts[cid]=new Chart(ctx,{
-    type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:4,borderRadius:8,spacing:2}]},
-    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{backgroundColor:'#fff',borderColor:'#e5eaf5',borderWidth:1,titleColor:'#111',bodyColor:'#6b7280',callbacks:{label:c=>{const pct=tot>0?(c.parsed/tot*100).toFixed(2):'0.00';return ` ${c.label}: ${c.parsed}명 (${pct}%)`}}}}},
+    type:'doughnut',data:{labels,datasets:[{data:values,backgroundColor:colors,borderWidth:2,borderColor:'#fff',hoverOffset:0,borderRadius:8,spacing:2}]},
+    options:{responsive:true,maintainAspectRatio:false,cutout:'68%',plugins:{legend:{display:false},tooltip:{enabled:false}},hover:{mode:null}},
     plugins:[{id:'ctr',afterDatasetsDraw(chart){
       const{ctx,chartArea:{left,top,right,bottom}}=chart,cx=(left+right)/2,cy=(top+bottom)/2;
       ctx.save();ctx.textAlign='center';ctx.textBaseline='middle';
