@@ -1489,6 +1489,11 @@ function applyScale() {
   // topnav: scale 없이 appWrapper 너비에 맞게 자연 배치
   const navH = 84;
 
+  // scaleRoot의 실제 좌우 여백 계산 → topnav padding에 동기화
+  const scaledContentW = SCALE_BASE * scale;
+  const sidePad = Math.max(28, (wrapperW - scaledContentW) / 2 + 28 * scale);
+  nav.style.padding = `0 ${sidePad}px`;
+
   // scaleRoot: topnav 아래에 배치
   root.style.transform = `scale(${scale})`;
   root.style.width = SCALE_BASE + 'px';
