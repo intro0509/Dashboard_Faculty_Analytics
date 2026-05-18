@@ -18,7 +18,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 /* TOPNAV */
 .topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;border-radius:0;position:relative}
-.nav-group{display:flex;align-items:stretch;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;overflow:hidden}
+.nav-group{display:flex;align-items:stretch;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;overflow:visible}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
@@ -27,8 +27,8 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .nav-tabs{display:flex;align-items:stretch;gap:4px;flex:1}
 .nav-tab{display:flex;align-items:center;gap:6px;padding:0 20px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:'Pretendard',sans-serif;white-space:nowrap}
 .nav-tab:hover{background:#ebebeb;color:#374151}
-.nav-tab.active{background:transparent;color:#374151;font-weight:700;position:relative;z-index:1;}
-.nav-tab.active .tab-svg{position:absolute;inset:0;width:100%;height:100%;z-index:-1;}
+.nav-tab.active{background:transparent;color:#374151;font-weight:700;position:relative;z-index:2;}
+.nav-tab.active .tab-svg{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
@@ -570,9 +570,9 @@ function drawTabSVG(tab) {
   pathEl.setAttribute('d', path);
   pathEl.setAttribute('fill', '#F6F6F6');
 
-  // 하단 좌우 역방향 오목 곡선 (concave corners)
-  const leftConcave = `M 0 ${h} Q ${cr} ${h} ${cr} ${h - cr} L ${cr} ${h} Z`;
-  const rightConcave = `M ${w} ${h} Q ${w - cr} ${h} ${w - cr} ${h - cr} L ${w - cr} ${h} Z`;
+  // 하단 좌우 역방향 오목 곡선 (concave corners) - nav-group 배경색으로 채워서 오목하게 보이도록
+  const leftConcave = `M 0 ${h} L ${cr} ${h} Q 0 ${h} 0 ${h - cr} Z`;
+  const rightConcave = `M ${w} ${h} L ${w - cr} ${h} Q ${w} ${h} ${w} ${h - cr} Z`;
 
   const lPath = document.createElementNS('http://www.w3.org/2000/svg', 'path');
   lPath.setAttribute('d', leftConcave);
@@ -1530,7 +1530,7 @@ function renderCollege(s){
 
 
 
-loadData();
+loadData().then(() => { setTimeout(updateTabSVG, 100); });
 
 // 반응형 스케일: nav + scaleRoot 동시 적용
 const SCALE_BASE = 1920;
