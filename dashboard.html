@@ -11,7 +11,7 @@
 html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;color:#111827;font-size:14px;overflow-x:hidden}
 
 /* SCALE ROOT */
-#scaleRoot{width:1820px;transform-origin:top left;position:relative;margin-top:72px}
+#scaleRoot{width:1920px;transform-origin:top left;position:relative;margin-top:72px}
 
 /* TOPNAV */
 .topnav{position:sticky;top:0;z-index:100;background:#fff;border-bottom:1px solid #e5eaf5;height:72px;display:flex;align-items:center;padding:0 36px;gap:0;min-width:1100px}
@@ -1346,9 +1346,9 @@ function renderCollege(s){
 loadData();
 
 // 반응형 스케일: nav + scaleRoot 동시 적용
-const SCALE_BASE = 1820;
+const SCALE_BASE = 1920;
 const SCALE_MIN  = 1200;
-const SCALE_MAX  = 1820;
+const SCALE_MAX  = 1920;
 
 function applyScale() {
   const root = document.getElementById('scaleRoot');
