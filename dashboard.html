@@ -258,6 +258,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
                 <div class="kpi-delta-sm" id="kpiTotalDelta"></div>
               </div>
             </div>
+            <div style="flex-shrink:0;width:80px;height:40px"><canvas id="sparkTotal"></canvas></div>
           </div>
           <div class="kpi-card-sm">
             <div class="kpi-icon-box">
@@ -273,6 +274,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
                 <div class="kpi-delta-sm" id="kpiTenureDelta"></div>
               </div>
             </div>
+            <div style="flex-shrink:0;width:80px;height:40px"><canvas id="sparkTenure"></canvas></div>
           </div>
           <div class="kpi-card-sm">
             <div class="kpi-icon-box">
@@ -290,6 +292,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
                 <div class="kpi-delta-sm" id="kpiNonTenureDelta"></div>
               </div>
             </div>
+            <div style="flex-shrink:0;width:80px;height:40px"><canvas id="sparkNonTenure"></canvas></div>
           </div>
         </div>
       </div>
@@ -727,6 +730,52 @@ function renderKPI(s) {
     const cls = d > 0 ? 'dn' : d < 0 ? 'up' : '';
     document.getElementById('kpiNonTenureDelta').innerHTML = d !== 0 ? `<span class="${cls}">${arr} ${pct}%</span>` : '';
   }
+
+  // 스파크라인
+  renderSparkline('sparkTotal',   yrs.map(y => { const b = DB.summary[y]?.exclude?.base; return b ? b.total : null; }),        '#FD5B42');
+  renderSparkline('sparkTenure',  yrs.map(y => { const b = DB.summary[y]?.exclude?.base; return b ? b.tenure_track : null; }), '#1365FE');
+  renderSparkline('sparkNonTenure', yrs.map(y => { const b = DB.summary[y]?.exclude?.base; return b ? b.non_tenure : null; }), '#1365FE');
+}
+
+function renderSparkline(canvasId, data, color) {
+  const canvas = document.getElementById(canvasId);
+  if (!canvas) return;
+  if (charts[canvasId]) { charts[canvasId].destroy(); }
+  const validData = data.filter(v => v !== null);
+  const minV = Math.min(...validData);
+  const maxV = Math.max(...validData);
+  const ctx = canvas.getContext('2d');
+  const g = ctx.createLinearGradient(0, 0, 0, 40);
+  g.addColorStop(0, color + '33');
+  g.addColorStop(1, color + '00');
+  charts[canvasId] = new Chart(canvas, {
+    type: 'line',
+    data: {
+      labels: data.map((_, i) => i),
+      datasets: [{
+        data,
+        borderColor: color,
+        backgroundColor: g,
+        borderWidth: 2,
+        pointRadius: 0,
+        pointHoverRadius: 0,
+        fill: true,
+        tension: 0.3,
+        spanGaps: true
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      animation: { duration: 600 },
+      plugins: { legend: { display: false }, tooltip: { enabled: false } },
+      scales: {
+        x: { display: false },
+        y: { display: false, min: minV * 0.95, max: maxV * 1.05 }
+      },
+      layout: { padding: 2 }
+    }
+  });
 }
 
 // Export 드롭다운 메뉴
