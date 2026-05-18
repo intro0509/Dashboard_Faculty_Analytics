@@ -186,7 +186,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .heatmap-table{border-collapse:separate;border-spacing:2px;width:100%;margin:0 auto}
 .heatmap-table th{font-size:12px;color:#9ca3af;font-weight:400;padding:2px 4px;text-align:center;white-space:nowrap}
 .heatmap-table th.row-header{text-align:right;min-width:52px;width:52px;font-size:12px;font-weight:400;color:#9ca3af}
-.heatmap-cell{border-radius:4px;width:43px;height:43px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell{border-radius:4px;width:40px;height:40px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
 .heatmap-cell .cell-cnt{font-size:10px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:8px;opacity:.8}
@@ -1288,7 +1288,7 @@ function renderHeatmap(s) {
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
       const agLbl=AGE_LBL[ag]||ag, tLbl=TEN_LBL[t]||t;
-      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:43px" title="">
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:40px" title="">
         ${v?`<div class="cell-cnt">${v}명</div><div class="cell-pct">(${pct}%)</div>`:''}
       </td>`;
     });
