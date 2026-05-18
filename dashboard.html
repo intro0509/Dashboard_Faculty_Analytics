@@ -378,8 +378,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <div class="legend" id="genderLegend" style="margin-top:10px"></div>
         </div>
 
-        <!-- Row3~4: 3열 서브그리드 -->
-        <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr 1fr;gap:14px;align-items:start">
+        <!-- Row3: 2열 서브그리드 (COL1:히트맵 / COL2:재직기간+연령) -->
+        <div style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
 
           <!-- COL1: 연령×재직기간 (높이 독립) -->
           <div class="card" id="card-heatmap" style="overflow:hidden">
@@ -405,21 +405,19 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
             </div>
           </div>
 
-          <!-- COL3: 정년퇴직(위) + 빈칸(아래) -->
-          <div class="card" id="card-retire">
-            <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
-            <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
-          </div>
-
         </div>
 
       </div>
 
-      <!-- 우측: 단과대학별 독립 배치 -->
+      <!-- 우측: 단과대학별 + 정년퇴직 예정자 -->
       <div style="display:flex;flex-direction:column;gap:14px">
         <div class="card" id="card-college">
           <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
           <div class="college-scroll" id="collegeTable" style="max-height:500px"></div>
+        </div>
+        <div class="card" id="card-retire">
+          <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
+          <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
         </div>
       </div>
 
