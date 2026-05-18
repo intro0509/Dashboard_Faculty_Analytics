@@ -1509,7 +1509,8 @@ function applyScale() {
     // wrapper 높이: scaleRoot 실제 높이 + navH + 하단 여백
     try {
       const contentH = root.scrollHeight * scale;
-      wrapper.style.height = (navH + contentH) + 'px';
+      // margin은 scrollHeight에 미포함 → 넉넉히 추가
+      wrapper.style.height = (navH + contentH + 40) + 'px';
     } catch(e) { console.warn('wrapper height error:', e); }
   });
 }
