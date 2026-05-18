@@ -167,7 +167,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 .export-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9px;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;border:1px solid #e5eaf5;background:#fff;color:#374151;font-weight:500;transition:all .15s}
 .export-btn:hover{border-color:#1365FE;color:#1365FE;background:#f5f7ff}
 .export-btn svg{width:14px;height:14px}
-.coming-wrap{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg,#ffffff 0%,#f0f5ff 60%,#DBE8FE 100%)}
+.coming-wrap{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:#F6F6F6}
 .coming-card{background:#fff;border-radius:20px;border:1px solid #e5eaf5;padding:48px;text-align:center;max-width:480px}
 .coming-icon{width:64px;height:64px;border-radius:16px;background:#EBF1FF;display:flex;align-items:center;justify-content:center;margin:0 auto 20px}
 .coming-icon svg{width:32px;height:32px}
@@ -224,10 +224,14 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
       Export
     </button>
-    <div class="nav-icon-btn" title="관리자에게 메일 보내기" onclick="sendMailToAdmin()">
+    <div class="nav-icon-btn" title="관리자에게 메일 보내기" onclick="sendMailToAdmin()" style="width:auto;padding:0 12px;gap:6px">
       <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m2 7 10 7 10-7"/></svg>
+      <span style="font-size:13px;font-weight:500;font-family:'Pretendard',sans-serif">E-mail</span>
     </div>
-    <div class="nav-avatar">관리</div>
+    <div class="nav-icon-btn" onclick="goAdmin()" title="관리자 페이지" style="width:auto;padding:0 12px;gap:6px">
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06A1.65 1.65 0 004.68 15a1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06A1.65 1.65 0 009 4.68a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06A1.65 1.65 0 0019.4 9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+      <span style="font-size:13px;font-weight:500;font-family:'Pretendard',sans-serif">관리</span>
+    </div>
   </div>
 </nav>
 
@@ -475,6 +479,16 @@ Chart.defaults.font.size = 11;
 Chart.defaults.color = '#9ca3af';
 
 // PAGE NAV
+function goAdmin() {
+  const pw = prompt('관리자 비밀번호를 입력하세요.');
+  if (pw === null) return;
+  if (pw === 'ryanrhk#6104') {
+    window.location.href = 'upload.html';
+  } else {
+    alert('비밀번호가 올바르지 않습니다.');
+  }
+}
+
 function sendMailToAdmin() {
   if (confirm('관리자에게 메일을 보내시겠습니까?')) {
     window.location.href = 'mailto:intro0509@dau.ac.kr';
@@ -1285,20 +1299,21 @@ function renderRetire(s){
   const total=s.total||1;
 
   const items=[];
-  const baseColors=['#1365FE','#3B82F6','#60A5FA','#93C5FD','#BFDBFE'];
-  for(let i=4;i>=0;i--){
+  for(let i=0;i<=4;i++){
     const y=yr+i;
-    items.push({label:`${y}학년도`, value:trends[String(y)]||0, color:baseColors[i]});
+    items.push({label:`${y}학년도`, value:trends[String(y)]||0});
   }
   const max=Math.max(...items.map(it=>it.value),1);
+  const maxVal=max;
 
   // histo-row 스타일로 렌더링
   const html=items.map(it=>{
     const barPct=(it.value/max*100).toFixed(1);
     const ratePct=(it.value/total*100).toFixed(2);
+    const barColor=it.value===maxVal&&maxVal>0?'#1365FE':'#93c5fd';
     return `<div class="histo-row">
       <div class="histo-lbl">${it.label}</div>
-      <div class="bar-bg"><div class="bar-fill" style="background:${it.color}" data-target="${barPct}"></div></div>
+      <div class="bar-bg"><div class="bar-fill" style="background:${barColor}" data-target="${barPct}"></div></div>
       <span class="histo-cnt">${it.value}명<span class="histo-pct"> (${ratePct}%)</span></span>
     </div>`;
   }).join('');
@@ -1404,12 +1419,12 @@ function renderCollege(s){
   const sorted=Object.entries(colleges).sort((a,b)=>b[1]-a[1]).slice(0,20);
   if(!sorted.length){el.innerHTML='<p style="color:#9ca3af;font-size:12px;padding:20px;text-align:center">데이터 없음</p>';return;}
   const max=sorted[0]?.[1]||1;
-  const html=sorted.map(([name,cnt])=>{
+  const html=sorted.map(([name,cnt],idx)=>{
     const pct=(cnt/total*100).toFixed(1);
     const barPct=(cnt/max*100).toFixed(1);
     return `<div class="histo-row">
       <div class="histo-lbl">${name}</div>
-      <div class="bar-bg"><div class="bar-fill" style="background:#1365FE" data-target="${barPct}"></div></div>
+      <div class="bar-bg"><div class="bar-fill" style="background:${idx===0?'#1365FE':'#93c5fd'}" data-target="${barPct}"></div></div>
       <span class="histo-cnt">${cnt}명<span class="histo-pct"> (${pct}%)</span></span>
     </div>`;
   }).join('');
