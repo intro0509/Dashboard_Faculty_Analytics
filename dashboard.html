@@ -183,12 +183,12 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 @media(max-width:768px){.grid-2,.grid-3{grid-template-columns:1fr}.kpi-grid{grid-template-columns:1fr 1fr}}
 
 /* HEATMAP */
-.heatmap-table{border-collapse:separate;border-spacing:2px;width:100%;margin:0}
-.heatmap-table th{font-size:9px;color:#9ca3af;font-weight:500;padding:2px 4px;text-align:center;white-space:nowrap}
-.heatmap-table th.row-header{text-align:right;min-width:52px;width:52px;font-size:9px}
+.heatmap-table{border-collapse:separate;border-spacing:2px;width:100%;margin:0 auto}
+.heatmap-table th{font-size:12px;color:#9ca3af;font-weight:500;padding:2px 4px;text-align:center;white-space:nowrap}
+.heatmap-table th.row-header{text-align:right;min-width:52px;width:52px;font-size:12px}
 .heatmap-cell{border-radius:4px;width:30px;height:30px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
-.heatmap-cell .cell-cnt{font-size:9px;font-weight:700}
+.heatmap-cell .cell-cnt{font-size:10px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:8px;opacity:.8}
 
 footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
@@ -297,7 +297,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div class="rate-card">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div></div>
         <div style="position:relative;height:220px"><canvas id="rateChart"></canvas></div>
-        <p style="margin-top:8px;font-size:11px;color:#111827;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:6px">
+        <p style="margin-top:14px;font-size:11px;color:#111827;line-height:1.6;border-top:1px solid #f3f4f6;padding-top:8px">
           💡 출처: 고등교육통계조사(매 학년도 4월 1일 기준)
         </p>
       </div>
@@ -1111,7 +1111,7 @@ function renderHisto(cid, dataObj, colors, total, legendId) {
 
       // 안쪽 공간 축소, 두께 증가
       const margin = 2;
-      const maxR = Math.min(W, H) / 2 * 0.96;
+      const maxR = Math.min(W, H) / 2 * 0.90;
       const arcGap = n > 1 ? (maxR - margin) / (n - 1) * 0.65 : maxR;
       const outerR = maxR;
       const barH = Math.min(arcGap * 0.85, 26);
@@ -1260,7 +1260,7 @@ function renderHeatmap(s) {
   const TEN_LBL={'3년 미만':'▼ 3년','3년-5년':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년-35년':'▼ 35년','35년 초과':'▲ 35년'};
   const AGE_LBL={'30세 미만':'▼ 30세','30세-35세':'▼ 35세','35세-40세':'▼ 40세','40세-45세':'▼ 45세','45세-50세':'▼ 50세','50세-55세':'▼ 55세','55세-60세':'▼ 60세','60세-65세':'▼ 65세','65세 초과':'▲ 65세'};
 
-  let html=`<div style="overflow-x:auto"><table class="heatmap-table">
+  let html=`<div style="overflow-x:auto"><table class="heatmap-table" style="margin:0 auto">
     <thead><tr>
       <th class="row-header" style="min-width:52px;width:52px"></th>
       ${TEN.map(()=>`<th style="min-width:30px;width:30px"></th>`).join('')}
