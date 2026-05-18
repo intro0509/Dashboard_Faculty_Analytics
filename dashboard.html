@@ -8,7 +8,7 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;overflow-x:hidden}
+html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px}
 
 /* APP WRAPPER */
 #appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
@@ -38,7 +38,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 
 /* PAGE */
 .page{display:none}
-.page.active{display:flex;justify-content:center;overflow:hidden}
+.page.active{display:flex;justify-content:center}
 
 /* DASHBOARD */
 .dash-wrap{min-height:calc(100vh - 56px);background:#F6F6F6;padding:24px 28px}
@@ -1494,8 +1494,15 @@ function applyScale() {
   nav.style.width = SCALE_BASE + 'px';
   nav.style.transformOrigin = 'top center';
   // topnav 높이 보정 (scale 후 실제 높이)
-  const navH = 72 * scale;
-  nav.style.marginBottom = `${navH - 72}px`;
+  const navH = 84 * scale;
+  nav.style.marginBottom = `${navH - 84}px`;
+
+  // nav-right: scale 후 실제 우측 여백에 맞춰 동적 조정
+  const navRight = document.querySelector('.nav-right');
+  if (navRight) {
+    const scaledRight = 28 * scale;
+    navRight.style.right = scaledRight + 'px';
+  }
 
   // scaleRoot: topnav 아래에 배치
   root.style.transform = `scale(${scale})`;
