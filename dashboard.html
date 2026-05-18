@@ -1491,7 +1491,7 @@ function applyScale() {
 
   // scaleRoot의 실제 좌우 여백 계산 → topnav padding에 동기화
   const scaledContentW = SCALE_BASE * scale;
-  const sidePad = Math.max(28, (wrapperW - scaledContentW) / 2 + 28 * scale);
+  const sidePad = (wrapperW - scaledContentW) / 2 + 28;
   nav.style.padding = `0 ${sidePad}px`;
 
   // scaleRoot: topnav 아래에 배치
