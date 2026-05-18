@@ -186,7 +186,7 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .heatmap-table{border-collapse:separate;border-spacing:2px;width:100%;margin:0 auto}
 .heatmap-table th{font-size:12px;color:#9ca3af;font-weight:400;padding:2px 4px;text-align:center;white-space:nowrap}
 .heatmap-table th.row-header{text-align:right;min-width:52px;width:52px;font-size:12px;font-weight:400;color:#9ca3af}
-.heatmap-cell{border-radius:4px;width:55px;height:55px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
+.heatmap-cell{border-radius:4px;width:43px;height:43px;text-align:center;vertical-align:middle;font-size:8px;font-weight:600;cursor:pointer;transition:transform .15s,box-shadow .15s;position:relative}
 .heatmap-cell:hover{transform:scale(1.08);box-shadow:0 2px 8px rgba(19,101,254,.25);z-index:10}
 .heatmap-cell .cell-cnt{font-size:10px;font-weight:700}
 .heatmap-cell .cell-pct{font-size:8px;opacity:.8}
@@ -384,7 +384,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <!-- COL1: 연령×재직기간 (높이 독립) -->
           <div class="card" id="card-heatmap" style="overflow-y:auto;overflow-x:hidden">
             <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
-            <div id="heatmapWrap" style="overflow-x:auto"></div>
+            <div id="heatmapWrap"></div>
           </div>
 
           <!-- COL2: 재직기간별(위) + 연령별(아래) -->
@@ -1271,10 +1271,10 @@ function renderHeatmap(s) {
     return val/maxVal>0.5?'#fff':'#1365FE';
   }
 
-  const TEN_LBL={'3년 미만':'▼ 3년','3년-5년':'▼ 5년','5년-10년':'▼ 10년','10년-15년':'▼ 15년','15년-20년':'▼ 20년','20년-25년':'▼ 25년','25년-30년':'▼ 30년','30년-35년':'▼ 35년','35년 초과':'▲ 35년'};
-  const AGE_LBL={'30세 미만':'▼ 30세','30세-35세':'▼ 35세','35세-40세':'▼ 40세','40세-45세':'▼ 45세','45세-50세':'▼ 50세','50세-55세':'▼ 55세','55세-60세':'▼ 60세','60세-65세':'▼ 65세','65세 초과':'▲ 65세'};
+  const TEN_LBL={'3년 미만':'▽ 3년','3년-5년':'▽ 5년','5년-10년':'▽ 10년','10년-15년':'▽ 15년','15년-20년':'▽ 20년','20년-25년':'▽ 25년','25년-30년':'▽ 30년','30년-35년':'▽ 35년','35년 초과':'▲ 35년'};
+  const AGE_LBL={'30세 미만':'▽ 30세','30세-35세':'▽ 35세','35세-40세':'▽ 40세','40세-45세':'▽ 45세','45세-50세':'▽ 50세','50세-55세':'▽ 55세','55세-60세':'▽ 60세','60세-65세':'▽ 65세','65세 초과':'▲ 65세'};
 
-  let html=`<div style="overflow-x:auto"><table class="heatmap-table" style="margin:0 auto">
+  let html=`<div style=""><table class="heatmap-table" style="margin:0 auto">
     <thead><tr>
       <th class="row-header" style="min-width:52px;width:52px"></th>
       ${TEN.map(()=>`<th style="min-width:55px;width:55px"></th>`).join('')}
@@ -1288,7 +1288,7 @@ function renderHeatmap(s) {
       const pct=total>0?(v/total*100).toFixed(1):'0.0';
       const bg=cellColor(v), tc=textColor(v);
       const agLbl=AGE_LBL[ag]||ag, tLbl=TEN_LBL[t]||t;
-      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:55px" title="">
+      html+=`<td class="heatmap-cell" style="background:${bg};color:${tc};width:43px" title="">
         ${v?`<div class="cell-cnt">${v}명</div><div class="cell-pct">(${pct}%)</div>`:''}
       </td>`;
     });
