@@ -14,10 +14,10 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;col
 #appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
-#scaleRoot{width:1920px;transform-origin:top left;position:relative}
+#scaleRoot{width:1920px;transform-origin:top center;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:#ffffff;height:72px;display:flex;align-items:center;padding:0 36px;gap:0;width:1920px;transform-origin:top left;border-radius:0;position:relative}
+.topnav{z-index:100;background:#ffffff;height:72px;display:flex;align-items:center;padding:0 36px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
 .logo{display:flex;align-items:center;gap:10px;margin-right:36px;text-decoration:none}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
@@ -1446,7 +1446,7 @@ function applyScale() {
   // topnav: wrapper 안에서 scale 적용
   nav.style.transform = `scale(${scale})`;
   nav.style.width = SCALE_BASE + 'px';
-  nav.style.transformOrigin = 'top left';
+  nav.style.transformOrigin = 'top center';
   // topnav 높이 보정 (scale 후 실제 높이)
   const navH = 72 * scale;
   nav.style.marginBottom = `${navH - 72}px`;
@@ -1454,7 +1454,7 @@ function applyScale() {
   // scaleRoot: topnav 아래에 배치
   root.style.transform = `scale(${scale})`;
   root.style.width = SCALE_BASE + 'px';
-  root.style.transformOrigin = 'top left';
+  root.style.transformOrigin = 'top center';
 
   // wrapper 높이 = navH + scaleRoot 높이
   const contentH = root.scrollHeight * scale;
