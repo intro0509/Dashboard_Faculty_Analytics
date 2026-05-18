@@ -110,8 +110,8 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .histo-lbl{font-size:12px;color:#374151;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden}
 .bar-fill{height:100%;border-radius:8px;transition:width 1s ease;width:0%}
-.histo-cnt{font-size:15px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
-.histo-pct{font-size:11px;color:#9ca3af;text-align:right;white-space:nowrap}
+.histo-cnt{font-size:14px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
+.histo-pct{font-size:12px;font-weight:400;color:#9ca3af;text-align:right;white-space:nowrap}
 
 /* RETIRE */
 .retire-row{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid #f3f4f6}
@@ -127,9 +127,9 @@ html,body{height:100%;font-family:'Pretendard',sans-serif;background:#f0f5ff;col
 .college-table th{text-align:left;padding:6px 8px;color:#9ca3af;font-weight:500;border-bottom:1px solid #f3f4f6;font-size:11px}
 .college-table td{padding:7px 8px;border-bottom:1px solid #f9fafb;color:#374151}
 .college-table tr:last-child td{border-bottom:none}
-.col-num{font-weight:700;color:#111827;text-align:right;font-size:15px}
+.col-num{font-weight:700;color:#111827;text-align:right;font-size:14px}
 .col-name{font-size:12px;color:#374151}
-.col-pct{color:#9ca3af;font-size:11px;text-align:right}
+.col-pct{color:#9ca3af;font-size:12px;font-weight:400;text-align:right}
 .col-bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden;width:60px;min-width:40px}
 .col-bar{height:100%;background:#1365FE;border-radius:8px;transition:width 1s ease}
 
@@ -970,7 +970,7 @@ function renderDonut(cid,lid,labels,values,colors,total){
           <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
           <span>${l}</span>
         </div>
-        <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
       </div>`;
     }).join('')}
   </div>`;
@@ -1070,7 +1070,7 @@ function renderStkBar(cid,lid,allLbls,allVals,allClrs,s,filterType){
           <div style="width:10px;height:10px;border-radius:2px;background:${colors[i]};flex-shrink:0"></div>
           <span>${l}</span>
         </div>
-        <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
+        <div style="font-size:14px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
       </div>`;
     }).join('')}
   </div>`;
@@ -1193,7 +1193,7 @@ function renderHisto(cid, dataObj, colors, total, legendId) {
               <div style="width:9px;height:9px;border-radius:2px;background:${colors[colorIdx]};flex-shrink:0"></div>
               <span>${l}</span>
             </div>
-            <div style="font-size:15px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:11px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
+            <div style="font-size:14px;font-weight:700;color:#111827">${cnt}명 <span style="font-size:12px;font-weight:400;color:#9ca3af">(${pct}%)</span></div>
           </div>`;
         }).join('')}
       </div>`;
