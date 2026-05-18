@@ -18,16 +18,16 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 /* TOPNAV */
 .topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;border-radius:0;position:relative}
-.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:0}
+.nav-group{display:flex;align-items:stretch;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;box-shadow:0 2px 8px rgba(0,0,0,0.08);gap:0;overflow:hidden}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
 .logo-text{font-size:14px;font-weight:700;color:#111827;white-space:nowrap}
 .logo-text span{color:#1365FE}
-.nav-tabs{display:flex;align-items:center;gap:4px;flex:1}
-.nav-tab{display:flex;align-items:center;gap:6px;padding:8px 20px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:'Pretendard',sans-serif;white-space:nowrap}
+.nav-tabs{display:flex;align-items:stretch;gap:4px;flex:1}
+.nav-tab{display:flex;align-items:center;gap:6px;padding:0 20px;border-radius:8px;font-size:13px;color:#374151;cursor:pointer;transition:all .15s;border:none;background:transparent;font-family:'Pretendard',sans-serif;white-space:nowrap}
 .nav-tab:hover{background:#ebebeb;color:#374151}
-.nav-tab.active{background:#F6F6F6;color:#374151;font-weight:700;border-radius:8px}
+.nav-tab.active{background:#F6F6F6;color:#374151;font-weight:700;border-radius:8px 8px 0 0;margin-bottom:-4px;padding-bottom:4px;box-shadow:0 2px 0 #F6F6F6}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
