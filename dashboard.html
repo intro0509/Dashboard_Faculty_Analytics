@@ -11,7 +11,7 @@
 html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px}
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
 #scaleRoot{width:1920px;transform-origin:top center;position:relative}
@@ -32,8 +32,8 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
 .nav-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
-.nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #e5eaf5;background:#fff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#374151;transition:all .15s}
-.nav-icon-btn:hover{border-color:#374151;background:#374151;color:#fff}
+.nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #161616;background:#ffffff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#161616;transition:all .15s}
+.nav-icon-btn:hover{border-color:#161616;background:#161616;color:#ffffff}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
 
 /* PAGE */
@@ -62,12 +62,12 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .status-txt strong{color:#111827}
 
 /* FILTER BAR */
-.filter-bar{background:#F6F6F6;border:1px solid #e5eaf5;border-radius:12px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto}
+.filter-bar{background:transparent;border:1px solid #e5eaf5;border-radius:12px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto}
 .filter-section{display:flex;align-items:center;gap:6px}
 .filter-label{font-size:11px;color:#6b7280;font-weight:600;white-space:nowrap;background:#f3f4f6;border:1px solid #e5eaf5;border-radius:6px;padding:3px 8px}
-.fchip{padding:4px 11px;border-radius:20px;font-size:11px;border:1px solid #e5eaf5;background:#f8faff;color:#6b7280;cursor:pointer;transition:all .15s;font-family:'Pretendard',sans-serif;white-space:nowrap}
-.fchip:hover{border-color:#1365FE;color:#1365FE}
-.fchip.on{background:#1365FE;border-color:#1365FE;color:#fff;font-weight:600}
+.fchip{padding:4px 11px;border-radius:20px;font-size:11px;border:1px solid #161616;background:#ffffff;color:#161616;cursor:pointer;transition:all .15s;font-family:'Pretendard',sans-serif;white-space:nowrap}
+.fchip:hover{border-color:#161616;background:#161616;color:#ffffff}
+.fchip.on{background:#161616;border-color:#161616;color:#ffffff;font-weight:600}
 .fsep{color:#e5eaf5;font-size:16px;margin:0 2px}
 .filter-total{margin-left:auto;font-size:13px;font-weight:700;color:#1365FE;white-space:nowrap}
 .filter-reset-btn{padding:4px 10px;border-radius:8px;font-size:11px;border:1px solid #fca5a5;background:#fff5f5;color:#dc2626;cursor:pointer;font-family:'Pretendard',sans-serif;white-space:nowrap;flex-shrink:0}
@@ -165,8 +165,8 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .kpi-delta-sm{font-size:11px;margin-top:2px;white-space:nowrap}
 
 /* EXPORT BTN */
-.export-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9px;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;border:1px solid #e5eaf5;background:#fff;color:#374151;font-weight:500;transition:all .15s}
-.export-btn:hover{border-color:#374151;background:#374151;color:#fff}
+.export-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9px;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;border:1px solid #161616;background:#ffffff;color:#161616;font-weight:500;transition:all .15s}
+.export-btn:hover{border-color:#161616;background:#161616;color:#ffffff}
 .export-btn svg{width:14px;height:14px}
 .coming-wrap{min-height:calc(100vh - 56px);display:flex;align-items:center;justify-content:center;background:#F6F6F6}
 .coming-card{background:#fff;border-radius:20px;border:1px solid #e5eaf5;padding:48px;text-align:center;max-width:480px}
@@ -200,7 +200,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
 <body>
-<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
+<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
 
 <nav class="topnav">
   <div class="nav-group">
@@ -252,7 +252,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px">
         <div style="padding:4px 2px 18px">
           <h1 style="font-size:40px;font-weight:800;color:#111827;margin-bottom:6px">Integrated Faculty Analytics Dashboard</h1>
-          <p style="font-size:20px;color:#9ca3af;line-height:1.6">Data-driven insights into faculty structure, organizational distribution, tenure coverage, and workforce sustainability.</p>
+          <p style="font-size:20px;color:#9ca3af;line-height:1.6">Data-driven insights into faculty structure, organizational distribution, tenure coverage,<br>and workforce sustainability.</p>
         </div>
         <div class="kpi-row">
           <div class="kpi-card-sm">
