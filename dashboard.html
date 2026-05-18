@@ -1504,10 +1504,11 @@ function applyScale() {
     nav.style.paddingRight = `${rightPad}px`;
   });
 
-  // wrapper 높이: auto (scaleRoot margin-bottom으로 공간 확보)
-  const contentH = root.scrollHeight * scale;
-  root.style.marginBottom = `-${root.scrollHeight - contentH}px`;
-  wrapper.style.height = 'auto';
+  // wrapper 높이: transform 적용 후 실제 높이 계산
+  setTimeout(() => {
+    const contentH = root.scrollHeight * scale;
+    wrapper.style.height = (navH + contentH + 16) + 'px';
+  }, 50);
 }
 
 applyScale();
