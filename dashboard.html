@@ -14,7 +14,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
-#scaleRoot{width:1920px;transform-origin:top center;position:relative}
+#scaleRoot{width:1920px;transform-origin:top left;position:relative}
 
 /* TOPNAV */
 .topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;border-radius:0;position:relative}
@@ -1497,19 +1497,16 @@ function applyScale() {
   // (setTimeout으로 transform 적용 후 위치 읽기)
   root.style.transform = `scale(${scale})`;
   root.style.width = SCALE_BASE + 'px';
-  root.style.transformOrigin = 'top center';
+  root.style.transformOrigin = 'top left';
 
   requestAnimationFrame(() => {
     try {
-      const rootRect = root.getBoundingClientRect();
-      const wrapperRect = wrapper.getBoundingClientRect();
-      const leftPad = rootRect.left - wrapperRect.left + 28 * scale;
-      const rightPad = wrapperRect.right - rootRect.right + 28 * scale;
-      nav.style.paddingLeft = `${leftPad}px`;
-      nav.style.paddingRight = `${rightPad}px`;
+      const sidePad = 28 * scale;
+      nav.style.paddingLeft = `${sidePad}px`;
+      nav.style.paddingRight = `${sidePad}px`;
       // nav-right를 paddingRight 기준 우측에 맞춤
       const navRight = document.querySelector('.nav-right');
-      if (navRight) navRight.style.right = `${rightPad}px`;
+      if (navRight) navRight.style.right = `${sidePad}px`;
     } catch(e) { console.warn('nav padding error:', e); }
 
     // wrapper 높이: scaleRoot 실제 높이 + navH + 하단 여백
