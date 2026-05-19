@@ -11,7 +11,7 @@
 html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;width:calc(100% - 32px);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
 #scaleRoot{width:1920px;transform-origin:top center;position:relative}
@@ -200,7 +200,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
 <body>
-<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;width:calc(100% - 32px);overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
+<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
 
 <nav class="topnav">
   <div class="nav-group">
@@ -1493,12 +1493,22 @@ function applyScale() {
   // topnav: scale 없이 appWrapper 너비에 맞게 자연 배치
   const navH = 84;
 
-  // scaleRoot 실제 위치로 topnav padding 동기화
-  root.style.transform = `scale(${scale})`;
-  root.style.width = SCALE_BASE + 'px';
-  root.style.transformOrigin = 'top center';
-
-  // wrapper 너비: CSS로 처리
+  // 화면 너비에 따라 PC/모바일 분기
+  if (wrapperW >= SCALE_MIN) {
+    // PC: top center 기준, overflow:hidden, 좌우 여백 유지
+    root.style.transform = `scale(${scale})`;
+    root.style.width = SCALE_BASE + 'px';
+    root.style.transformOrigin = 'top center';
+    wrapper.style.overflowX = 'hidden';
+    wrapper.style.overflowY = 'hidden';
+  } else {
+    // 모바일: top left 기준, overflow-x:auto, 좌우 스크롤 허용
+    root.style.transform = `scale(${scale})`;
+    root.style.width = SCALE_BASE + 'px';
+    root.style.transformOrigin = 'top left';
+    wrapper.style.overflowX = 'auto';
+    wrapper.style.overflowY = 'hidden';
+  }
 
   requestAnimationFrame(() => {
     try {
