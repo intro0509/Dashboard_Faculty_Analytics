@@ -367,7 +367,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     </div>
 
     <!-- 메인 레이아웃: 좌측(2열) + 우측(1열) 독립 -->
-    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-bottom:14px;align-items:stretch">
+    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-bottom:14px;align-items:start">
 
       <!-- 좌측: 2열 그리드 -->
       <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
@@ -436,10 +436,10 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       </div>
 
       <!-- 우측: 단과대학별 + 정년퇴직 예정자 -->
-      <div style="display:flex;flex-direction:column;gap:14px;height:100%">
-        <div class="card" id="card-college" style="flex:1;min-height:0;overflow:hidden">
+      <div style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" id="card-college">
           <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-          <div class="college-scroll" id="collegeTable" style="overflow-y:auto;height:calc(100% - 48px)"></div>
+          <div class="college-scroll" id="collegeTable" style="max-height:500px"></div>
         </div>
         <div class="card" id="card-retire">
           <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
@@ -763,15 +763,16 @@ async function renderAll() {
   const filterTotalEl = document.getElementById('filterTotal');
   if (filterTotalEl) filterTotalEl.textContent = s.total.toLocaleString()+'명';
   animateBars();
-  // applyScale 먼저 → 완료 후 adjust 함수들 실행 (순서 보장)
+  // applyScale → rAF 두 번 중첩 → 캔버스 렌더링 완료 후 높이 측정
   setTimeout(() => {
     applyScale();
-    // applyScale 후 브라우저 레이아웃 재계산 완료 시점에 높이 조정
     requestAnimationFrame(() => {
-      adjustCollegeHeight();
-      adjustHeatmapHeight();
-      adjustRetireHeight();
-      initScrollProxy();
+      requestAnimationFrame(() => {
+        adjustCollegeHeight();
+        adjustHeatmapHeight();
+        adjustRetireHeight();
+        initScrollProxy();
+      });
     });
   }, 150);
 
@@ -1547,22 +1548,25 @@ window.addEventListener('resize', () => {
   applyScale();
   if (resizeTimer) clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    // applyScale 후 브라우저 레이아웃 재계산 완료 시점에 높이 조정
     requestAnimationFrame(() => {
-      adjustCollegeHeight();
-      adjustHeatmapHeight();
-      adjustRetireHeight();
-      initScrollProxy();
+      requestAnimationFrame(() => {
+        adjustCollegeHeight();
+        adjustHeatmapHeight();
+        adjustRetireHeight();
+        initScrollProxy();
+      });
     });
   }, 100);
 });
 setTimeout(() => {
   applyScale();
   requestAnimationFrame(() => {
-    adjustCollegeHeight();
-    adjustHeatmapHeight();
-    adjustRetireHeight();
-    initScrollProxy();
+    requestAnimationFrame(() => {
+      adjustCollegeHeight();
+      adjustHeatmapHeight();
+      adjustRetireHeight();
+      initScrollProxy();
+    });
   });
 }, 200);
 
@@ -1593,14 +1597,35 @@ function initScrollProxy() {
 
 // 히트맵 카드 높이를 Row3+gap+Row4 합계로 동적 설정
 function adjustHeatmapHeight() {
-  // CSS Grid로 높이 자동 조정 - JS 강제설정 제거
+  const cardTenure = document.getElementById('card-tenure');
+  const cardAge = document.getElementById('card-age');
+  const cardHeatmap = document.getElementById('card-heatmap');
+  if (!cardTenure || !cardAge || !cardHeatmap) return;
+  const gap = 14;
+  // 히트맵 높이 = 재직기간별 + gap + 연령별
+  const totalH = cardTenure.offsetHeight + gap + cardAge.offsetHeight;
+  cardHeatmap.style.height = totalH + 'px';
 }
 
 function adjustRetireHeight() {
-  // CSS Grid로 높이 자동 조정 - JS 강제설정 제거
+  // 정년퇴직 예정자 높이 = 연령별 분포와 동일
+  const cardAge = document.getElementById('card-age');
+  const cardRetire = document.getElementById('card-retire');
+  if (!cardAge || !cardRetire) return;
+  cardRetire.style.height = cardAge.offsetHeight + 'px';
 }
 function adjustCollegeHeight() {
-  // CSS Grid로 높이 자동 조정 - JS 강제설정 제거
+  const cardTrack = document.getElementById('card-track');
+  const cardRank = document.getElementById('card-rank');
+  const cardTenure = document.getElementById('card-tenure');
+  const cardCollege = document.getElementById('card-college');
+  if (!cardTrack || !cardRank || !cardTenure || !cardCollege) return;
+  const gap = 14;
+  // 단과대학별 높이 = 트랙별 + 직급별 + 재직기간별 + gap*2
+  const totalH = cardTrack.offsetHeight + gap + cardRank.offsetHeight + gap + cardTenure.offsetHeight;
+  cardCollege.style.height = totalH + 'px';
+  const scroll = cardCollege.querySelector('.college-scroll');
+  if (scroll) scroll.style.maxHeight = (totalH - 60) + 'px';
 }
 </script>
 </div><!-- /appWrapper -->
