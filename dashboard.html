@@ -12,6 +12,8 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #scrollProxy{position:fixed;bottom:0;left:16px;right:calc(16px + var(--sb-width, 0px));height:0;overflow-x:auto;overflow-y:hidden;z-index:9999}
 #scrollProxy.active{height:14px}
 #scrollProxyInner{height:1px;pointer-events:none}
+#appWrapper::-webkit-scrollbar{display:none}
+#appWrapper{scrollbar-width:none}
 
 
 /* APP WRAPPER */
