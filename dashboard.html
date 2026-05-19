@@ -15,7 +15,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:hidden;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
 #scaleRoot{width:1920px;transform-origin:top left;position:relative}
@@ -1520,8 +1520,8 @@ function applyScale() {
     nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
   }
 
-  // appWrapper overflow: 소형은 스크롤 허용, 그 외 숨김
-  wrapper.style.overflowX = (wrapperW < SCALE_MIN) ? 'auto' : 'hidden';
+  // appWrapper는 항상 hidden (scrollProxy가 대신 스크롤바 표시)
+  wrapper.style.overflowX = 'hidden';
 }
 
 applyScale();
