@@ -38,7 +38,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 /* PAGE */
 .page{display:none}
-.page.active{display:flex;justify-content:center}
+.page.active{display:flex;justify-content:center;overflow:hidden}
 
 /* DASHBOARD */
 .dash-wrap{min-height:calc(100vh - 56px);background:#F6F6F6;padding:24px 28px 24px}
@@ -1494,14 +1494,13 @@ function applyScale() {
   const navH = 84;
 
   // scaleRoot 실제 위치로 topnav padding 동기화
-  // (setTimeout으로 transform 적용 후 위치 읽기)
   root.style.transform = `scale(${scale})`;
   root.style.width = SCALE_BASE + 'px';
   root.style.transformOrigin = 'top center';
 
-  // wrapper 너비를 window.innerWidth - 32px로 고정 (좌우 margin:16px 유지)
-  wrapper.style.width = (window.innerWidth - 32) + 'px';
-  wrapper.style.maxWidth = 'none';
+  // wrapper 너비 초기화 (margin:16px이 자연스럽게 적용되도록)
+  wrapper.style.width = '';
+  wrapper.style.maxWidth = '';
 
   requestAnimationFrame(() => {
     try {
