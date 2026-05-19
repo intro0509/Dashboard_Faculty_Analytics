@@ -1487,20 +1487,25 @@ function applyScale() {
   const viewportW = document.documentElement.clientWidth;
   const wrapperW  = viewportW - 32; // appWrapper 좌우 margin 16px×2
 
+  // ★ 핵심: 풀스크린 판단은 viewportW 기준 (margin 32px 제외 전)
+  //   1920px 화면 → wrapperW=1888, scale=1888/1920=0.983 → scaleRoot 1920px 유지 → 오른쪽 여백 발생
+  //   해결: viewportW >= SCALE_BASE면 풀스크린으로 간주, scaleRoot를 wrapperW에 맞춤
+  const isFullscreen = viewportW >= SCALE_BASE;
+
   let scale;
-  if (wrapperW >= SCALE_BASE) {
-    scale = 1;
+  if (isFullscreen) {
+    scale = 1;                       // 풀스크린: scaleRoot를 wrapperW에 맞춤
   } else if (wrapperW >= SCALE_MIN) {
-    scale = wrapperW / SCALE_BASE;
+    scale = wrapperW / SCALE_BASE;   // 중간: 비례 축소
   } else {
-    scale = SCALE_MIN / SCALE_BASE;
+    scale = SCALE_MIN / SCALE_BASE;  // 소형: 최소 고정
   }
 
   // scaleRoot
   root.style.transformOrigin = 'top left';
-  if (scale >= 1) {
+  if (isFullscreen) {
     root.style.transform    = 'none';
-    root.style.width        = wrapperW + 'px';
+    root.style.width        = wrapperW + 'px';  // 1888px에 맞춤 → 오른쪽 여백 제거
     root.style.marginBottom = '0px';
   } else {
     root.style.transform    = `scale(${scale})`;
@@ -1510,7 +1515,7 @@ function applyScale() {
 
   // topnav (scaleRoot 밖에 독립 존재)
   nav.style.transformOrigin = 'top left';
-  if (scale >= 1) {
+  if (isFullscreen) {
     nav.style.transform    = 'none';
     nav.style.width        = wrapperW + 'px';
     nav.style.marginBottom = '0px';
