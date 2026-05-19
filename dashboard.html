@@ -12,8 +12,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #scrollProxy{position:fixed;bottom:0;left:16px;right:calc(16px + var(--sb-width, 0px));height:0;overflow-x:auto;overflow-y:hidden;z-index:9999}
 #scrollProxy.active{height:14px}
 #scrollProxyInner{height:1px;pointer-events:none}
-#appWrapper::-webkit-scrollbar{display:none}
-#appWrapper{scrollbar-width:none}
+/* appWrapper scrollbar: 소형화면에서 JS가 auto로 전환 */
 
 
 /* APP WRAPPER */
@@ -1474,14 +1473,10 @@ function renderCollege(s){
 
 loadData();
 
-// ─────────────────────────────────────────────────────────
-// 반응형 스케일 전략
-//  ① 1920px 이상  : scale=1, scaleRoot/nav 너비 = wrapper 너비 (가로 스크롤 없음)
-//  ② 1632~1919px  : scale 비례 축소, 가로 스크롤 없음
-//  ③ 1632px 미만  : scale 고정(최소), appWrapper에서 가로 스크롤
-// ─────────────────────────────────────────────────────────
+// 반응형 스케일: nav + scaleRoot 동시 적용
 const SCALE_BASE = 1920;
 const SCALE_MIN  = 1632;
+const SCALE_MAX  = 1920;
 
 function applyScale() {
   const root    = document.getElementById('scaleRoot');
@@ -1489,33 +1484,35 @@ function applyScale() {
   const wrapper = document.getElementById('appWrapper');
   if (!root || !nav || !wrapper) return;
 
-  // document.documentElement.clientWidth: 세로 스크롤바 너비 제외한 정확한 뷰포트
+  // ★ document.documentElement.clientWidth: 세로 스크롤바 제외한 실제 뷰포트 너비
+  //   window.innerWidth는 스크롤바 포함이라 오차 발생 → clientWidth 사용
   const viewportW = document.documentElement.clientWidth;
-  const wrapperW  = viewportW - 32; // 좌우 margin 16px씩
+  const wrapperW  = viewportW - 32; // appWrapper 좌우 margin 16px×2
 
   let scale;
   if (wrapperW >= SCALE_BASE) {
-    scale = 1;                        // ① 풀스크린
+    scale = 1;                       // ① 1920px 이상: 풀스크린
   } else if (wrapperW >= SCALE_MIN) {
-    scale = wrapperW / SCALE_BASE;    // ② 중간 크기
+    scale = wrapperW / SCALE_BASE;   // ② 1632~1919px: 비례 축소
   } else {
-    scale = SCALE_MIN / SCALE_BASE;   // ③ 소형 고정
+    scale = SCALE_MIN / SCALE_BASE;  // ③ 1632px 미만: 최소 고정
   }
 
-  // scaleRoot
+  // ── scaleRoot 처리 ──
   root.style.transformOrigin = 'top left';
   if (scale >= 1) {
+    // 풀스크린: transform 없이 너비만 맞춤
     root.style.transform    = 'none';
     root.style.width        = wrapperW + 'px';
     root.style.marginBottom = '0px';
   } else {
-    root.style.transform = `scale(${scale})`;
-    root.style.width     = SCALE_BASE + 'px';
-    const collapsed = root.scrollHeight * (1 - scale);
-    root.style.marginBottom = `-${Math.round(collapsed)}px`;
+    // 축소: 1920px 기준 scale, 줄어든 높이 보정
+    root.style.transform    = `scale(${scale})`;
+    root.style.width        = SCALE_BASE + 'px';
+    root.style.marginBottom = `-${Math.round(root.scrollHeight * (1 - scale))}px`;
   }
 
-  // topnav (scaleRoot 밖에 독립적으로 존재하므로 별도 처리)
+  // ── topnav 처리 (scaleRoot 밖에 독립 존재하므로 별도 처리) ──
   nav.style.transformOrigin = 'top left';
   if (scale >= 1) {
     nav.style.transform    = 'none';
@@ -1527,7 +1524,9 @@ function applyScale() {
     nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
   }
 
-  // ③ 소형: appWrapper 가로 스크롤 ON, 그 외 OFF
+  // ── appWrapper overflow 제어 ──
+  // 소형(③): 콘텐츠가 scale 고정이라 wrapper보다 넓음 → 가로 스크롤 허용
+  // 그 외: 가로 스크롤 숨김
   wrapper.style.overflowX = (wrapperW < SCALE_MIN) ? 'auto' : 'hidden';
 }
 
