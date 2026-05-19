@@ -1480,12 +1480,12 @@ function applyScale() {
   if (!root || !nav || !wrapper) return;
 
   // wrapper 실제 너비 = 윈도우 - 마진(16px*2)
-  const wrapperW = wrapper.clientWidth;
+  const wrapperW = window.innerWidth - 32;
   let scale;
   if (wrapperW < SCALE_MIN) {
     scale = SCALE_MIN / SCALE_BASE;
-  } else if (wrapperW > SCALE_MAX) {
-    scale = SCALE_MAX / SCALE_BASE;
+  } else if (wrapperW >= SCALE_BASE) {
+    scale = 1;
   } else {
     scale = wrapperW / SCALE_BASE;
   }
