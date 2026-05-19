@@ -572,6 +572,8 @@ async function loadData() {
 async function initDashboard() {
   document.getElementById('loadingState').style.display='none';
   document.getElementById('dashContent').style.display='block';
+  // dashContent 표시 후 스케일 재적용 (차트 렌더링 전 scrollWidth 오측정 방지)
+  applyScale();
   const yearFilter = document.getElementById('yearFilter');
   DB.meta.years.slice().reverse().forEach(yr => {
     const chip = document.createElement('span');
@@ -763,6 +765,8 @@ async function renderAll() {
   animateBars();
   setTimeout(adjustCollegeHeight, 150);
   setTimeout(adjustHeatmapHeight, 150);
+  // 차트 렌더링 완료 후 스케일/스크롤바 재측정 (scrollWidth 정확히 반영)
+  setTimeout(() => { applyScale(); initScrollProxy(); }, 200);
 
 }
 
@@ -1531,7 +1535,7 @@ function applyScale() {
 
 applyScale();
 window.addEventListener('resize', () => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); initScrollProxy(); });
-setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); initScrollProxy(); }, 800);
+setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); initScrollProxy(); }, 200);
 
 function initScrollProxy() {
   const wrapper = document.getElementById('appWrapper');
