@@ -166,7 +166,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .kpi-lbl-sm{font-size:11px;color:#9ca3af;font-weight:500;margin-bottom:2px}
 .kpi-num-sm{font-size:22px;font-weight:800;color:#111827;line-height:1.1;white-space:nowrap}
 .kpi-num-sm small{font-size:12px;font-weight:400;color:#9ca3af;margin-left:2px}
-.kpi-delta-sm{font-size:11px;margin-top:2px;white-space:nowrap}
+.kpi-delta-sm{font-size:11px;margin-top:2px;white-space:nowrap;display:inline-flex;align-items:center;background:#e5e7eb;border-radius:6px;padding:2px 8px}
 
 /* EXPORT BTN */
 .export-btn{display:flex;align-items:center;gap:6px;padding:7px 16px;border-radius:9px;font-size:13px;font-family:'Pretendard',sans-serif;cursor:pointer;border:1px solid #161616;background:#ffffff;color:#161616;font-weight:500;transition:all .15s}
@@ -760,14 +760,14 @@ async function renderAll() {
   animateBars();
   // 순서 보장: adjust → applyScale(scrollHeight 정확히 측정) → scrollProxy
   setTimeout(() => {
-    // 1단계: rAF 두 번 → 캔버스 렌더링 완료 후 높이 측정
+    // 1단계: applyScale로 scaleRoot 너비 먼저 확정
+    applyScale();
+    // 2단계: rAF 두 번 → 너비 확정 후 레이아웃 완료 시점에 높이 측정
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        adjustCollegeHeight();
         adjustHeatmapHeight();
         adjustRetireHeight();
-        // 2단계: adjust 완료 후 applyScale (scrollHeight 정확히 반영)
-        applyScale();
+        adjustCollegeHeight();
         initScrollProxy();
       });
     });
@@ -1539,9 +1539,9 @@ function applyScale() {
 
   // 스케일 변경 후 레이아웃 완료 시점에 높이 재조정
   requestAnimationFrame(() => {
-    adjustCollegeHeight();
     adjustHeatmapHeight();
     adjustRetireHeight();
+    adjustCollegeHeight();
   });
 }
 
@@ -1552,24 +1552,25 @@ window.addEventListener('resize', () => {
   applyScale();
   if (resizeTimer) clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
+    // applyScale로 scaleRoot 너비 확정 후 adjust
+    applyScale();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
-        adjustCollegeHeight();
         adjustHeatmapHeight();
         adjustRetireHeight();
-        applyScale();
+        adjustCollegeHeight();
         initScrollProxy();
       });
     });
   }, 100);
 });
 setTimeout(() => {
+  applyScale();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
-      adjustCollegeHeight();
       adjustHeatmapHeight();
       adjustRetireHeight();
-      applyScale();
+      adjustCollegeHeight();
       initScrollProxy();
     });
   });
