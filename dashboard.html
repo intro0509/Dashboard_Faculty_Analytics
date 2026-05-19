@@ -8,10 +8,14 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
+html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0}
+/* 가로 스크롤바 화면 하단 고정 */
+#appWrapper{scrollbar-width:thin}
+#scrollProxy{position:fixed;bottom:0;left:0;right:0;height:12px;overflow-x:auto;overflow-y:hidden;z-index:9999;background:transparent}
+#scrollProxyInner{height:1px}
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
 #scaleRoot{width:1920px;transform-origin:top center;position:relative}
@@ -200,7 +204,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
 <body>
-<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
+<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
 
 <nav class="topnav">
   <div class="nav-group">
@@ -1493,12 +1497,12 @@ function applyScale() {
   // topnav: scale 없이 appWrapper 너비에 맞게 자연 배치
   const navH = 84;
 
-  // 항상 top center 기준으로 scale
+  // top left 기준으로 scale (화면이 작아져도 왼쪽부터 표시)
   root.style.transform = `scale(${scale})`;
   root.style.width = SCALE_BASE + 'px';
-  root.style.transformOrigin = 'top center';
-  wrapper.style.overflowX = 'hidden';
-  wrapper.style.overflowY = 'hidden';
+  root.style.transformOrigin = 'top left';
+  // topnav도 동일하게
+  nav.style.transformOrigin = 'top left';
 
   requestAnimationFrame(() => {
     try {
@@ -1521,6 +1525,22 @@ function applyScale() {
 applyScale();
 window.addEventListener('resize', () => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); });
 setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); }, 800);
+
+// 가로 스크롤바 화면 하단 고정 동기화
+function syncScrollProxy() {
+  const wrapper = document.getElementById('appWrapper');
+  const proxy = document.getElementById('scrollProxy');
+  const proxyInner = document.getElementById('scrollProxyInner');
+  if (!wrapper || !proxy || !proxyInner) return;
+  // proxy 너비를 wrapper 스크롤 너비와 동일하게
+  proxyInner.style.width = wrapper.scrollWidth + 'px';
+  proxy.style.left = (wrapper.getBoundingClientRect().left) + 'px';
+  proxy.style.right = (window.innerWidth - wrapper.getBoundingClientRect().right) + 'px';
+  // 스크롤 동기화
+  proxy.addEventListener('scroll', () => { wrapper.scrollLeft = proxy.scrollLeft; }, { passive: true });
+  wrapper.addEventListener('scroll', () => { proxy.scrollLeft = wrapper.scrollLeft; }, { passive: true });
+}
+setTimeout(syncScrollProxy, 1000);
 
 // 히트맵 카드 높이를 Row3+gap+Row4 합계로 동적 설정
 function adjustHeatmapHeight() {
@@ -1545,5 +1565,6 @@ function adjustCollegeHeight() {
 }
 </script>
 </div><!-- /appWrapper -->
+<div id="scrollProxy"><div id="scrollProxyInner"></div></div>
 </body>
 </html>
