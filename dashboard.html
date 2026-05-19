@@ -8,11 +8,12 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:auto}
+html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
 #scrollProxy{position:fixed;bottom:0;left:16px;right:calc(16px + var(--sb-width, 0px));height:0;overflow-x:auto;overflow-y:hidden;z-index:9999}
 #scrollProxy.active{height:14px}
 #scrollProxyInner{height:1px;pointer-events:none}
-/* appWrapper scrollbar visible for small screens */
+#appWrapper::-webkit-scrollbar{display:none}
+#appWrapper{scrollbar-width:none}
 
 
 /* APP WRAPPER */
@@ -22,7 +23,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #scaleRoot{width:1920px;transform-origin:top left;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;transform-origin:top left;border-radius:0;position:relative}
+.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;transform-origin:top left;border-radius:0;position:relative}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1473,11 +1474,12 @@ function renderCollege(s){
 
 loadData();
 
-// ── 반응형 스케일 설계 ──────────────────────────────────────────
-// 1920px 풀스크린  : scale=1, scaleRoot·topnav 너비 = wrapperW (가로 스크롤 없음)
-// 1632~1919px     : scale = wrapperW/1920 (비례 축소), 가로 스크롤 없음
-// 1632px 미만     : scale = 1632/1920 고정, appWrapper에서 가로 스크롤
-// ─────────────────────────────────────────────────────────────────
+// ─────────────────────────────────────────────────────────
+// 반응형 스케일 전략
+//  ① 1920px 이상  : scale=1, scaleRoot/nav 너비 = wrapper 너비 (가로 스크롤 없음)
+//  ② 1632~1919px  : scale 비례 축소, 가로 스크롤 없음
+//  ③ 1632px 미만  : scale 고정(최소), appWrapper에서 가로 스크롤
+// ─────────────────────────────────────────────────────────
 const SCALE_BASE = 1920;
 const SCALE_MIN  = 1632;
 
@@ -1487,53 +1489,46 @@ function applyScale() {
   const wrapper = document.getElementById('appWrapper');
   if (!root || !nav || !wrapper) return;
 
-  // 세로 스크롤바를 제외한 실제 뷰포트 너비
+  // document.documentElement.clientWidth: 세로 스크롤바 너비 제외한 정확한 뷰포트
   const viewportW = document.documentElement.clientWidth;
-  // appWrapper 좌우 margin 16px씩 = 32px 제외
-  const wrapperW  = viewportW - 32;
+  const wrapperW  = viewportW - 32; // 좌우 margin 16px씩
 
   let scale;
   if (wrapperW >= SCALE_BASE) {
-    // ① 풀스크린: 딱 맞게
-    scale = 1;
+    scale = 1;                        // ① 풀스크린
   } else if (wrapperW >= SCALE_MIN) {
-    // ② 중간 크기: 비례 축소
-    scale = wrapperW / SCALE_BASE;
+    scale = wrapperW / SCALE_BASE;    // ② 중간 크기
   } else {
-    // ③ 소형 화면: 최소 scale 고정 → appWrapper 가로 스크롤로 처리
-    scale = SCALE_MIN / SCALE_BASE;
+    scale = SCALE_MIN / SCALE_BASE;   // ③ 소형 고정
   }
 
-  const scaledW = Math.round(SCALE_BASE * scale); // 실제 표시 너비
-
+  // scaleRoot
+  root.style.transformOrigin = 'top left';
   if (scale >= 1) {
-    // ① 풀스크린: transform 없음, 너비를 wrapperW에 맞춤
-    root.style.transform = 'none';
-    root.style.width     = wrapperW + 'px';
-    nav.style.transform  = 'none';
-    nav.style.width      = wrapperW + 'px';
-    nav.style.marginBottom = '0px';
+    root.style.transform    = 'none';
+    root.style.width        = wrapperW + 'px';
     root.style.marginBottom = '0px';
   } else {
-    // ② ③ 축소 모드: top-left 기준 scale
-    root.style.transformOrigin = 'top left';
     root.style.transform = `scale(${scale})`;
     root.style.width     = SCALE_BASE + 'px';
-    nav.style.transformOrigin  = 'top left';
-    nav.style.transform  = `scale(${scale})`;
-    nav.style.width      = SCALE_BASE + 'px';
-    // scale로 줄어든 높이만큼 여백 제거
-    nav.style.marginBottom  = `-${Math.round(84 * (1 - scale))}px`;
-    const contentH = root.scrollHeight * scale;
-    root.style.marginBottom = `-${Math.round(root.scrollHeight - contentH)}px`;
+    const collapsed = root.scrollHeight * (1 - scale);
+    root.style.marginBottom = `-${Math.round(collapsed)}px`;
   }
 
-  // ③ 소형 화면: appWrapper 가로 스크롤 활성화
-  if (wrapperW < SCALE_MIN) {
-    wrapper.style.overflowX = 'auto';
+  // topnav (scaleRoot 밖에 독립적으로 존재하므로 별도 처리)
+  nav.style.transformOrigin = 'top left';
+  if (scale >= 1) {
+    nav.style.transform    = 'none';
+    nav.style.width        = wrapperW + 'px';
+    nav.style.marginBottom = '0px';
   } else {
-    wrapper.style.overflowX = 'hidden';
+    nav.style.transform    = `scale(${scale})`;
+    nav.style.width        = SCALE_BASE + 'px';
+    nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
   }
+
+  // ③ 소형: appWrapper 가로 스크롤 ON, 그 외 OFF
+  wrapper.style.overflowX = (wrapperW < SCALE_MIN) ? 'auto' : 'hidden';
 }
 
 applyScale();
