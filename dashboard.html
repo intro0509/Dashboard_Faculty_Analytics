@@ -20,10 +20,10 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:auto;overflow-y:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
-#scaleRoot{width:1920px;transform-origin:top center;position:relative}
+#scaleRoot{width:1920px;transform-origin:top left;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;transform-origin:top center;border-radius:0;position:relative}
+.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;transform-origin:top left;border-radius:0;position:relative}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1485,8 +1485,11 @@ function applyScale() {
   const wrapper = document.getElementById('appWrapper');
   if (!root || !nav || !wrapper) return;
 
-  // wrapper 실제 너비 = 윈도우 - 마진(16px*2)
-  const wrapperW = window.innerWidth - 32; // appWrapper 좌우 margin 16px씩
+  // 세로 스크롤바 너비를 제외한 실제 뷰포트 너비 사용 (가로 스크롤 방지 핵심)
+  const viewportW = document.documentElement.clientWidth;
+  // appWrapper 좌우 margin 16px씩 = 32px 제외
+  const wrapperW = viewportW - 32;
+
   let scale;
   if (wrapperW < SCALE_MIN) {
     scale = SCALE_MIN / SCALE_BASE;
@@ -1496,41 +1499,34 @@ function applyScale() {
     scale = wrapperW / SCALE_BASE;
   }
 
-  // topnav: scale 없이 appWrapper 너비에 맞게 자연 배치
-  const navH = 84;
-
-  // top left 기준으로 scale (화면이 작아져도 왼쪽부터 표시)
-  // scale=1이면 scaleRoot 너비를 wrapperW로 제한 (가로 스크롤 방지)
+  // scale=1(풀스크린)이면 scaleRoot/nav 너비를 wrapperW로 정확히 제한
   const effectiveW = scale >= 1 ? wrapperW : SCALE_BASE;
+
+  // scaleRoot 설정 (동기 처리로 타이밍 이슈 제거)
   root.style.transform = scale >= 1 ? 'none' : `scale(${scale})`;
   root.style.width = effectiveW + 'px';
   root.style.transformOrigin = 'top left';
-  // topnav도 동일하게
-  nav.style.transformOrigin = 'top left';
 
-  requestAnimationFrame(() => {
-    try {
-      // topnav: scaleRoot와 동일한 scale/origin 적용
-      if (scale >= 1) {
-        nav.style.transform = 'none';
-        nav.style.marginBottom = '0px';
-        nav.style.width = wrapperW + 'px';
-      } else {
-        nav.style.transform = `scale(${scale})`;
-        nav.style.transformOrigin = 'top left';
-        nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
-        nav.style.width = SCALE_BASE + 'px';
-      }
-    } catch(e) { console.warn('nav padding error:', e); }
+  // topnav 설정 (동기 처리)
+  if (scale >= 1) {
+    nav.style.transform = 'none';
+    nav.style.marginBottom = '0px';
+    nav.style.width = wrapperW + 'px';
+    nav.style.transformOrigin = 'top left';
+  } else {
+    nav.style.transform = `scale(${scale})`;
+    nav.style.transformOrigin = 'top left';
+    nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
+    nav.style.width = SCALE_BASE + 'px';
+  }
 
-    // wrapper 높이: scaleRoot 실제 높이 + navH + 하단 여백
-    try {
-      // wrapper 높이: JS 미설정 → CSS auto, margin:16px 자연스럽게 보임
-      // scaleRoot 원본 높이와 scale된 높이 차이를 margin-bottom으로 보정
-      const contentH = root.scrollHeight * scale;
-      root.style.marginBottom = `-${root.scrollHeight - contentH}px`;
-    } catch(e) { console.warn('wrapper height error:', e); }
-  });
+  // scaleRoot 높이 보정 (scale < 1인 경우만 필요)
+  if (scale < 1) {
+    const contentH = root.scrollHeight * scale;
+    root.style.marginBottom = `-${root.scrollHeight - contentH}px`;
+  } else {
+    root.style.marginBottom = '0px';
+  }
 }
 
 applyScale();
