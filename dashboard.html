@@ -1499,6 +1499,10 @@ function applyScale() {
   root.style.width = SCALE_BASE + 'px';
   root.style.transformOrigin = 'top center';
 
+  // wrapper 너비를 window.innerWidth - 32px로 고정 (좌우 margin:16px 유지)
+  wrapper.style.width = (window.innerWidth - 32) + 'px';
+  wrapper.style.maxWidth = 'none';
+
   requestAnimationFrame(() => {
     try {
       // topnav: scaleRoot와 동일한 scale/origin 적용
