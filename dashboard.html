@@ -1534,7 +1534,18 @@ function applyScale() {
 }
 
 applyScale();
-window.addEventListener('resize', () => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); initScrollProxy(); });
+// debounce: resize 완료 후 실행 (겹침 방지)
+let resizeTimer = null;
+window.addEventListener('resize', () => {
+  applyScale(); // 즉시 scale 적용 (화면 크기 변화에 즉각 반응)
+  if (resizeTimer) clearTimeout(resizeTimer);
+  resizeTimer = setTimeout(() => {
+    // 브라우저 레이아웃 재계산 완료 후 높이 조정
+    adjustCollegeHeight();
+    adjustHeatmapHeight();
+    initScrollProxy();
+  }, 100);
+});
 setTimeout(() => { applyScale(); adjustCollegeHeight(); adjustHeatmapHeight(); initScrollProxy(); }, 200);
 
 function initScrollProxy() {
