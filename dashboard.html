@@ -763,14 +763,16 @@ async function renderAll() {
   const filterTotalEl = document.getElementById('filterTotal');
   if (filterTotalEl) filterTotalEl.textContent = s.total.toLocaleString()+'명';
   animateBars();
-  // applyScale → rAF 두 번 중첩 → 캔버스 렌더링 완료 후 높이 측정
+  // 순서 보장: adjust → applyScale(scrollHeight 정확히 측정) → scrollProxy
   setTimeout(() => {
-    applyScale();
+    // 1단계: rAF 두 번 → 캔버스 렌더링 완료 후 높이 측정
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         adjustCollegeHeight();
         adjustHeatmapHeight();
         adjustRetireHeight();
+        // 2단계: adjust 완료 후 applyScale (scrollHeight 정확히 반영)
+        applyScale();
         initScrollProxy();
       });
     });
@@ -1553,18 +1555,19 @@ window.addEventListener('resize', () => {
         adjustCollegeHeight();
         adjustHeatmapHeight();
         adjustRetireHeight();
+        applyScale();
         initScrollProxy();
       });
     });
   }, 100);
 });
 setTimeout(() => {
-  applyScale();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       adjustCollegeHeight();
       adjustHeatmapHeight();
       adjustRetireHeight();
+      applyScale();
       initScrollProxy();
     });
   });
