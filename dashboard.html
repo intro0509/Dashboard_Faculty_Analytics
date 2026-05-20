@@ -22,7 +22,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 /* TOPNAV */
 .topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;transform-origin:top left;border-radius:0;position:relative}
-.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:1}
+.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:0 0 auto}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
@@ -253,7 +253,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <!-- 상단: 제목+KPI(좌) | 확보율추이(우) -->
     <div class="top-header">
       <!-- 좌: 제목(상단) + KPI 3개(하단) -->
-      <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-width:0;overflow:hidden">
         <div style="padding:4px 2px 18px">
           <h1 style="font-size:40px;font-weight:800;color:#111827;margin-bottom:6px">Integrated Faculty Analytics Dashboard</h1>
           <p style="font-size:20px;color:#9ca3af;line-height:1.6">Data-driven insights into faculty structure, organizational distribution, tenure coverage,<br>and workforce sustainability.</p>
@@ -1599,15 +1599,8 @@ function adjustRetireHeight() {
   // CSS Grid로 높이 자동 조정
 }
 function adjustCollegeHeight() {
-  // CSS Grid span으로 높이 자동 조정 - JS 불필요
-  // college-scroll 높이만 카드에 맞게 조정
-  const cardCollege = document.getElementById('card-college');
-  if (!cardCollege) return;
-  const scroll = cardCollege.querySelector('.college-scroll');
-  if (scroll) {
-    const availH = cardCollege.clientHeight - 48;
-    if (availH > 0) scroll.style.height = availH + 'px';
-  }
+  // CSS flex:1 + min-height:0으로 자동 처리
+  // JS height 설정 불필요 (flex:1이 card-hd 제외 나머지 공간 자동 채움)
 }
 </script>
 </div><!-- /appWrapper -->
