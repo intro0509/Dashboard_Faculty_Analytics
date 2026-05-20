@@ -149,12 +149,12 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 .loading-txt{font-size:13px;color:#9ca3af}
 
 /* TOP HEADER AREA */
-.top-header{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:14px;align-items:stretch}
+.top-header{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px;align-items:stretch}
 .top-header-left{display:flex;flex-direction:column;gap:14px}
 .title-card{background:#F6F6F6;border-radius:14px;padding:20px 22px}
 .title-card h1{font-size:22px;font-weight:800;color:#111827;margin-bottom:4px}
 .title-card p{font-size:13px;color:#9ca3af}
-.rate-card{background:#ffffff;border-radius:14px;padding:18px;display:flex;flex-direction:column}
+.rate-card{background:#ffffff;border-radius:14px;padding:18px;display:flex;flex-direction:column;min-width:0;overflow:hidden}
 
 /* KPI ROW - 레퍼런스 스타일 */
 .kpi-row{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
@@ -274,7 +274,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
                 <div class="kpi-delta-sm" id="kpiTotalDelta"></div>
               </div>
             </div>
-            <div style="flex-shrink:0;width:80px;height:40px"><canvas id="sparkTotal"></canvas></div>
+            <div style="flex:1;min-width:60px;height:40px"><canvas id="sparkTotal"></canvas></div>
           </div>
           <div class="kpi-card-sm">
             <div class="kpi-icon-box">
@@ -290,7 +290,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
                 <div class="kpi-delta-sm" id="kpiTenureDelta"></div>
               </div>
             </div>
-            <div style="flex-shrink:0;width:80px;height:40px"><canvas id="sparkTenure"></canvas></div>
+            <div style="flex:1;min-width:60px;height:40px"><canvas id="sparkTenure"></canvas></div>
           </div>
           <div class="kpi-card-sm">
             <div class="kpi-icon-box">
@@ -308,7 +308,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
                 <div class="kpi-delta-sm" id="kpiNonTenureDelta"></div>
               </div>
             </div>
-            <div style="flex-shrink:0;width:80px;height:40px"><canvas id="sparkNonTenure"></canvas></div>
+            <div style="flex:1;min-width:60px;height:40px"><canvas id="sparkNonTenure"></canvas></div>
           </div>
         </div>
       </div>
@@ -390,7 +390,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <!-- Col3 Row1~2 span: 단과대학별 (CSS grid-row:span 2 → 자동 높이!) -->
       <div class="card" id="card-college" style="grid-row:span 3;overflow:hidden;display:flex;flex-direction:column">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-        <div class="college-scroll" id="collegeTable" style="overflow-y:auto;flex:1"></div>
+        <div class="college-scroll" id="collegeTable" style="overflow-y:auto;flex:1;min-height:0"></div>
       </div>
 
       <!-- Row2 Col1: 직급별 -->
@@ -408,7 +408,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       </div>
 
       <!-- Row3 Col1: 히트맵 -->
-      <div class="card" id="card-heatmap" style="grid-row:span 2;overflow-y:auto;overflow-x:hidden">
+      <div class="card" id="card-heatmap" style="grid-row:span 2;overflow-y:auto;overflow-x:auto">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
         <div id="heatmapWrap"></div>
       </div>
