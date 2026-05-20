@@ -253,8 +253,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     <!-- 상단: 제목+KPI(좌) | 확보율추이(우) -->
     <div class="top-header">
       <!-- 좌: 제목(상단) + KPI 3개(하단) -->
-      <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-width:0;overflow:hidden">
-        <div style="padding:4px 2px 18px">
+      <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-width:0">
+        <div style="padding:4px 2px 18px;overflow:hidden">
           <h1 style="font-size:40px;font-weight:800;color:#111827;margin-bottom:6px">Integrated Faculty Analytics Dashboard</h1>
           <p style="font-size:20px;color:#9ca3af;line-height:1.6">Data-driven insights into faculty structure, organizational distribution, tenure coverage,<br>and workforce sustainability.</p>
         </div>
@@ -388,8 +388,8 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       </div>
 
       <!-- Col3 Row1~2 span: 단과대학별 (CSS grid-row:span 2 → 자동 높이!) -->
-      <div class="card" id="card-college" style="grid-row:span 3;overflow:hidden;display:flex;flex-direction:column">
-        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
+      <div class="card" id="card-college" style="grid-row:span 3;display:flex;flex-direction:column;padding:0">
+        <div class="card-hd" style="padding:18px 18px 0"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
         <div class="college-scroll" id="collegeTable" style="overflow-y:auto;flex:1;min-height:0"></div>
       </div>
 
@@ -1390,7 +1390,7 @@ function renderHeatmap(s) {
   let html=`<div style=""><table class="heatmap-table" style="margin:0 auto">
     <thead><tr>
       <th class="row-header" style="min-width:52px;width:52px"></th>
-      ${TEN.map(()=>`<th style="min-width:55px;width:55px"></th>`).join('')}
+      ${TEN.map(()=>`<th style="min-width:40px;width:40px"></th>`).join('')}
     </tr></thead>
     <tbody>`;
 
@@ -1410,7 +1410,7 @@ function renderHeatmap(s) {
 
   html+=`<tr>
     <th class="row-header" style="min-width:52px;width:52px"></th>
-    ${TEN.map(t=>`<th style="min-width:55px;width:55px;font-size:12px;color:#9ca3af;font-weight:500;padding:3px 1px;text-align:center;white-space:nowrap">${TEN_LBL[t]||t}</th>`).join('')}
+    ${TEN.map(t=>`<th style="min-width:40px;width:40px;font-size:11px;color:#9ca3af;font-weight:500;padding:3px 1px;text-align:center;white-space:nowrap">${TEN_LBL[t]||t}</th>`).join('')}
   </tr>`;
 
   html+='</tbody></table></div>';
