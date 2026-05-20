@@ -366,81 +366,60 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <button class="filter-reset-btn" style="margin-left:auto" onclick="resetAllFilters()">✕ 초기화</button>
     </div>
 
-    <!-- 메인 레이아웃: 좌측(2열) + 우측(1열) 독립 -->
-    <div style="display:grid;grid-template-columns:minmax(0,2fr) minmax(0,1fr);gap:14px;margin-bottom:14px;align-items:start">
+    <!-- 메인 레이아웃: 3열 통합 그리드 -->
+    <div id="main-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px">
 
-      <!-- 좌측: 2열 그리드 -->
-      <div id="left-grid" style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start">
-
-        <!-- Row1 Col1: 트랙별 -->
-        <div class="card" id="card-track">
-          <div class="card-hd"><div class="card-title"><div class="cdot"></div>트랙별 현황</div></div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="trackDonutChart"></canvas></div>
-            <div class="legend" id="trackDonutLegend" style="flex:1"></div>
-          </div>
+            <!-- Row1 Col1: 트랙별 -->
+      <div class="card" id="card-track">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="legend" id="trackDonutLegend" style="flex:1"></div>
         </div>
-
-        <!-- Row1 Col2: 비정년트랙별 -->
-        <div class="card" id="card-nt">
-          <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>비정년트랙별 현황</div></div>
-          <div style="display:flex;align-items:center;gap:12px">
-            <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="nonTenureDonutChart"></canvas></div>
-            <div class="legend" id="nonTenureDonutLegend" style="flex:1"></div>
-          </div>
-        </div>
-
-        <!-- Row2 Col1: 직급별 -->
-        <div class="card" id="card-rank">
-          <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>직급별 현황</div></div>
-          <div style="position:relative;height:28px;margin:4px 0"><canvas id="rankChart"></canvas></div>
-          <div class="legend" id="rankLegend" style="margin-top:10px"></div>
-        </div>
-
-        <!-- Row2 Col2: 성별 -->
-        <div class="card" id="card-gender">
-          <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#8b5cf6"></div>성별 현황</div></div>
-          <div style="position:relative;height:28px;margin:4px 0"><canvas id="genderChart"></canvas></div>
-          <div class="legend" id="genderLegend" style="margin-top:10px"></div>
-        </div>
-
-        <!-- Row3: 2열 서브그리드 (COL1:히트맵 / COL2:재직기간+연령) -->
-        <div id="row3-grid" style="grid-column:1/-1;display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:stretch">
-
-          <!-- COL1: 연령×재직기간 (높이 독립) -->
-          <div class="card" id="card-heatmap" style="overflow-y:auto;overflow-x:hidden">
-            <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
-            <div id="heatmapWrap"></div>
-          </div>
-
-          <!-- COL2: 재직기간별(위) + 연령별(아래) -->
-          <div style="display:flex;flex-direction:column;gap:14px">
-            <div class="card" id="card-tenure">
-              <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="tenureHisto"></canvas></div>
-                <div id="tenureHistoLegend" style="flex:1"></div>
-              </div>
-            </div>
-            <div class="card" id="card-age">
-              <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
-              <div style="display:flex;align-items:center;gap:8px">
-                <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="ageHisto"></canvas></div>
-                <div id="ageHistoLegend" style="flex:1"></div>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
       </div>
 
-      <!-- 우측: 단과대학별 + 정년퇴직 예정자 -->
-      <div style="display:flex;flex-direction:column;gap:14px">
-        <div class="card" id="card-college">
-          <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-          <div class="college-scroll" id="collegeTable" style="max-height:500px"></div>
+      <!-- Row1 Col2: 비정년트랙별 -->
+      <div class="card" id="card-nt">
+        <div style="display:flex;align-items:center;gap:12px">
+          <div class="legend" id="nonTenureDonutLegend" style="flex:1"></div>
         </div>
+      </div>
+
+      <!-- Col3 Row1~2 span: 단과대학별 (CSS grid-row:span 2 → 자동 높이!) -->
+      <div class="card" id="card-college" style="grid-row:span 2;overflow:hidden;display:flex;flex-direction:column">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
+        <div class="college-scroll" id="collegeTable" style="overflow-y:auto;flex:1"></div>
+      </div>
+
+      <!-- Row2 Col1: 직급별 -->
+      <div class="card" id="card-rank">
+        <div class="legend" id="rankLegend" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Row2 Col2: 성별 -->
+      <div class="card" id="card-gender">
+        <div class="legend" id="genderLegend" style="margin-top:10px"></div>
+      </div>
+
+      <!-- Row3 Col1: 히트맵 -->
+      <div class="card" id="card-heatmap" style="overflow-y:auto;overflow-x:hidden">
+        <div id="heatmapWrap"></div>
+      </div>
+
+      <!-- Row3 Col2: 재직기간별 + 연령별 -->
+      <div id="row3-col2" style="display:flex;flex-direction:column;gap:14px">
+        <div class="card" id="card-tenure">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="tenureHistoLegend" style="flex:1"></div>
+          </div>
+        </div>
+        <div class="card" id="card-age">
+          <div style="display:flex;align-items:center;gap:8px">
+            <div id="ageHistoLegend" style="flex:1"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Row3 Col3: 정년퇴직 예정자 -->
+      <div style="display:flex;flex-direction:column;gap:14px">
         <div class="card" id="card-retire">
           <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ef4444"></div>정년퇴직 예정자 현황</div></div>
           <div id="retireChart" class="histo-wrap" style="margin-top:4px"></div>
@@ -1603,46 +1582,23 @@ function initScrollProxy() {
 
 // 히트맵 카드 높이를 Row3+gap+Row4 합계로 동적 설정
 function adjustHeatmapHeight() {
-  const cardTenure = document.getElementById('card-tenure');
-  const cardAge = document.getElementById('card-age');
-  const cardHeatmap = document.getElementById('card-heatmap');
-  if (!cardTenure || !cardAge || !cardHeatmap) return;
-  const gap = 14;
-  // 히트맵 높이 = 재직기간별 + gap + 연령별 (순환참조 없이 직접 합산)
-  cardHeatmap.style.height = (cardTenure.offsetHeight + gap + cardAge.offsetHeight) + 'px';
+  // CSS Grid로 높이 자동 조정
+  // card-heatmap과 row3-col2가 같은 row에 있어 자동으로 높이 맞춤
 }
 
 function adjustRetireHeight() {
-  // 정년퇴직 예정자 높이 = 연령별 분포와 동일
-  const cardAge = document.getElementById('card-age');
-  const cardRetire = document.getElementById('card-retire');
-  if (!cardAge || !cardRetire) return;
-  cardRetire.style.height = cardAge.offsetHeight + 'px';
+  // CSS Grid로 높이 자동 조정
 }
 function adjustCollegeHeight() {
-  const cardTrack    = document.getElementById('card-track');
-  const cardNT       = document.getElementById('card-nt');
-  const cardRank     = document.getElementById('card-rank');
-  const cardGender   = document.getElementById('card-gender');
-  const cardTenure   = document.getElementById('card-tenure');
-  const cardCollege  = document.getElementById('card-college');
-  if (!cardTrack || !cardRank || !cardTenure || !cardCollege) return;
-  const gap = 14;
-  // Row1 높이 = max(card-track, card-nonTenure)
-  const row1H = Math.max(
-    cardTrack.offsetHeight,
-    cardNT ? cardNT.offsetHeight : 0
-  );
-  // Row2 높이 = max(card-rank, card-gender)
-  const row2H = Math.max(
-    cardRank.offsetHeight,
-    cardGender ? cardGender.offsetHeight : 0
-  );
-  // card-college = Row1 + gap + Row2 + gap + card-tenure
-  const totalH = row1H + gap + row2H + gap + cardTenure.offsetHeight;
-  cardCollege.style.height = totalH + 'px';
+  // CSS Grid span으로 높이 자동 조정 - JS 불필요
+  // college-scroll 높이만 카드에 맞게 조정
+  const cardCollege = document.getElementById('card-college');
+  if (!cardCollege) return;
   const scroll = cardCollege.querySelector('.college-scroll');
-  if (scroll) scroll.style.maxHeight = (totalH - 60) + 'px';
+  if (scroll) {
+    const availH = cardCollege.clientHeight - 48;
+    if (availH > 0) scroll.style.height = availH + 'px';
+  }
 }
 </script>
 </div><!-- /appWrapper -->
