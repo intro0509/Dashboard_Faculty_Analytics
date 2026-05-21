@@ -1539,25 +1539,16 @@ function applyScale() {
     scale = SCALE_MIN / SCALE_BASE;  // 소형: 최소 고정
   }
 
-  // ★ 좌우 균등 여백: scaleRoot에 width=scaledWidth + margin:0 auto 적용
-  // - transform은 레이아웃 공간을 그대로 차지하므로 marginLeft 방식으로는 해결 불가
-  // - scaledWidth로 width를 줄이고 margin auto로 중앙 정렬
-  // - page.active의 justify-content:flex-start는 그대로 유지 (수정완료항목 규칙 1번)
-  const scaledWidth = Math.round(SCALE_BASE * scale);
-
   // scaleRoot
   root.style.transformOrigin = 'top left';
   if (isFullscreen) {
     root.style.transform    = 'none';
-    root.style.width        = wrapperW + 'px';
-    root.style.marginLeft   = 'auto';
-    root.style.marginRight  = 'auto';
+    root.style.width        = wrapperW + 'px';  // 1888px에 맞춤 → 오른쪽 여백 제거
     root.style.marginBottom = '0px';
   } else {
     root.style.transform    = `scale(${scale})`;
-    root.style.width        = scaledWidth + 'px';
-    root.style.marginLeft   = 'auto';
-    root.style.marginRight  = 'auto';
+    root.style.width        = SCALE_BASE + 'px';
+    // marginBottom: rAF에서 레이아웃 확정 후 측정
     requestAnimationFrame(() => {
       root.style.marginBottom = `-${Math.round(root.scrollHeight * (1 - scale))}px`;
     });
@@ -1568,18 +1559,14 @@ function applyScale() {
   if (isFullscreen) {
     nav.style.transform    = 'none';
     nav.style.width        = wrapperW + 'px';
-    nav.style.marginLeft   = 'auto';
-    nav.style.marginRight  = 'auto';
     nav.style.marginBottom = '0px';
   } else {
     nav.style.transform    = `scale(${scale})`;
-    nav.style.width        = scaledWidth + 'px';
-    nav.style.marginLeft   = 'auto';
-    nav.style.marginRight  = 'auto';
+    nav.style.width        = SCALE_BASE + 'px';
     nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
   }
 
-  // appWrapper: overflow-x hidden 유지 (scrollProxy가 모바일 스크롤 담당)
+  // appWrapper는 항상 hidden (scrollProxy가 대신 스크롤바 표시)
   wrapper.style.overflowX = 'hidden';
 
 }
