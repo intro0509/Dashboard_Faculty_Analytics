@@ -9,7 +9,7 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
-#scrollProxy{position:fixed;bottom:0;left:16px;right:calc(16px + var(--sb-width, 0px));height:0;overflow-x:auto;overflow-y:hidden;z-index:9999}
+#scrollProxy{position:fixed;bottom:0;left:16px;right:calc(16px + var(--sb-width, 0px));height:0;overflow-x:auto;overflow-y:hidden;z-index:9999;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 #scrollProxy.active{height:14px}
 #scrollProxyInner{height:1px}
 
@@ -22,7 +22,7 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 /* TOPNAV */
 .topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;border-radius:0;position:relative}
-.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:0 0 auto}
+.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:1}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
