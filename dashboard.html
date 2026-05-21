@@ -2,13 +2,13 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
 <title>동아대학교 교원관리 시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0}
+html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
 body{padding:16px;box-sizing:border-box}
 #scrollProxy{position:fixed;bottom:0;left:0;right:var(--sb-width, 0px);height:0;overflow-x:auto;overflow-y:hidden;z-index:9999;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 #scrollProxy.active{height:14px}
@@ -16,11 +16,11 @@ body{padding:16px;box-sizing:border-box}
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:0;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:0 auto;max-width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none}
 #appWrapper::-webkit-scrollbar{display:none}
 
 /* SCALE ROOT */
-#scaleRoot{width:1888px;position:relative;flex-shrink:0}
+#scaleRoot{width:1888px;position:relative;flex-shrink:0;transform-origin:top left}
 
 /* TOPNAV */
 .topnav{z-index:100;background:#F6F6F6;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1888px;border-radius:0;position:sticky;top:0}
@@ -37,14 +37,14 @@ body{padding:16px;box-sizing:border-box}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
-.nav-right{display:flex;align-items:center;gap:10px;position:absolute;right:28px;top:50%;transform:translateY(-50%);height:52px;z-index:200}
+.nav-right{display:flex;align-items:center;gap:10px;position:fixed;z-index:9990}
 .nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #161616;background:#ffffff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#161616;transition:all .15s}
 .nav-icon-btn:hover{border-color:#161616;background:#161616;color:#ffffff}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
 
 /* PAGE */
 .page{display:none}
-.page.active{display:flex;justify-content:flex-start;overflow:visible}
+.page.active{display:flex;justify-content:flex-start;overflow:visible;min-width:1888px}
 
 /* DASHBOARD */
 .dash-wrap{min-height:calc(100vh - 56px);background:#F6F6F6;padding:24px 28px 24px}
@@ -230,7 +230,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 }
 #dev-panel.show { display:block; }
 
-.dev-card-outline .card { outline:1px dashed rgba(255,80,80,0.6) !important; }
+.dev-card-outline .card { outline:1px solid rgba(255,50,50,0.85) !important; }
 .dev-grid-line #main-grid { outline:2px solid rgba(19,101,254,0.8) !important; }
 .dev-grid-line #main-grid > * { outline:1px solid rgba(19,101,254,0.3) !important; }
 .dev-height-label {
@@ -239,6 +239,23 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
   font-size:9px;padding:1px 5px;border-radius:3px;
   z-index:9997;pointer-events:none;font-family:monospace;
   white-space:nowrap;
+}
+.dev-chart-overlay {
+  position:absolute;inset:0;
+  outline:1px solid rgba(255,140,0,0.9);
+  pointer-events:none;z-index:9996;
+}
+.dev-chart-label {
+  position:absolute;bottom:2px;right:2px;
+  background:rgba(255,140,0,0.85);color:#fff;
+  font-size:9px;padding:1px 5px;border-radius:3px;
+  z-index:9997;pointer-events:none;font-family:monospace;
+  white-space:nowrap;
+}
+.dev-guide-line {
+  position:fixed;top:0;bottom:0;width:1px;
+  background:rgba(255,0,0,0.7);
+  pointer-events:none;z-index:9995;
 }
 </style>
 </head>
@@ -597,8 +614,8 @@ async function loadData() {
 async function initDashboard() {
   document.getElementById('loadingState').style.display='none';
   document.getElementById('dashContent').style.display='block';
-  // dashContent 표시 후 스크롤 프록시 초기화
-  initScrollProxy();
+  // dashContent 표시 후 스케일 + 스크롤 프록시 초기화
+  applyScale();
   const yearFilter = document.getElementById('yearFilter');
   DB.meta.years.slice().reverse().forEach(yr => {
     const chip = document.createElement('span');
@@ -795,7 +812,7 @@ async function renderAll() {
         adjustHeatmapHeight();
         adjustRetireHeight();
         adjustCollegeHeight();
-        initScrollProxy();
+        applyScale();
       });
     });
   }, 150);
@@ -1512,7 +1529,65 @@ loadData();
 // scaleRoot/topnav: 1920px 고정, transform 없음
 // 화면이 넓으면 좌우 여백만 생김, 화면이 좁으면 scrollProxy가 가로 스크롤 담당
 
-// resize 시 adjust + scrollProxy 갱신
+// ==============================
+// 뷰포트별 스케일 적용
+// ==============================
+function getScale() {
+  const vw = window.innerWidth;
+  if (vw <= 479)  return 0.85;
+  if (vw <= 767)  return 0.90;
+  if (vw <= 1919) return 0.95;
+  return 1.00;
+}
+
+function positionNavRight() {
+  const navRight = document.querySelector('.nav-right');
+  if (!navRight) return;
+
+  // clientWidth = 세로 스크롤바를 제외한 실제 가용 너비
+  // body padding 16px 양쪽 → body 콘텐츠 = clientWidth - 32
+  const cw       = document.documentElement.clientWidth;
+  const bodyW    = cw - 32;                        // body 콘텐츠 너비
+  const wrapW    = Math.min(bodyW, 1888);          // appWrapper 실제 너비
+  const scale    = getScale();
+  const PADDING  = 28;
+
+  // appWrapper 좌측 x좌표 (clientWidth 기준)
+  const wrapLeft = 16 + (bodyW - wrapW) / 2;      // margin:0 auto 반영
+  // 우측 가이드라인 x좌표
+  const guideRight = wrapLeft + wrapW - PADDING;
+  // fixed right = clientWidth - guideRight
+  navRight.style.right = (cw - guideRight) + 'px';
+
+  // top: body padding(16) + topnav 시각적 높이 중앙
+  const topnavVisualH = 84 * scale;
+  const navH = 52;
+  navRight.style.top = (16 + (topnavVisualH - navH) / 2) + 'px';
+}
+
+function applyScale() {
+  const scale   = getScale();
+  const root    = document.getElementById('scaleRoot');
+  const wrapper = document.getElementById('appWrapper');
+  if (!root || !wrapper) return;
+
+  if (scale < 1) {
+    root.style.transform = `scale(${scale})`;
+    wrapper.style.height = (root.offsetHeight * scale) + 'px';
+    wrapper.scrollLeft = 0;
+  } else {
+    root.style.transform = '';
+    wrapper.style.height = '';
+  }
+
+  positionNavRight();
+  initScrollProxy();
+}
+
+// 세로 스크롤 시 nav-right top 위치 갱신
+window.addEventListener('scroll', positionNavRight, { passive: true });
+
+// resize 시 adjust + scale + scrollProxy 갱신
 let resizeTimer = null;
 window.addEventListener('resize', () => {
   if (resizeTimer) clearTimeout(resizeTimer);
@@ -1522,7 +1597,7 @@ window.addEventListener('resize', () => {
         adjustHeatmapHeight();
         adjustRetireHeight();
         adjustCollegeHeight();
-        initScrollProxy();
+        applyScale();
       });
     });
   }, 100);
@@ -1533,31 +1608,33 @@ setTimeout(() => {
       adjustHeatmapHeight();
       adjustRetireHeight();
       adjustCollegeHeight();
-      initScrollProxy();
+      applyScale();
     });
   });
 }, 200);
 
 function initScrollProxy() {
   const wrapper = document.getElementById('appWrapper');
-  const proxy = document.getElementById('scrollProxy');
-  const inner = document.getElementById('scrollProxyInner');
+  const proxy   = document.getElementById('scrollProxy');
+  const inner   = document.getElementById('scrollProxyInner');
   if (!wrapper || !proxy || !inner) return;
 
   // 세로 스크롤바 너비 계산
   const sbWidth = window.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty('--sb-width', sbWidth + 'px');
 
-  // 가로 스크롤이 필요한 경우만 표시 (뷰포트 1920px 미만일 때)
+  // scrollProxyInner 너비 = appWrapper 실제 DOM scrollWidth (scale 무관)
+  // transform:scale()은 DOM 레이아웃에 영향 없으므로 항상 1888px
   if (window.innerWidth < 1920) {
     inner.style.width = wrapper.scrollWidth + 'px';
     proxy.classList.add('active');
   } else {
     proxy.classList.remove('active');
+    wrapper.scrollLeft = 0;
     return;
   }
 
-  // 스크롤 동기화 (중복 등록 방지)
+  // 스크롤 동기화
   proxy.onscroll = () => { wrapper.scrollLeft = proxy.scrollLeft; };
   wrapper.onscroll = () => { proxy.scrollLeft = wrapper.scrollLeft; };
 }
@@ -1585,13 +1662,11 @@ function adjustCollegeHeight() {
    삭제 시 이 블록 전체 제거
    ============================== */
 (function() {
-  // 토글 버튼 생성
   const btn = document.createElement('button');
   btn.id = 'dev-toggle';
   btn.textContent = '🔧 개발모드';
   document.body.appendChild(btn);
 
-  // 정보 패널 생성
   const panel = document.createElement('div');
   panel.id = 'dev-panel';
   panel.innerHTML = `
@@ -1599,70 +1674,116 @@ function adjustCollegeHeight() {
     <div id="dv-viewport">뷰포트: -</div>
     <div id="dv-scroll">scrollLeft: -</div>
     <div style="border-top:1px solid #374151;margin:5px 0"></div>
-    <div style="color:#6b7280;font-size:10px;margin-bottom:2px">카드 offsetHeight</div>
+    <div style="color:#6b7280;font-size:10px;margin-bottom:2px">카드 가로×세로</div>
     <div id="dv-heights"></div>
   `;
   document.body.appendChild(panel);
 
   let devOn = false;
-  let heightLabels = [];
+  let overlayEls = [];
+  let guideLines = [];
 
   const CARDS = [
-    {id:'card-track', name:'트랙별'},
-    {id:'card-nt', name:'비정년트랙'},
-    {id:'card-rank', name:'직급별'},
-    {id:'card-gender', name:'성별'},
+    {id:'card-track',   name:'트랙별'},
+    {id:'card-nt',      name:'비정년트랙'},
+    {id:'card-rank',    name:'직급별'},
+    {id:'card-gender',  name:'성별'},
     {id:'card-heatmap', name:'히트맵'},
-    {id:'card-tenure', name:'재직기간'},
-    {id:'card-age', name:'연령별'},
+    {id:'card-tenure',  name:'재직기간'},
+    {id:'card-age',     name:'연령별'},
     {id:'card-college', name:'단과대학'},
-    {id:'card-retire', name:'정년퇴직'},
+    {id:'card-retire',  name:'정년퇴직'},
+  ];
+
+  const CHARTS = [
+    {card:'card-track',   sel:'canvas#trackDonutChart',    name:'트랙 도넛'},
+    {card:'card-nt',      sel:'canvas#nonTenureDonutChart',name:'비정년 도넛'},
+    {card:'card-rank',    sel:'canvas#rankChart',          name:'직급 바'},
+    {card:'card-gender',  sel:'canvas#genderChart',        name:'성별 바'},
+    {card:'card-heatmap', sel:'#heatmapWrap',              name:'히트맵'},
+    {card:'card-tenure',  sel:'canvas#tenureHisto',        name:'재직기간 호'},
+    {card:'card-age',     sel:'canvas#ageHisto',           name:'연령별 호'},
+    {card:'card-college', sel:'#collegeTable',             name:'단과대학 바'},
+    {card:'card-retire',  sel:'#retireChart',              name:'정년퇴직 바'},
+    {card:null,           sel:'canvas#rateChart',          name:'확보율 추이'},
   ];
 
   function updatePanel() {
     if (!devOn) return;
-
-    // 뷰포트 & 스크롤 정보
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-
     const wrapper = document.getElementById('appWrapper');
     const scrollL = wrapper ? wrapper.scrollLeft : 0;
 
-    document.getElementById('dv-viewport').textContent =
-      `뷰포트: ${vw} × ${vh}`;
-    document.getElementById('dv-scroll').textContent =
-      `scrollLeft: ${Math.round(scrollL)}px`;
+    document.getElementById('dv-viewport').textContent = `뷰포트: ${vw} × ${vh}`;
+    document.getElementById('dv-scroll').textContent   = `scrollLeft: ${Math.round(scrollL)}px`;
 
-    // 카드 높이 패널
     document.getElementById('dv-heights').innerHTML = CARDS.map(c => {
       const el = document.getElementById(c.id);
-      const h = el ? el.offsetHeight : '-';
-      return `<div>${c.name}: <span style="color:#fcd34d">${h}px</span></div>`;
+      if (!el) return '';
+      return `<div>${c.name}: <span style="color:#fcd34d">${el.offsetWidth}×${el.offsetHeight}px</span></div>`;
     }).join('');
 
-    // 카드 위 높이 레이블 갱신
-    heightLabels.forEach(l => l.remove());
-    heightLabels = [];
+    overlayEls.forEach(e => e.remove());
+    overlayEls = [];
+
+    // ① 카드 크기 레이블
     CARDS.forEach(c => {
       const el = document.getElementById(c.id);
       if (!el) return;
+      if (!el.style.position || el.style.position === 'static') el.style.position = 'relative';
       const lbl = document.createElement('div');
       lbl.className = 'dev-height-label';
-      lbl.textContent = `${c.name}: ${el.offsetHeight}px`;
-      const prev = el.style.position;
-      if (!prev || prev === 'static') el.style.position = 'relative';
+      lbl.textContent = `${c.name}: ${el.offsetWidth}×${el.offsetHeight}`;
       el.appendChild(lbl);
-      heightLabels.push(lbl);
+      overlayEls.push(lbl);
+    });
+
+    // ② 차트 경계선(주황) + 차트 크기 레이블
+    CHARTS.forEach(ct => {
+      const chartEl = document.querySelector(ct.sel);
+      if (!chartEl) return;
+      const parent = chartEl.parentElement;
+      if (!parent) return;
+      if (!parent.style.position || parent.style.position === 'static') parent.style.position = 'relative';
+      const ov = document.createElement('div');
+      ov.className = 'dev-chart-overlay';
+      parent.appendChild(ov);
+      overlayEls.push(ov);
+      const lbl = document.createElement('div');
+      lbl.className = 'dev-chart-label';
+      lbl.textContent = `${ct.name}: ${chartEl.offsetWidth}×${chartEl.offsetHeight}`;
+      parent.appendChild(lbl);
+      overlayEls.push(lbl);
+    });
+
+    updateGuideLines();
+  }
+
+  function updateGuideLines() {
+    guideLines.forEach(l => l.remove());
+    guideLines = [];
+    const scaleRoot = document.getElementById('scaleRoot');
+    if (!scaleRoot) return;
+    const rect = scaleRoot.getBoundingClientRect();
+    const PADDING = 28;
+    [rect.left + PADDING, rect.right - PADDING].forEach((x, i) => {
+      const line = document.createElement('div');
+      line.className = 'dev-guide-line';
+      line.style.left = x + 'px';
+      line.title = i === 0 ? `좌측 정렬 기준 (${Math.round(x)}px)` : `우측 정렬 기준 (${Math.round(x)}px)`;
+      document.body.appendChild(line);
+      guideLines.push(line);
     });
   }
 
-  function clearLabels() {
-    heightLabels.forEach(l => l.remove());
-    heightLabels = [];
+  function clearAll() {
+    overlayEls.forEach(e => e.remove());
+    overlayEls = [];
+    guideLines.forEach(l => l.remove());
+    guideLines = [];
   }
 
-  // 토글 클릭
   btn.addEventListener('click', () => {
     devOn = !devOn;
     btn.textContent = devOn ? '🔧 개발모드 ON' : '🔧 개발모드';
@@ -1670,11 +1791,10 @@ function adjustCollegeHeight() {
     panel.classList.toggle('show', devOn);
     document.body.classList.toggle('dev-card-outline', devOn);
     document.body.classList.toggle('dev-grid-line', devOn);
-    if (devOn) { updatePanel(); }
-    else { clearLabels(); }
+    if (devOn) updatePanel();
+    else clearAll();
   });
 
-  // 실시간 갱신 (500ms)
   setInterval(updatePanel, 500);
   window.addEventListener('resize', updatePanel);
   const wrapper = document.getElementById('appWrapper');
