@@ -1525,9 +1525,10 @@ function applyScale() {
   const wrapperW  = viewportW - 32; // appWrapper 좌우 margin 16px×2
 
   // ★ 핵심: 풀스크린 판단은 viewportW 기준 (margin 32px 제외 전)
-  //   1920px 화면 → wrapperW=1888, scale=1888/1920=0.983 → scaleRoot 1920px 유지 → 오른쪽 여백 발생
-  //   해결: viewportW >= SCALE_BASE면 풀스크린으로 간주, scaleRoot를 wrapperW에 맞춤
-  const isFullscreen = viewportW >= SCALE_BASE;
+  //   1920px 모니터 풀스크린 → 세로 스크롤바(~17px) 차감 → clientWidth ≈ 1903px
+  //   따라서 SCALE_BASE(1920)로 비교하면 항상 2단계로 떨어져 우측 여백 발생
+  //   해결: 스크롤바 최대 너비(20px)를 감안해 1900px 이상이면 풀스크린으로 간주
+  const isFullscreen = viewportW >= (SCALE_BASE - 20);
 
   let scale;
   if (isFullscreen) {
@@ -1694,7 +1695,7 @@ function adjustCollegeHeight() {
     const wrapperW = cw - 32;
     const SCALE_BASE = 1920, SCALE_MIN = 1632;
     let stage, scale;
-    if (cw >= SCALE_BASE)         { stage = 1; scale = 1.0000; }
+    if (cw >= SCALE_BASE - 20)    { stage = 1; scale = 1.0000; }
     else if (wrapperW >= SCALE_MIN) { stage = 2; scale = (wrapperW / SCALE_BASE); }
     else                            { stage = 3; scale = (SCALE_MIN / SCALE_BASE); }
 
