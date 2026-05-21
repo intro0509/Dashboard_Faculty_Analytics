@@ -18,10 +18,10 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:hidden;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
-#scaleRoot{width:1920px;transform-origin:top center;position:relative}
+#scaleRoot{width:1920px;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;transform-origin:top center;border-radius:0;position:relative}
+.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1920px;border-radius:0;position:relative}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:0 0 auto}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -595,8 +595,8 @@ async function loadData() {
 async function initDashboard() {
   document.getElementById('loadingState').style.display='none';
   document.getElementById('dashContent').style.display='block';
-  // dashContent 표시 후 스케일 재적용 (차트 렌더링 전 scrollWidth 오측정 방지)
-  applyScale();
+  // dashContent 표시 후 스크롤 프록시 초기화
+  initScrollProxy();
   const yearFilter = document.getElementById('yearFilter');
   DB.meta.years.slice().reverse().forEach(yr => {
     const chip = document.createElement('span');
@@ -786,11 +786,8 @@ async function renderAll() {
   const filterTotalEl = document.getElementById('filterTotal');
   if (filterTotalEl) filterTotalEl.textContent = s.total.toLocaleString()+'명';
   animateBars();
-  // 순서 보장: adjust → applyScale(scrollHeight 정확히 측정) → scrollProxy
+  // adjust 실행 순서: adjustHeatmapHeight → adjustRetireHeight → adjustCollegeHeight
   setTimeout(() => {
-    // 1단계: applyScale로 scaleRoot 너비 먼저 확정
-    applyScale();
-    // 2단계: rAF 두 번 → 너비 확정 후 레이아웃 완료 시점에 높이 측정
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         adjustHeatmapHeight();
@@ -1509,77 +1506,15 @@ function renderCollege(s){
 
 loadData();
 
-// 반응형 스케일: nav + scaleRoot 동시 적용
-const SCALE_BASE = 1920;
-const SCALE_MIN  = 1632;
-const SCALE_MAX  = 1920;
+// ★ 고정 레이아웃 (1920px 기준)
+// scaleRoot/topnav: 1920px 고정, transform 없음
+// 화면이 넓으면 좌우 여백만 생김, 화면이 좁으면 scrollProxy가 가로 스크롤 담당
 
-function applyScale() {
-  const root    = document.getElementById('scaleRoot');
-  const nav     = document.querySelector('.topnav');
-  const wrapper = document.getElementById('appWrapper');
-  if (!root || !nav || !wrapper) return;
-
-  // clientWidth: 세로 스크롤바 제외한 정확한 뷰포트 너비
-  const viewportW = document.documentElement.clientWidth;
-  const wrapperW  = viewportW - 32; // appWrapper 좌우 margin 16px×2
-
-  // ★ 핵심: 풀스크린 판단은 viewportW 기준 (margin 32px 제외 전)
-  //   1920px 모니터 풀스크린 → 세로 스크롤바(~17px) 차감 → clientWidth ≈ 1903px
-  //   따라서 SCALE_BASE(1920)로 비교하면 항상 2단계로 떨어져 우측 여백 발생
-  //   해결: 스크롤바 최대 너비(20px)를 감안해 1900px 이상이면 풀스크린으로 간주
-  const isFullscreen = viewportW >= (SCALE_BASE - 20);
-
-  let scale;
-  if (isFullscreen) {
-    scale = 1;                       // 풀스크린: scaleRoot를 wrapperW에 맞춤
-  } else if (wrapperW >= SCALE_MIN) {
-    scale = wrapperW / SCALE_BASE;   // 중간: 비례 축소
-  } else {
-    scale = SCALE_MIN / SCALE_BASE;  // 소형: 최소 고정
-  }
-
-  // scaleRoot
-  root.style.transformOrigin = 'top center';
-  if (isFullscreen) {
-    root.style.transform    = 'none';
-    root.style.width        = wrapperW + 'px';  // 1888px에 맞춤 → 오른쪽 여백 제거
-    root.style.marginBottom = '0px';
-  } else {
-    root.style.transform    = `scale(${scale})`;
-    root.style.width        = SCALE_BASE + 'px';
-    // marginBottom: rAF에서 레이아웃 확정 후 측정
-    requestAnimationFrame(() => {
-      root.style.marginBottom = `-${Math.round(root.scrollHeight * (1 - scale))}px`;
-    });
-  }
-
-  // topnav (scaleRoot 밖에 독립 존재)
-  nav.style.transformOrigin = 'top center';
-  if (isFullscreen) {
-    nav.style.transform    = 'none';
-    nav.style.width        = wrapperW + 'px';
-    nav.style.marginBottom = '0px';
-  } else {
-    nav.style.transform    = `scale(${scale})`;
-    nav.style.width        = SCALE_BASE + 'px';
-    nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
-  }
-
-  // appWrapper는 항상 hidden (scrollProxy가 대신 스크롤바 표시)
-  wrapper.style.overflowX = 'hidden';
-
-}
-
-applyScale();
-// debounce: resize 완료 후 실행 (겹침 방지)
+// resize 시 adjust + scrollProxy 갱신
 let resizeTimer = null;
 window.addEventListener('resize', () => {
-  applyScale();
   if (resizeTimer) clearTimeout(resizeTimer);
   resizeTimer = setTimeout(() => {
-    // applyScale로 scaleRoot 너비 확정 후 adjust
-    applyScale();
     requestAnimationFrame(() => {
       requestAnimationFrame(() => {
         adjustHeatmapHeight();
@@ -1591,7 +1526,6 @@ window.addEventListener('resize', () => {
   }, 100);
 });
 setTimeout(() => {
-  applyScale();
   requestAnimationFrame(() => {
     requestAnimationFrame(() => {
       adjustHeatmapHeight();
@@ -1666,8 +1600,6 @@ function adjustCollegeHeight() {
   panel.innerHTML = `
     <div style="color:#93c5fd;font-weight:700;margin-bottom:4px;font-size:12px">🔧 개발모드 정보</div>
     <div id="dv-viewport">뷰포트: -</div>
-    <div id="dv-stage">단계: -</div>
-    <div id="dv-scale">scale: -</div>
     <div id="dv-scroll">scrollLeft: -</div>
     <div style="border-top:1px solid #374151;margin:5px 0"></div>
     <div style="color:#6b7280;font-size:10px;margin-bottom:2px">카드 offsetHeight</div>
@@ -1693,26 +1625,15 @@ function adjustCollegeHeight() {
   function updatePanel() {
     if (!devOn) return;
 
-    // 뷰포트 & 스케일 정보
+    // 뷰포트 & 스크롤 정보
     const vw = window.innerWidth;
     const vh = window.innerHeight;
-    const cw = document.documentElement.clientWidth;
-    const wrapperW = cw - 32;
-    const SCALE_BASE = 1920, SCALE_MIN = 1632;
-    let stage, scale;
-    if (cw >= SCALE_BASE - 20)    { stage = 1; scale = 1.0000; }
-    else if (wrapperW >= SCALE_MIN) { stage = 2; scale = (wrapperW / SCALE_BASE); }
-    else                            { stage = 3; scale = (SCALE_MIN / SCALE_BASE); }
 
     const wrapper = document.getElementById('appWrapper');
     const scrollL = wrapper ? wrapper.scrollLeft : 0;
 
     document.getElementById('dv-viewport').textContent =
       `뷰포트: ${vw} × ${vh}`;
-    document.getElementById('dv-stage').textContent =
-      `단계: ${stage}단계 (clientW: ${cw})`;
-    document.getElementById('dv-scale').textContent =
-      `scale: ${scale.toFixed(4)}`;
     document.getElementById('dv-scroll').textContent =
       `scrollLeft: ${Math.round(scrollL)}px`;
 
