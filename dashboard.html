@@ -23,7 +23,7 @@ body{padding:16px;box-sizing:border-box}
 #scaleRoot{width:1888px;position:relative;flex-shrink:0;transform-origin:top left}
 
 /* TOPNAV */
-.topnav{z-index:100;background:#F6F6F6;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:1888px;border-radius:0;position:sticky;top:0}
+.topnav{z-index:100;background:#F6F6F6;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0 28px;gap:0;border-radius:0;position:sticky;top:0}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:0 0 auto}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -37,7 +37,7 @@ body{padding:16px;box-sizing:border-box}
 .nav-tab.disabled{color:#c5cad8;cursor:default}
 .nav-tab.disabled:hover{background:none;color:#c5cad8}
 .nav-badge{font-size:10px;background:#f1f3f8;color:#9ca3af;padding:1px 6px;border-radius:8px;font-weight:400}
-.nav-right{display:flex;align-items:center;gap:10px;position:fixed;z-index:9990}
+.nav-right{display:flex;align-items:center;gap:10px;flex-shrink:0}
 .nav-icon-btn{width:34px;height:34px;border-radius:8px;border:1px solid #161616;background:#ffffff;display:flex;align-items:center;justify-content:center;cursor:pointer;color:#161616;transition:all .15s}
 .nav-icon-btn:hover{border-color:#161616;background:#161616;color:#ffffff}
 .nav-avatar{width:30px;height:30px;border-radius:50%;background:#DBE8FE;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#1365FE;cursor:pointer}
@@ -1540,31 +1540,6 @@ function getScale() {
   return 1.00;
 }
 
-function positionNavRight() {
-  const navRight = document.querySelector('.nav-right');
-  if (!navRight) return;
-
-  // clientWidth = 세로 스크롤바를 제외한 실제 가용 너비
-  // body padding 16px 양쪽 → body 콘텐츠 = clientWidth - 32
-  const cw       = document.documentElement.clientWidth;
-  const bodyW    = cw - 32;                        // body 콘텐츠 너비
-  const wrapW    = Math.min(bodyW, 1888);          // appWrapper 실제 너비
-  const scale    = getScale();
-  const PADDING  = 28;
-
-  // appWrapper 좌측 x좌표 (clientWidth 기준)
-  const wrapLeft = 16 + (bodyW - wrapW) / 2;      // margin:0 auto 반영
-  // 우측 가이드라인 x좌표
-  const guideRight = wrapLeft + wrapW - PADDING;
-  // fixed right = clientWidth - guideRight
-  navRight.style.right = (cw - guideRight) + 'px';
-
-  // top: body padding(16) + topnav 시각적 높이 중앙
-  const topnavVisualH = 84 * scale;
-  const navH = 52;
-  navRight.style.top = (16 + (topnavVisualH - navH) / 2) + 'px';
-}
-
 function applyScale() {
   const scale   = getScale();
   const root    = document.getElementById('scaleRoot');
@@ -1580,12 +1555,8 @@ function applyScale() {
     wrapper.style.height = '';
   }
 
-  positionNavRight();
   initScrollProxy();
 }
-
-// 세로 스크롤 시 nav-right top 위치 갱신
-window.addEventListener('scroll', positionNavRight, { passive: true });
 
 // resize 시 adjust + scale + scrollProxy 갱신
 let resizeTimer = null;
