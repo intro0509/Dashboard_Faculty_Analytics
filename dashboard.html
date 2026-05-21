@@ -1539,24 +1539,25 @@ function applyScale() {
     scale = SCALE_MIN / SCALE_BASE;  // 소형: 최소 고정
   }
 
-  // 축소 후 남는 공간을 좌우 균등 분배 (top left 유지 + marginLeft 보정)
-  // scaledWidth = 실제 표시되는 너비, leftOffset = 좌측에 추가할 여백
-  // leftOffset이 음수(모바일 등 좁은 화면)이면 0으로 고정 → top left 그대로 유지
-  const scaledWidth = SCALE_BASE * scale;
-  const leftOffset  = Math.max(0, Math.round((wrapperW - scaledWidth) / 2));
+  // ★ 좌우 균등 여백: scaleRoot에 width=scaledWidth + margin:0 auto 적용
+  // - transform은 레이아웃 공간을 그대로 차지하므로 marginLeft 방식으로는 해결 불가
+  // - scaledWidth로 width를 줄이고 margin auto로 중앙 정렬
+  // - page.active의 justify-content:flex-start는 그대로 유지 (수정완료항목 규칙 1번)
+  const scaledWidth = Math.round(SCALE_BASE * scale);
 
   // scaleRoot
   root.style.transformOrigin = 'top left';
   if (isFullscreen) {
     root.style.transform    = 'none';
     root.style.width        = wrapperW + 'px';
-    root.style.marginLeft   = '0px';
+    root.style.marginLeft   = 'auto';
+    root.style.marginRight  = 'auto';
     root.style.marginBottom = '0px';
   } else {
     root.style.transform    = `scale(${scale})`;
-    root.style.width        = SCALE_BASE + 'px';
-    root.style.marginLeft   = leftOffset + 'px';
-    // marginBottom: rAF에서 레이아웃 확정 후 측정
+    root.style.width        = scaledWidth + 'px';
+    root.style.marginLeft   = 'auto';
+    root.style.marginRight  = 'auto';
     requestAnimationFrame(() => {
       root.style.marginBottom = `-${Math.round(root.scrollHeight * (1 - scale))}px`;
     });
@@ -1567,16 +1568,18 @@ function applyScale() {
   if (isFullscreen) {
     nav.style.transform    = 'none';
     nav.style.width        = wrapperW + 'px';
-    nav.style.marginLeft   = '0px';
+    nav.style.marginLeft   = 'auto';
+    nav.style.marginRight  = 'auto';
     nav.style.marginBottom = '0px';
   } else {
     nav.style.transform    = `scale(${scale})`;
-    nav.style.width        = SCALE_BASE + 'px';
-    nav.style.marginLeft   = leftOffset + 'px';
+    nav.style.width        = scaledWidth + 'px';
+    nav.style.marginLeft   = 'auto';
+    nav.style.marginRight  = 'auto';
     nav.style.marginBottom = `-${Math.round(84 * (1 - scale))}px`;
   }
 
-  // appWrapper는 항상 hidden (scrollProxy가 대신 스크롤바 표시)
+  // appWrapper: overflow-x hidden 유지 (scrollProxy가 모바일 스크롤 담당)
   wrapper.style.overflowX = 'hidden';
 
 }
