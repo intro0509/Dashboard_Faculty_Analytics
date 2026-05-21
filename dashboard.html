@@ -1547,8 +1547,8 @@ function initScrollProxy() {
   const sbWidth = window.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty('--sb-width', sbWidth + 'px');
 
-  // 가로 스크롤이 필요한 경우만 표시 (scaleRoot 1920px + appWrapper margin 32px = 1952px 이하부터)
-  if (window.innerWidth < 1952) {
+  // 가로 스크롤이 필요한 경우만 표시 (scaleRoot가 appWrapper보다 클 때)
+  if (wrapper.scrollWidth > wrapper.clientWidth) {
     inner.style.width = wrapper.scrollWidth + 'px';
     proxy.classList.add('active');
   } else {
