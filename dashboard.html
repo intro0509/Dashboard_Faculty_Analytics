@@ -18,10 +18,10 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 #appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:hidden;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative}
 
 /* SCALE ROOT */
-#scaleRoot{width:1920px;transform-origin:top left;position:relative}
+#scaleRoot{width:1920px;transform-origin:top center;position:relative}
 
 /* TOPNAV */
-.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;transform-origin:top left;border-radius:0;position:relative}
+.topnav{z-index:100;background:transparent;height:84px;display:flex;align-items:center;padding:0 28px;gap:0;width:100%;transform-origin:top center;border-radius:0;position:relative}
 .nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;height:52px;gap:0;flex:0 0 auto}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
@@ -1540,7 +1540,7 @@ function applyScale() {
   }
 
   // scaleRoot
-  root.style.transformOrigin = 'top left';
+  root.style.transformOrigin = 'top center';
   if (isFullscreen) {
     root.style.transform    = 'none';
     root.style.width        = wrapperW + 'px';  // 1888px에 맞춤 → 오른쪽 여백 제거
@@ -1555,7 +1555,7 @@ function applyScale() {
   }
 
   // topnav (scaleRoot 밖에 독립 존재)
-  nav.style.transformOrigin = 'top left';
+  nav.style.transformOrigin = 'top center';
   if (isFullscreen) {
     nav.style.transform    = 'none';
     nav.style.width        = wrapperW + 'px';
@@ -1620,6 +1620,11 @@ function initScrollProxy() {
     proxy.classList.remove('active');
     return;
   }
+
+  // top center 기준 축소 시 모바일에서 초기 위치가 중앙이 되는 문제 보정
+  // → scrollLeft를 0으로 강제 초기화하여 항상 좌측부터 표시
+  wrapper.scrollLeft = 0;
+  proxy.scrollLeft   = 0;
 
   // 스크롤 동기화 (중복 등록 방지)
   proxy.onscroll = () => { wrapper.scrollLeft = proxy.scrollLeft; };
