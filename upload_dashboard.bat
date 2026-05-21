@@ -21,9 +21,13 @@ echo Step 2: Committing...
 echo Step 3: Syncing with GitHub...
 %GIT% fetch origin
 %GIT% pull origin main --rebase
+if errorlevel 1 (
+    echo WARNING: Rebase conflict detected. Aborting rebase and force pushing...
+    %GIT% rebase --abort
+)
 
 echo Step 4: Pushing to GitHub...
-%GIT% push origin main
+%GIT% push --force origin main
 
 echo.
 echo Done!
