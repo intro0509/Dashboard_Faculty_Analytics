@@ -202,38 +202,41 @@ html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1
 
 footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 
+
+
 /* ==============================
-   개발모드 CSS (비활성화 상태)
+   개발모드 CSS
    삭제 시 이 블록 전체 제거
    ============================== */
 #dev-toggle {
   position:fixed;bottom:20px;right:20px;z-index:9999;
   background:#1f2937;color:#fff;border:none;border-radius:10px;
   padding:8px 14px;font-size:12px;font-weight:600;cursor:pointer;
-  font-family:'Pretendard',sans-serif;opacity:0.85;
-  box-shadow:0 2px 8px rgba(0,0,0,0.3);
+  font-family:'Pretendard',sans-serif;opacity:0.75;
+  box-shadow:0 2px 8px rgba(0,0,0,0.3);transition:all .2s;
 }
 #dev-toggle:hover { opacity:1; }
-#dev-toggle.active { background:#1365FE; }
+#dev-toggle.active { background:#1365FE; opacity:1; }
 
 #dev-panel {
   position:fixed;top:12px;left:12px;z-index:9998;
   background:rgba(17,24,39,0.92);color:#f9fafb;
   border-radius:10px;padding:10px 14px;font-size:11px;
-  font-family:'Pretendard',monospace;line-height:1.8;
-  display:none;min-width:220px;
+  font-family:'Pretendard',monospace;line-height:1.9;
+  display:none;min-width:230px;
   box-shadow:0 2px 12px rgba(0,0,0,0.4);
 }
 #dev-panel.show { display:block; }
 
-.dev-card-outline * { outline:1px dashed rgba(255,0,0,0.3) !important; }
-.dev-grid-line #main-grid { outline:2px solid #1365FE !important; }
-.dev-grid-line #main-grid > * { outline:1px solid rgba(19,101,254,0.4) !important; }
-.dev-height-label { 
+.dev-card-outline .card { outline:1px dashed rgba(255,80,80,0.6) !important; }
+.dev-grid-line #main-grid { outline:2px solid rgba(19,101,254,0.8) !important; }
+.dev-grid-line #main-grid > * { outline:1px solid rgba(19,101,254,0.3) !important; }
+.dev-height-label {
   position:absolute;top:2px;left:2px;
-  background:rgba(0,0,0,0.6);color:#fff;
-  font-size:9px;padding:1px 4px;border-radius:3px;
+  background:rgba(0,0,0,0.65);color:#fcd34d;
+  font-size:9px;padding:1px 5px;border-radius:3px;
   z-index:9997;pointer-events:none;font-family:monospace;
+  white-space:nowrap;
 }
 </style>
 </head>
@@ -1637,109 +1640,117 @@ function adjustCollegeHeight() {
   // JS height 설정 불필요 (flex:1이 card-hd 제외 나머지 공간 자동 채움)
 }
 
+
+
+
 /* ==============================
-   개발모드 JS (비활성화 상태)
+   개발모드 JS
    삭제 시 이 블록 전체 제거
    ============================== */
 (function() {
-  const DEV_ENABLED = false; // 개발모드 활성화 여부 (true: 활성, false: 비활성)
-  if (!DEV_ENABLED) return;
-
   // 토글 버튼 생성
   const btn = document.createElement('button');
   btn.id = 'dev-toggle';
-  btn.textContent = '🔧 개발모드 OFF';
+  btn.textContent = '🔧 개발모드';
   document.body.appendChild(btn);
 
   // 정보 패널 생성
   const panel = document.createElement('div');
   panel.id = 'dev-panel';
   panel.innerHTML = `
-    <div style="color:#93c5fd;font-weight:700;margin-bottom:4px">🔧 개발모드</div>
-    <div id="dev-viewport">뷰포트: -</div>
-    <div id="dev-stage">단계: -</div>
-    <div id="dev-scale">scale: -</div>
-    <div id="dev-scroll">scrollLeft: -</div>
-    <hr style="border-color:#374151;margin:6px 0">
-    <div style="color:#6b7280;font-size:10px">카드 높이 (offsetHeight)</div>
-    <div id="dev-heights"></div>
+    <div style="color:#93c5fd;font-weight:700;margin-bottom:4px;font-size:12px">🔧 개발모드 정보</div>
+    <div id="dv-viewport">뷰포트: -</div>
+    <div id="dv-stage">단계: -</div>
+    <div id="dv-scale">scale: -</div>
+    <div id="dv-scroll">scrollLeft: -</div>
+    <div style="border-top:1px solid #374151;margin:5px 0"></div>
+    <div style="color:#6b7280;font-size:10px;margin-bottom:2px">카드 offsetHeight</div>
+    <div id="dv-heights"></div>
   `;
   document.body.appendChild(panel);
 
   let devOn = false;
   let heightLabels = [];
-  const CARD_IDS = [
-    'card-track','card-nt','card-rank','card-gender',
-    'card-heatmap','card-tenure','card-age','card-college','card-retire'
+
+  const CARDS = [
+    {id:'card-track', name:'트랙별'},
+    {id:'card-nt', name:'비정년트랙'},
+    {id:'card-rank', name:'직급별'},
+    {id:'card-gender', name:'성별'},
+    {id:'card-heatmap', name:'히트맵'},
+    {id:'card-tenure', name:'재직기간'},
+    {id:'card-age', name:'연령별'},
+    {id:'card-college', name:'단과대학'},
+    {id:'card-retire', name:'정년퇴직'},
   ];
-  const CARD_NAMES = {
-    'card-track':'트랙별','card-nt':'비정년트랙',
-    'card-rank':'직급별','card-gender':'성별',
-    'card-heatmap':'히트맵','card-tenure':'재직기간',
-    'card-age':'연령별','card-college':'단과대학',
-    'card-retire':'정년퇴직'
-  };
 
   function updatePanel() {
     if (!devOn) return;
+
+    // 뷰포트 & 스케일 정보
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const cw = document.documentElement.clientWidth;
     const wrapperW = cw - 32;
     const SCALE_BASE = 1920, SCALE_MIN = 1632;
     let stage, scale;
-    if (cw >= SCALE_BASE) { stage = 1; scale = 1; }
-    else if (wrapperW >= SCALE_MIN) { stage = 2; scale = (wrapperW / SCALE_BASE).toFixed(4); }
-    else { stage = 3; scale = (SCALE_MIN / SCALE_BASE).toFixed(4); }
+    if (cw >= SCALE_BASE)         { stage = 1; scale = 1.0000; }
+    else if (wrapperW >= SCALE_MIN) { stage = 2; scale = (wrapperW / SCALE_BASE); }
+    else                            { stage = 3; scale = (SCALE_MIN / SCALE_BASE); }
 
     const wrapper = document.getElementById('appWrapper');
     const scrollL = wrapper ? wrapper.scrollLeft : 0;
 
-    document.getElementById('dev-viewport').textContent = `뷰포트: ${vw} x ${vh} (client:${cw})`;
-    document.getElementById('dev-stage').textContent = `단계: ${stage}단계`;
-    document.getElementById('dev-scale').textContent = `scale: ${scale}`;
-    document.getElementById('dev-scroll').textContent = `scrollLeft: ${scrollL}px`;
+    document.getElementById('dv-viewport').textContent =
+      `뷰포트: ${vw} × ${vh}`;
+    document.getElementById('dv-stage').textContent =
+      `단계: ${stage}단계 (clientW: ${cw})`;
+    document.getElementById('dv-scale').textContent =
+      `scale: ${scale.toFixed(4)}`;
+    document.getElementById('dv-scroll').textContent =
+      `scrollLeft: ${Math.round(scrollL)}px`;
 
-    // 카드 높이
-    const heightsEl = document.getElementById('dev-heights');
-    heightsEl.innerHTML = CARD_IDS.map(id => {
-      const el = document.getElementById(id);
+    // 카드 높이 패널
+    document.getElementById('dv-heights').innerHTML = CARDS.map(c => {
+      const el = document.getElementById(c.id);
       const h = el ? el.offsetHeight : '-';
-      return `<div>${CARD_NAMES[id]}: <span style="color:#fcd34d">${h}px</span></div>`;
+      return `<div>${c.name}: <span style="color:#fcd34d">${h}px</span></div>`;
     }).join('');
 
-    // 카드 높이 레이블 업데이트
+    // 카드 위 높이 레이블 갱신
     heightLabels.forEach(l => l.remove());
     heightLabels = [];
-    if (devOn) {
-      CARD_IDS.forEach(id => {
-        const el = document.getElementById(id);
-        if (!el) return;
-        const label = document.createElement('div');
-        label.className = 'dev-height-label';
-        label.textContent = `${CARD_NAMES[id]}: ${el.offsetHeight}px`;
-        el.style.position = 'relative';
-        el.appendChild(label);
-        heightLabels.push(label);
-      });
-    }
+    CARDS.forEach(c => {
+      const el = document.getElementById(c.id);
+      if (!el) return;
+      const lbl = document.createElement('div');
+      lbl.className = 'dev-height-label';
+      lbl.textContent = `${c.name}: ${el.offsetHeight}px`;
+      const prev = el.style.position;
+      if (!prev || prev === 'static') el.style.position = 'relative';
+      el.appendChild(lbl);
+      heightLabels.push(lbl);
+    });
   }
 
+  function clearLabels() {
+    heightLabels.forEach(l => l.remove());
+    heightLabels = [];
+  }
+
+  // 토글 클릭
   btn.addEventListener('click', () => {
     devOn = !devOn;
-    btn.textContent = devOn ? '🔧 개발모드 ON' : '🔧 개발모드 OFF';
+    btn.textContent = devOn ? '🔧 개발모드 ON' : '🔧 개발모드';
     btn.classList.toggle('active', devOn);
     panel.classList.toggle('show', devOn);
     document.body.classList.toggle('dev-card-outline', devOn);
     document.body.classList.toggle('dev-grid-line', devOn);
-    if (!devOn) {
-      heightLabels.forEach(l => l.remove());
-      heightLabels = [];
-    }
-    updatePanel();
+    if (devOn) { updatePanel(); }
+    else { clearLabels(); }
   });
 
-  // 실시간 업데이트
+  // 실시간 갱신 (500ms)
   setInterval(updatePanel, 500);
   window.addEventListener('resize', updatePanel);
   const wrapper = document.getElementById('appWrapper');
