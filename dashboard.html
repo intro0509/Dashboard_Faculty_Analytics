@@ -8,14 +8,15 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
-#scrollProxy{position:fixed;bottom:0;left:16px;right:calc(16px + var(--sb-width, 0px));height:0;overflow-x:auto;overflow-y:hidden;z-index:9999;-webkit-overflow-scrolling:touch;touch-action:pan-x}
+html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0}
+body{padding:16px;box-sizing:border-box}
+#scrollProxy{position:fixed;bottom:0;left:0;right:var(--sb-width, 0px);height:0;overflow-x:auto;overflow-y:hidden;z-index:9999;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 #scrollProxy.active{height:14px}
 #scrollProxyInner{height:1px}
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:0;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none}
 #appWrapper::-webkit-scrollbar{display:none}
 
 /* SCALE ROOT */
@@ -242,7 +243,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
 <body>
-<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;margin:16px;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
+<div id="appWrapper" style="background:#F6F6F6;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
 
 <nav class="topnav">
   <div class="nav-group">
@@ -1547,8 +1548,8 @@ function initScrollProxy() {
   const sbWidth = window.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty('--sb-width', sbWidth + 'px');
 
-  // 가로 스크롤이 필요한 경우만 표시 (scaleRoot가 appWrapper보다 클 때)
-  if (wrapper.scrollWidth > wrapper.clientWidth) {
+  // 가로 스크롤이 필요한 경우만 표시 (뷰포트 1920px 미만일 때)
+  if (window.innerWidth < 1920) {
     inner.style.width = wrapper.scrollWidth + 'px';
     proxy.classList.add('active');
   } else {
