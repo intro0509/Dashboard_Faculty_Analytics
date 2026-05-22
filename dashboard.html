@@ -1578,13 +1578,17 @@ function applyScale() {
   if (!root || !wrapper) return;
 
   if (scale < 1) {
+    // scaleRoot DOM 너비를 역산: 시각적 너비가 appWrapper 너비와 정확히 일치하도록
+    // scale 적용 후 시각 너비 = DOM 너비 × scale = wrapper.clientWidth
+    // → DOM 너비 = wrapper.clientWidth / scale
+    root.style.width = (wrapper.clientWidth / scale) + 'px';
     root.style.transform = `scale(${scale})`;
     wrapper.style.height = (root.offsetHeight * scale) + 'px';
-    // scaleRoot 시각적 너비만큼 appWrapper도 좁혀서 여백 제거
-    wrapper.style.width  = (1888 * scale) + 'px';
+    wrapper.style.width  = '';
     wrapper.scrollLeft = 0;
   } else {
     root.style.transform = '';
+    root.style.width = '';
     wrapper.style.height = '';
     wrapper.style.width  = '';
   }
