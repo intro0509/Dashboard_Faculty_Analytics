@@ -234,29 +234,19 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 .dev-nav-outline .topnav   { outline:1px dashed rgba(255,0,0,0.8) !important; }
 .dev-nav-outline .nav-group { outline:1px dashed rgba(255,0,0,0.8) !important; }
 .dev-nav-outline .nav-right { outline:1px dashed rgba(255,0,0,0.8) !important; }
-/* KPI 카드 경계선 */
+/* KPI 카드, 확보율 카드, card-hd 경계선 */
 .dev-kpi-outline .kpi-card-sm { outline:1px solid rgba(255,140,0,0.9) !important; }
-/* 스파크라인 경계선 (JS로 주입) */
-.dev-spark-overlay {
-  outline:1px solid rgba(255,140,0,0.9);
-  pointer-events:none;
-}
-/* 확보율 추이 카드 경계선 */
-.dev-kpi-outline .rate-card { outline:1px solid rgba(255,140,0,0.9) !important; }
-/* card-hd (제목 영역) 경계선 */
-.dev-kpi-outline .card-hd { outline:1px solid rgba(255,140,0,0.9) !important; }
-.dev-gap-box {
-  position:absolute;left:0;right:0;
-  outline:1px solid rgba(255,140,0,0.8);
-  background:rgba(255,140,0,0.06);
-  pointer-events:none;z-index:9996;
-  display:flex;align-items:center;justify-content:center;
-}
-.dev-gap-label {
-  background:rgba(255,140,0,0.85);color:#fff;
-  font-size:9px;padding:1px 5px;border-radius:3px;
-  font-family:monospace;white-space:nowrap;
-}
+.dev-kpi-outline .rate-card   { outline:1px solid rgba(255,140,0,0.9) !important; }
+.dev-kpi-outline .card-hd     { outline:1px solid rgba(255,140,0,0.9) !important; }
+/* 범례 경계선 */
+.dev-kpi-outline .legend,
+.dev-kpi-outline #trackDonutLegend,
+.dev-kpi-outline #nonTenureDonutLegend,
+.dev-kpi-outline #rankLegend,
+.dev-kpi-outline #genderLegend,
+.dev-kpi-outline #tenureHistoLegend,
+.dev-kpi-outline #ageHistoLegend { outline:1px solid rgba(255,140,0,0.9) !important; }
+.dev-grid-line #main-grid { outline:2px solid rgba(19,101,254,0.8) !important; }
 .dev-grid-line #main-grid > * { outline:1px solid rgba(19,101,254,0.3) !important; }
 .dev-height-label {
   position:absolute;top:2px;left:2px;
@@ -276,6 +266,19 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
   font-size:9px;padding:1px 5px;border-radius:3px;
   z-index:9997;pointer-events:none;font-family:monospace;
   white-space:nowrap;
+}
+/* 카드 하단 여백 박스 */
+.dev-bottom-gap {
+  position:absolute;left:0;right:0;
+  outline:1px solid rgba(255,140,0,0.8);
+  background:rgba(255,140,0,0.06);
+  pointer-events:none;z-index:9996;
+  display:flex;align-items:center;justify-content:center;
+}
+.dev-bottom-gap-label {
+  background:rgba(255,140,0,0.85);color:#fff;
+  font-size:9px;padding:1px 5px;border-radius:3px;
+  font-family:monospace;white-space:nowrap;
 }
 .dev-guide-line {
   position:fixed;top:0;bottom:0;width:1px;
@@ -1704,6 +1707,19 @@ function adjustCollegeHeight() {
     {card:null,           sel:'canvas#rateChart',          name:'확보율 추이'},
   ];
 
+  // 카드별 마지막 차트 요소 (하단 여백 계산 기준)
+  const CARD_BOTTOMS = [
+    {card:'card-track',   lastSel:'#trackDonutLegend'},
+    {card:'card-nt',      lastSel:'#nonTenureDonutLegend'},
+    {card:'card-rank',    lastSel:'#rankLegend'},
+    {card:'card-gender',  lastSel:'#genderLegend'},
+    {card:'card-heatmap', lastSel:'#heatmapWrap'},
+    {card:'card-tenure',  lastSel:'#tenureHistoLegend'},
+    {card:'card-age',     lastSel:'#ageHistoLegend'},
+    {card:'card-college', lastSel:'#collegeTable'},
+    {card:'card-retire',  lastSel:'#retireChart'},
+  ];
+
   function updatePanel() {
     if (!devOn) return;
     const vw = window.innerWidth;
@@ -1753,7 +1769,7 @@ function adjustCollegeHeight() {
       overlayEls.push(lbl);
     });
 
-    // ③ 스파크라인 경계선 (sparkTotal/sparkTenure/sparkNonTenure의 부모 div)
+    // ③ 스파크라인 경계선
     ['sparkTotal','sparkTenure','sparkNonTenure'].forEach(id => {
       const canvas = document.getElementById(id);
       if (!canvas) return;
@@ -1763,35 +1779,26 @@ function adjustCollegeHeight() {
       overlayEls.push({ remove: () => { p.style.outline = ''; } });
     });
 
-    // ④ 카드와 차트 사이 세로 여백 박스 (card-hd 하단 ~ 차트 상단)
-    CARDS.forEach(c => {
-      const card = document.getElementById(c.id);
-      if (!card) return;
-      const hd = card.querySelector('.card-hd');
-      const ct = CHARTS.find(x => x.card === c.id);
-      if (!hd || !ct) return;
-      const chartEl = card.querySelector(ct.sel.replace(`${c.id} `, '')) || document.querySelector(ct.sel);
-      if (!chartEl) return;
-
-      // card 기준 상대좌표
-      const cardRect = card.getBoundingClientRect();
-      const hdRect   = hd.getBoundingClientRect();
-      const chartRect = chartEl.parentElement.getBoundingClientRect();
-
-      const gapTop    = hdRect.bottom - cardRect.top;
-      const gapBottom = chartRect.top - cardRect.top;
-      const gapH      = gapBottom - gapTop;
-
-      if (gapH <= 0) return;
-
+    // ④ 카드 하단 여백 박스 (마지막 차트 요소 하단 ~ 카드 하단)
+    CARD_BOTTOMS.forEach(cb => {
+      const card    = document.getElementById(cb.card);
+      const lastEl  = document.querySelector(cb.lastSel);
+      if (!card || !lastEl) return;
       if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
+
+      const cardRect  = card.getBoundingClientRect();
+      const lastRect  = lastEl.getBoundingClientRect();
+      const gapTop    = lastRect.bottom - cardRect.top;   // 카드 상단 기준 마지막 요소 하단
+      const gapH      = cardRect.bottom - lastRect.bottom; // 카드 하단까지의 여백
+      if (gapH <= 1) return;
+
       const box = document.createElement('div');
-      box.className = 'dev-gap-box';
+      box.className = 'dev-bottom-gap';
       box.style.top    = gapTop + 'px';
       box.style.height = gapH + 'px';
       const lbl = document.createElement('span');
-      lbl.className = 'dev-gap-label';
-      lbl.textContent = `여백: ${Math.round(card.offsetWidth)}×${Math.round(gapH)}`;
+      lbl.className = 'dev-bottom-gap-label';
+      lbl.textContent = `하단 여백: ${Math.round(card.offsetWidth)}×${Math.round(gapH)}`;
       box.appendChild(lbl);
       card.appendChild(box);
       overlayEls.push(box);
