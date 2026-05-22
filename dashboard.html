@@ -1902,13 +1902,10 @@ function adjustCollegeHeight() {
     }
 
     // ③ 우측 가이드라인 ~ appWrapper 우측 (빨간, 번호만, 항상 표시)
-    // scaleRoot 시각 우측 x = wRect.left + srW (scrollLeft 보정 포함)
-    const wrapper = document.getElementById('appWrapper');
-    const scrollL = wrapper ? wrapper.scrollLeft : 0;
-    const srVisualRight = wRect.left + srW - scrollL * getScale();
-    const guideRightX   = srVisualRight - m3;
-    if (m3 > 0 && guideRightX >= 0) {
-      const dispW = Math.min(m3, vw - guideRightX); // 화면 밖 잘림 처리
+    // appWrapper 우측 끝에서 m3만큼 안쪽이 우측 가이드라인 위치
+    const guideRightX = wRect.right - m3;
+    if (m3 > 0 && guideRightX >= 0 && guideRightX < vw) {
+      const dispW = Math.min(m3, vw - guideRightX);
       if (dispW > 0) {
         const el = document.createElement('div');
         el.className = 'dev-margin-arrow dev-margin-arrow-red';
