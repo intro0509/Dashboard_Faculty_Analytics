@@ -234,6 +234,18 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 .dev-nav-outline .topnav   { outline:1px solid rgba(255,0,0,0.8) !important; }
 .dev-nav-outline .nav-group { outline:1px solid rgba(255,0,0,0.8) !important; }
 .dev-nav-outline .nav-right { outline:1px solid rgba(255,0,0,0.8) !important; }
+/* KPI 카드, 확보율 카드, card-hd 경계선 */
+.dev-kpi-outline .kpi-card-sm { outline:1px solid rgba(255,140,0,0.9) !important; }
+.dev-kpi-outline .rate-card   { outline:1px solid rgba(255,140,0,0.9) !important; }
+.dev-kpi-outline .card-hd     { outline:1px solid rgba(255,140,0,0.9) !important; }
+/* 범례 경계선 */
+.dev-kpi-outline .legend,
+.dev-kpi-outline #trackDonutLegend,
+.dev-kpi-outline #nonTenureDonutLegend,
+.dev-kpi-outline #rankLegend,
+.dev-kpi-outline #genderLegend,
+.dev-kpi-outline #tenureHistoLegend,
+.dev-kpi-outline #ageHistoLegend { outline:1px solid rgba(255,140,0,0.9) !important; }
 .dev-grid-line #main-grid { outline:2px solid rgba(19,101,254,0.8) !important; }
 .dev-grid-line #main-grid > * { outline:1px solid rgba(19,101,254,0.3) !important; }
 .dev-height-label {
@@ -254,6 +266,19 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
   font-size:9px;padding:1px 5px;border-radius:3px;
   z-index:9997;pointer-events:none;font-family:monospace;
   white-space:nowrap;
+}
+/* 카드 하단 여백 박스 */
+.dev-bottom-gap {
+  position:absolute;left:0;right:0;
+  outline:1px solid rgba(255,140,0,0.8);
+  background:rgba(255,140,0,0.06);
+  pointer-events:none;z-index:9996;
+  display:flex;align-items:center;justify-content:center;
+}
+.dev-bottom-gap-label {
+  background:rgba(255,140,0,0.85);color:#fff;
+  font-size:9px;padding:1px 5px;border-radius:3px;
+  font-family:monospace;white-space:nowrap;
 }
 .dev-guide-line {
   position:fixed;top:0;bottom:0;width:1px;
@@ -1644,7 +1669,10 @@ function adjustCollegeHeight() {
   const panel = document.createElement('div');
   panel.id = 'dev-panel';
   panel.innerHTML = `
-    <div style="color:#93c5fd;font-weight:700;margin-bottom:4px;font-size:12px">🔧 개발모드 정보</div>
+    <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:4px">
+      <div style="color:#93c5fd;font-weight:700;font-size:12px">🔧 개발모드 정보</div>
+      <button id="dev-panel-close" style="background:none;border:none;color:#6b7280;font-size:14px;cursor:pointer;padding:0 2px;line-height:1">✕</button>
+    </div>
     <div id="dv-viewport">뷰포트: -</div>
     <div id="dv-scroll">scrollLeft: -</div>
     <div style="border-top:1px solid #374151;margin:5px 0"></div>
@@ -1654,6 +1682,7 @@ function adjustCollegeHeight() {
   document.body.appendChild(panel);
 
   let devOn = false;
+  let panelOpen = true;
   let overlayEls = [];
   let guideLines = [];
 
@@ -1680,6 +1709,18 @@ function adjustCollegeHeight() {
     {card:'card-college', sel:'#collegeTable',             name:'단과대학 바'},
     {card:'card-retire',  sel:'#retireChart',              name:'정년퇴직 바'},
     {card:null,           sel:'canvas#rateChart',          name:'확보율 추이'},
+  ];
+
+  const CARD_BOTTOMS = [
+    {card:'card-track',   lastSel:'#trackDonutLegend'},
+    {card:'card-nt',      lastSel:'#nonTenureDonutLegend'},
+    {card:'card-rank',    lastSel:'#rankLegend'},
+    {card:'card-gender',  lastSel:'#genderLegend'},
+    {card:'card-heatmap', lastSel:'#heatmapWrap'},
+    {card:'card-tenure',  lastSel:'#tenureHistoLegend'},
+    {card:'card-age',     lastSel:'#ageHistoLegend'},
+    {card:'card-college', lastSel:'#collegeTable'},
+    {card:'card-retire',  lastSel:'#retireChart'},
   ];
 
   function updatePanel() {
@@ -1731,6 +1772,39 @@ function adjustCollegeHeight() {
       overlayEls.push(lbl);
     });
 
+    // ③ 스파크라인 경계선
+    ['sparkTotal','sparkTenure','sparkNonTenure'].forEach(id => {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const p = canvas.parentElement;
+      if (!p) return;
+      p.style.outline = '1px solid rgba(255,140,0,0.9)';
+      overlayEls.push({ remove: () => { p.style.outline = ''; } });
+    });
+
+    // ④ 카드 하단 여백 박스
+    CARD_BOTTOMS.forEach(cb => {
+      const card   = document.getElementById(cb.card);
+      const lastEl = document.querySelector(cb.lastSel);
+      if (!card || !lastEl) return;
+      if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
+      const cardRect = card.getBoundingClientRect();
+      const lastRect = lastEl.getBoundingClientRect();
+      const gapTop   = lastRect.bottom - cardRect.top;
+      const gapH     = cardRect.bottom - lastRect.bottom;
+      if (gapH <= 1) return;
+      const box = document.createElement('div');
+      box.className = 'dev-bottom-gap';
+      box.style.top    = gapTop + 'px';
+      box.style.height = gapH + 'px';
+      const lbl = document.createElement('span');
+      lbl.className = 'dev-bottom-gap-label';
+      lbl.textContent = `하단 여백: ${Math.round(card.offsetWidth)}×${Math.round(gapH)}`;
+      box.appendChild(lbl);
+      card.appendChild(box);
+      overlayEls.push(box);
+    });
+
     updateGuideLines();
   }
 
@@ -1758,14 +1832,27 @@ function adjustCollegeHeight() {
     guideLines = [];
   }
 
+  // 패널 닫기 버튼
+  document.getElementById('dev-panel-close').addEventListener('click', () => {
+    panelOpen = false;
+    panel.classList.remove('show');
+  });
+
+  // 개발모드 토글 버튼
   btn.addEventListener('click', () => {
     devOn = !devOn;
     btn.textContent = devOn ? '🔧 개발모드 ON' : '🔧 개발모드';
     btn.classList.toggle('active', devOn);
-    panel.classList.toggle('show', devOn);
+    if (devOn) {
+      panelOpen = true;
+      panel.classList.add('show');
+    } else {
+      panel.classList.remove('show');
+    }
     document.body.classList.toggle('dev-card-outline', devOn);
     document.body.classList.toggle('dev-grid-line', devOn);
     document.body.classList.toggle('dev-nav-outline', devOn);
+    document.body.classList.toggle('dev-kpi-outline', devOn);
     if (devOn) updatePanel();
     else clearAll();
   });
