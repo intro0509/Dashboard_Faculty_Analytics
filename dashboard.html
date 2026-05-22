@@ -308,6 +308,11 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
   background:rgba(99,179,237,0.85);color:#fff;
   font-size:9px;padding:1px 4px;border-radius:3px;white-space:nowrap;margin:0 3px;
 }
+/* ②③ 빨간 화살표 */
+.dev-margin-arrow-red .dev-margin-arrow-line { background:rgba(255,60,60,0.9); }
+.dev-margin-arrow-red .dev-margin-arrow-line::before { border-right-color:rgba(255,60,60,0.9); }
+.dev-margin-arrow-red .dev-margin-arrow-line::after  { border-left-color:rgba(255,60,60,0.9); }
+.dev-margin-arrow-red .dev-margin-label { background:rgba(255,60,60,0.85); }
 </style>
 </head>
 <body>
@@ -1787,7 +1792,7 @@ function adjustCollegeHeight() {
       ].join('');
 
       // 화살표 시각화 업데이트
-      updateMarginArrows(wRect, m1, m4);
+      updateMarginArrows(wRect, m1, m2, m3, m4, srW);
     }
 
     document.getElementById('dv-heights').innerHTML = CARDS.map(c => {
@@ -1867,28 +1872,58 @@ function adjustCollegeHeight() {
 
   let marginArrows = [];
 
-  function updateMarginArrows(wRect, m1, m4) {
+  function updateMarginArrows(wRect, m1, m2, m3, m4, srW) {
     marginArrows.forEach(e => e.remove());
     marginArrows = [];
 
-    const arrowY = 8; // 화면 상단에서 고정 높이
+    const Y1 = 8;  // ①④ 파란 화살표 높이
+    const Y2 = 24; // ②③ 빨간 화살표 높이
+    const vw = window.innerWidth;
 
-    // ① 브라우저 좌측 ~ appWrapper 좌측
+    // ① 브라우저 좌측 ~ appWrapper 좌측 (파란, 수치 표시)
     if (m1 > 0) {
       const el = document.createElement('div');
       el.className = 'dev-margin-arrow';
-      el.style.cssText = `left:0;top:${arrowY}px;width:${wRect.left}px;`;
-      el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">① ${m1}px</span>`;
+      el.style.cssText = `left:0;top:${Y1}px;width:${wRect.left}px;`;
+      el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">①</span>`;
       document.body.appendChild(el);
       marginArrows.push(el);
     }
 
-    // ④ 브라우저 우측 ~ appWrapper 우측
+    // ② appWrapper 좌측 ~ 좌측 가이드라인 (빨간, 번호만)
+    if (m2 > 0) {
+      const el = document.createElement('div');
+      el.className = 'dev-margin-arrow dev-margin-arrow-red';
+      el.style.cssText = `left:${wRect.left}px;top:${Y2}px;width:${m2}px;`;
+      el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">②</span>`;
+      document.body.appendChild(el);
+      marginArrows.push(el);
+    }
+
+    // ③ 우측 가이드라인 ~ appWrapper 우측 (빨간, 번호만, 항상 표시)
+    // scaleRoot 시각 우측 x = wRect.left + srW (scrollLeft 보정 포함)
+    const wrapper = document.getElementById('appWrapper');
+    const scrollL = wrapper ? wrapper.scrollLeft : 0;
+    const srVisualRight = wRect.left + srW - scrollL * getScale();
+    const guideRightX   = srVisualRight - m3;
+    if (m3 > 0 && guideRightX >= 0) {
+      const dispW = Math.min(m3, vw - guideRightX); // 화면 밖 잘림 처리
+      if (dispW > 0) {
+        const el = document.createElement('div');
+        el.className = 'dev-margin-arrow dev-margin-arrow-red';
+        el.style.cssText = `left:${guideRightX}px;top:${Y2}px;width:${dispW}px;`;
+        el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">③</span>`;
+        document.body.appendChild(el);
+        marginArrows.push(el);
+      }
+    }
+
+    // ④ 브라우저 우측 ~ appWrapper 우측 (파란, 수치 표시)
     if (m4 > 0) {
       const el = document.createElement('div');
       el.className = 'dev-margin-arrow';
-      el.style.cssText = `left:${wRect.right}px;top:${arrowY}px;width:${m4}px;`;
-      el.innerHTML = `<span class="dev-margin-label">④ ${m4}px</span><div class="dev-margin-arrow-line"></div>`;
+      el.style.cssText = `left:${wRect.right}px;top:${Y1}px;width:${m4}px;`;
+      el.innerHTML = `<span class="dev-margin-label">④</span><div class="dev-margin-arrow-line"></div>`;
       document.body.appendChild(el);
       marginArrows.push(el);
     }
