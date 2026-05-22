@@ -1580,13 +1580,10 @@ function applyScale() {
   if (scale < 1) {
     root.style.transform = `scale(${scale})`;
     wrapper.style.height = (root.offsetHeight * scale) + 'px';
-    // scaleRoot 시각적 너비만큼 appWrapper도 좁혀서 여백 제거
-    wrapper.style.width  = (1888 * scale) + 'px';
     wrapper.scrollLeft = 0;
   } else {
     root.style.transform = '';
     wrapper.style.height = '';
-    wrapper.style.width  = '';
   }
 
   initScrollProxy();
