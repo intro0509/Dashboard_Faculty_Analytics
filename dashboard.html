@@ -1780,7 +1780,7 @@ function adjustCollegeHeight() {
       //    scaleRoot 시각적 너비 = offsetWidth * scale
       //    appWrapper 시각적 너비 = wrapper.clientWidth
       //    우측 여백 = scaleRoot 시각 너비 - appWrapper 너비 + GUIDE
-      const srW = sRoot ? sRoot.offsetWidth * scale : 1888 * scale;
+      const srW = 1888 * scale; // scaleRoot 기준 너비 1888px 고정 (offsetWidth는 flex 영향으로 부정확)
       const m3  = Math.round(srW - wrapper.clientWidth + GUIDE);
       // ④ 브라우저 우측 ~ appWrapper 우측
       const m4  = Math.round(cvw - wRect.right); // 세로 스크롤바 제외
