@@ -1756,8 +1756,9 @@ function adjustCollegeHeight() {
 
   function updatePanel() {
     if (!devOn) return;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
+    const vw  = window.innerWidth;
+    const cvw = document.documentElement.clientWidth; // 세로 스크롤바 제외
+    const vh  = window.innerHeight;
     const wrapper = document.getElementById('appWrapper');
     const scrollL = wrapper ? wrapper.scrollLeft : 0;
 
@@ -1782,7 +1783,7 @@ function adjustCollegeHeight() {
       const srW = sRoot ? sRoot.offsetWidth * scale : 1888 * scale;
       const m3  = Math.round(srW - wrapper.clientWidth + GUIDE);
       // ④ 브라우저 우측 ~ appWrapper 우측
-      const m4  = Math.round(vw - wRect.right);
+      const m4  = Math.round(cvw - wRect.right); // 세로 스크롤바 제외
 
       document.getElementById('dv-margins').innerHTML = [
         `<div>① 브라우저좌 ~ wrapper좌: <span style="color:#fcd34d">${m1}px</span></div>`,
@@ -1878,7 +1879,7 @@ function adjustCollegeHeight() {
 
     const Y1 = 8;  // ①④ 파란 화살표 높이
     const Y2 = 24; // ②③ 빨간 화살표 높이
-    const vw = window.innerWidth;
+    const vw = document.documentElement.clientWidth; // 세로 스크롤바 제외
 
     // ① 브라우저 좌측 ~ appWrapper 좌측 (파란, 수치 표시)
     if (m1 > 0) {
