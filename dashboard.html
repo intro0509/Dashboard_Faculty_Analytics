@@ -24,7 +24,7 @@ body{padding:16px;box-sizing:border-box}
 
 /* TOPNAV */
 .topnav{z-index:100;background:#F6F6F6;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0;gap:0;width:100%;border-radius:0;position:sticky;top:0}
-.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;padding-left:8px;padding-right:28px;height:52px;gap:0;flex:0 0 auto}
+.nav-group{display:flex;align-items:center;background:#ffffff;border-radius:14px;padding:0 8px;padding-right:28px;height:52px;gap:0;flex:0 0 auto}
 .logo{display:flex;align-items:center;gap:10px;margin-right:16px;text-decoration:none;flex-shrink:0}
 .logo-box{width:30px;height:30px;background:#1365FE;border-radius:7px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .logo-box svg{width:16px;height:16px}
@@ -234,7 +234,29 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 .dev-nav-outline .topnav   { outline:1px dashed rgba(255,0,0,0.8) !important; }
 .dev-nav-outline .nav-group { outline:1px dashed rgba(255,0,0,0.8) !important; }
 .dev-nav-outline .nav-right { outline:1px dashed rgba(255,0,0,0.8) !important; }
-.dev-grid-line #main-grid { outline:2px solid rgba(19,101,254,0.8) !important; }
+/* KPI 카드 경계선 */
+.dev-kpi-outline .kpi-card-sm { outline:1px solid rgba(255,140,0,0.9) !important; }
+/* 스파크라인 경계선 (JS로 주입) */
+.dev-spark-overlay {
+  outline:1px solid rgba(255,140,0,0.9);
+  pointer-events:none;
+}
+/* 확보율 추이 카드 경계선 */
+.dev-kpi-outline .rate-card { outline:1px solid rgba(255,140,0,0.9) !important; }
+/* card-hd (제목 영역) 경계선 */
+.dev-kpi-outline .card-hd { outline:1px solid rgba(255,140,0,0.9) !important; }
+.dev-gap-box {
+  position:absolute;left:0;right:0;
+  outline:1px solid rgba(255,140,0,0.8);
+  background:rgba(255,140,0,0.06);
+  pointer-events:none;z-index:9996;
+  display:flex;align-items:center;justify-content:center;
+}
+.dev-gap-label {
+  background:rgba(255,140,0,0.85);color:#fff;
+  font-size:9px;padding:1px 5px;border-radius:3px;
+  font-family:monospace;white-space:nowrap;
+}
 .dev-grid-line #main-grid > * { outline:1px solid rgba(19,101,254,0.3) !important; }
 .dev-height-label {
   position:absolute;top:2px;left:2px;
@@ -1731,6 +1753,50 @@ function adjustCollegeHeight() {
       overlayEls.push(lbl);
     });
 
+    // ③ 스파크라인 경계선 (sparkTotal/sparkTenure/sparkNonTenure의 부모 div)
+    ['sparkTotal','sparkTenure','sparkNonTenure'].forEach(id => {
+      const canvas = document.getElementById(id);
+      if (!canvas) return;
+      const p = canvas.parentElement;
+      if (!p) return;
+      p.style.outline = '1px solid rgba(255,140,0,0.9)';
+      overlayEls.push({ remove: () => { p.style.outline = ''; } });
+    });
+
+    // ④ 카드와 차트 사이 세로 여백 박스 (card-hd 하단 ~ 차트 상단)
+    CARDS.forEach(c => {
+      const card = document.getElementById(c.id);
+      if (!card) return;
+      const hd = card.querySelector('.card-hd');
+      const ct = CHARTS.find(x => x.card === c.id);
+      if (!hd || !ct) return;
+      const chartEl = card.querySelector(ct.sel.replace(`${c.id} `, '')) || document.querySelector(ct.sel);
+      if (!chartEl) return;
+
+      // card 기준 상대좌표
+      const cardRect = card.getBoundingClientRect();
+      const hdRect   = hd.getBoundingClientRect();
+      const chartRect = chartEl.parentElement.getBoundingClientRect();
+
+      const gapTop    = hdRect.bottom - cardRect.top;
+      const gapBottom = chartRect.top - cardRect.top;
+      const gapH      = gapBottom - gapTop;
+
+      if (gapH <= 0) return;
+
+      if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
+      const box = document.createElement('div');
+      box.className = 'dev-gap-box';
+      box.style.top    = gapTop + 'px';
+      box.style.height = gapH + 'px';
+      const lbl = document.createElement('span');
+      lbl.className = 'dev-gap-label';
+      lbl.textContent = `여백: ${Math.round(card.offsetWidth)}×${Math.round(gapH)}`;
+      box.appendChild(lbl);
+      card.appendChild(box);
+      overlayEls.push(box);
+    });
+
     updateGuideLines();
   }
 
@@ -1766,6 +1832,7 @@ function adjustCollegeHeight() {
     document.body.classList.toggle('dev-card-outline', devOn);
     document.body.classList.toggle('dev-grid-line', devOn);
     document.body.classList.toggle('dev-nav-outline', devOn);
+    document.body.classList.toggle('dev-kpi-outline', devOn);
     if (devOn) updatePanel();
     else clearAll();
   });
