@@ -9,18 +9,18 @@
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
 html,body{min-height:100%;font-family:'Pretendard',sans-serif;background:#E1E1E1;color:#111827;font-size:14px;margin:0;padding:0;overflow-x:hidden}
-body{padding:16px;box-sizing:border-box}
+body{box-sizing:border-box}
 #scrollProxy{position:fixed;bottom:0;left:0;right:var(--sb-width, 0px);height:0;overflow-x:auto;overflow-y:hidden;z-index:9999;-webkit-overflow-scrolling:touch;touch-action:pan-x}
 #scrollProxy.active{height:14px}
 #scrollProxyInner{height:1px}
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:0 auto;max-width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:0 auto;width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
 #appWrapper::-webkit-scrollbar{display:none}
 
 /* SCALE ROOT */
-#scaleRoot{width:1888px;position:relative;flex-shrink:0;transform-origin:top center}
+#scaleRoot{width:1856px;margin:0 auto;position:relative;flex-shrink:0;transform-origin:top center}
 
 /* TOPNAV */
 .topnav{z-index:100;background:#F6F6F6;height:84px;display:flex;align-items:center;justify-content:space-between;padding:0;gap:0;width:100%;border-radius:0;position:sticky;top:0}
@@ -44,7 +44,7 @@ body{padding:16px;box-sizing:border-box}
 
 /* PAGE */
 .page{display:none}
-.page.active{display:flex;justify-content:center;overflow:visible;min-width:1888px}
+.page.active{display:flex;justify-content:center;overflow:visible}
 
 /* DASHBOARD */
 .dash-wrap{min-height:calc(100vh - 56px);background:#F6F6F6;padding:24px 28px 24px}
@@ -1606,18 +1606,17 @@ function applyScale() {
   root.style.zoom  = '';
 
   if (zoom < 1) {
-    // scaleRoot와 appWrapper 모두 top center 기준 scale 적용
+    // appWrapper와 scaleRoot 모두 top center 기준 scale 적용
+    // → 두 요소가 함께 축소되어 간격 비율 유지
     root.style.transform    = `scale(${zoom})`;
     wrapper.style.transform = `scale(${zoom})`;
-    // 높이 보정: appWrapper 시각적 높이만큼만 차지
-    // appWrapper의 부모(body)가 DOM 높이 기준으로 공간 차지하므로 보정 필요
+    // body 기준 높이 보정 (scale로 줄어든 시각적 높이만큼 여백 제거)
     wrapper.style.marginBottom = `-${wrapper.offsetHeight * (1 - zoom)}px`;
     wrapper.scrollLeft = 0;
   } else {
     root.style.transform    = '';
     wrapper.style.transform = '';
     wrapper.style.marginBottom = '';
-    wrapper.style.height = '';
   }
 
   initScrollProxy();
@@ -1774,23 +1773,34 @@ function adjustCollegeHeight() {
     document.getElementById('dv-viewport').textContent = `뷰포트: ${vw} × ${vh}`;
     document.getElementById('dv-scroll').textContent   = `scrollLeft: ${Math.round(scrollL)}px`;
 
-    // 여백 계산 (scrollLeft 무관한 고정값)
+    // 여백 계산 (scale 보정 적용 - getBoundingClientRect 대신 고정값 직접 계산)
     if (wrapper) {
-      const wRect  = wrapper.getBoundingClientRect();
-      const sRoot  = document.getElementById('scaleRoot');
       const zoom   = getZoom();
       const GUIDE  = 28;
 
-      // ① 브라우저 좌측 ~ appWrapper 좌측
-      const m1 = Math.round(wRect.left);
-      // ② appWrapper 좌측 ~ 좌측 가이드라인 (zoom 반영)
-      const m2 = Math.round(GUIDE * zoom);
-      // ③ appWrapper 우측 ~ 우측 가이드라인
-      //    zoom은 DOM 자체를 줄이므로 srW = root.offsetWidth * zoom
-      const srW = (sRoot ? sRoot.offsetWidth : 1888) * zoom;
-      const m3  = Math.round(srW - wrapper.clientWidth + GUIDE * zoom);
-      // ④ 브라우저 우측 ~ appWrapper 우측
-      const m4  = Math.round(cvw - wRect.right);
+      // transform:scale()이 appWrapper에 적용되므로 getBoundingClientRect()가 부정확
+      // → DOM 고정값(1888px, 1856px)으로 직접 시각적 좌표 계산
+
+      // appWrapper 시각적 너비 = 1888 * zoom
+      // appWrapper 시각적 좌측 = (cvw - 1888*zoom) / 2  (margin:0 auto 중앙 정렬)
+      const wrapVisualW = 1888 * zoom;
+      const wrapVisualL = (cvw - wrapVisualW) / 2;
+      const wrapVisualR = wrapVisualL + wrapVisualW;
+
+      // appWrapper ~ scaleRoot 시각적 좌우 여백 = (1888-1856)/2 * zoom = 16 * zoom
+      const gap = (1888 - 1856) / 2 * zoom;
+
+      // ① 브라우저 좌측 ~ appWrapper 좌측 (시각적)
+      const m1 = Math.round(wrapVisualL);
+
+      // ② appWrapper 좌측 ~ 좌측 가이드라인 (시각적)
+      const m2 = Math.round(gap + GUIDE * zoom);
+
+      // ③ appWrapper 우측 ~ 우측 가이드라인 (= ②, 좌우 대칭)
+      const m3 = m2;
+
+      // ④ 브라우저 우측 ~ appWrapper 우측 (시각적)
+      const m4 = Math.round(cvw - wrapVisualR);
 
       document.getElementById('dv-margins').innerHTML = [
         `<div>① 브라우저좌 ~ wrapper좌: <span style="color:#fcd34d">${m1}px</span></div>`,
@@ -1800,7 +1810,8 @@ function adjustCollegeHeight() {
       ].join('');
 
       // 화살표 시각화 업데이트
-      updateMarginArrows(wRect, m1, m2, m3, m4, srW);
+      const wRect = { left: wrapVisualL, right: wrapVisualR };
+      updateMarginArrows(wRect, m1, m2, m3, m4, 1856 * zoom);
     }
 
     document.getElementById('dv-heights').innerHTML = CARDS.map(c => {
@@ -1908,8 +1919,8 @@ function adjustCollegeHeight() {
       marginArrows.push(el);
     }
 
-    // ③ 우측 가이드라인 ~ appWrapper 우측 (빨간, 번호만, 항상 표시)
-    // appWrapper 우측 끝에서 m3만큼 안쪽이 우측 가이드라인 위치
+    // ③ 우측 가이드라인 ~ appWrapper 우측 (빨간, 번호만)
+    // 우측 가이드라인 x좌표 = appWrapper 우측 끝 - m3
     const guideRightX = wRect.right - m3;
     if (m3 > 0 && guideRightX >= 0 && guideRightX < vw) {
       const dispW = Math.min(m3, vw - guideRightX);
