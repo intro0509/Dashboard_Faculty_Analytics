@@ -56,7 +56,8 @@
         background: #f6f6f6;
         border-radius: 20px;
         margin: 0 auto;
-        width: 1888px;
+        max-width: 1888px;
+        width: 100%;
         overflow-x: scroll;
         overflow-y: visible;
         box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
@@ -3653,27 +3654,15 @@
       }
 
       function applyScale() {
-        const zoom = getZoom();
         const root = document.getElementById('scaleRoot');
         const wrapper = document.getElementById('appWrapper');
         if (!root || !wrapper) return;
 
+        root.style.transform = '';
         root.style.width = '';
         root.style.zoom = '';
-
-        if (zoom < 1) {
-          // appWrapper와 scaleRoot 모두 top center 기준 scale 적용
-          // → 두 요소가 함께 축소되어 간격 비율 유지
-          root.style.transform = `scale(${zoom})`;
-          wrapper.style.transform = `scale(${zoom})`;
-          // body 기준 높이 보정 (scale로 줄어든 시각적 높이만큼 여백 제거)
-          wrapper.style.marginBottom = `-${wrapper.offsetHeight * (1 - zoom)}px`;
-          wrapper.scrollLeft = 0;
-        } else {
-          root.style.transform = '';
-          wrapper.style.transform = '';
-          wrapper.style.marginBottom = '';
-        }
+        wrapper.style.transform = '';
+        wrapper.style.marginBottom = '';
 
         initScrollProxy();
       }
@@ -3718,9 +3707,8 @@
           sbWidth + 'px',
         );
 
-        // scrollProxyInner 너비 = appWrapper 실제 DOM scrollWidth (scale 무관)
-        // transform:scale()은 DOM 레이아웃에 영향 없으므로 항상 1888px
-        if (window.innerWidth < 1920) {
+        // scrollProxyInner 너비 = appWrapper의 실제 스크롤 너비
+        if (wrapper.scrollWidth > wrapper.clientWidth) {
           inner.style.width = wrapper.scrollWidth + 'px';
           proxy.classList.add('active');
         } else {
@@ -3847,33 +3835,26 @@
           document.getElementById('dv-scroll').textContent =
             `scrollLeft: ${Math.round(scrollL)}px`;
 
-          // 여백 계산 (scale 보정 적용 - getBoundingClientRect 대신 고정값 직접 계산)
+          // 여백 계산 (getBoundingClientRect 사용 - scale 없음)
           if (wrapper) {
-            const zoom = getZoom();
             const GUIDE = 28;
+            const wRect = wrapper.getBoundingClientRect();
+            const wrapVisualL = wRect.left;
+            const wrapVisualR = wRect.right;
 
-            // transform:scale()이 appWrapper에 적용되므로 getBoundingClientRect()가 부정확
-            // → DOM 고정값(1888px, 1856px)으로 직접 시각적 좌표 계산
+            // appWrapper ~ scaleRoot 시각적 좌우 여백
+            const gap = (wRect.width - 1856) / 2;
 
-            // appWrapper 시각적 너비 = 1888 * zoom
-            // appWrapper 시각적 좌측 = (cvw - 1888*zoom) / 2  (margin:0 auto 중앙 정렬)
-            const wrapVisualW = 1888 * zoom;
-            const wrapVisualL = (cvw - wrapVisualW) / 2;
-            const wrapVisualR = wrapVisualL + wrapVisualW;
-
-            // appWrapper ~ scaleRoot 시각적 좌우 여백 = (1888-1856)/2 * zoom = 16 * zoom
-            const gap = ((1888 - 1856) / 2) * zoom;
-
-            // ① 브라우저 좌측 ~ appWrapper 좌측 (시각적)
+            // ① 브라우저 좌측 ~ appWrapper 좌측
             const m1 = Math.round(wrapVisualL);
 
-            // ② appWrapper 좌측 ~ 좌측 가이드라인 (시각적)
-            const m2 = Math.round(gap + GUIDE * zoom);
+            // ② appWrapper 좌측 ~ 좌측 가이드라인
+            const m2 = Math.round(gap + GUIDE);
 
             // ③ appWrapper 우측 ~ 우측 가이드라인 (= ②, 좌우 대칭)
             const m3 = m2;
 
-            // ④ 브라우저 우측 ~ appWrapper 우측 (시각적)
+            // ④ 브라우저 우측 ~ appWrapper 우측
             const m4 = Math.round(cvw - wrapVisualR);
 
             document.getElementById('dv-margins').innerHTML = [
@@ -3883,9 +3864,7 @@
               `<div>④ 브라우저우 ~ wrapper우: <span style="color:#fcd34d">${m4}px</span></div>`,
             ].join('');
 
-            // 화살표 시각화 업데이트
-            const wRect = { left: wrapVisualL, right: wrapVisualR };
-            updateMarginArrows(wRect, m1, m2, m3, m4, 1856 * zoom);
+            updateMarginArrows({ left: wrapVisualL, right: wrapVisualR }, m1, m2, m3, m4, 1856);
           }
 
           document.getElementById('dv-heights').innerHTML = CARDS.map((c) => {
