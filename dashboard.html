@@ -16,7 +16,7 @@ body{padding:16px;box-sizing:border-box}
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:0 auto;max-width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:0 auto;max-width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
 #appWrapper::-webkit-scrollbar{display:none}
 
 /* SCALE ROOT */
@@ -44,7 +44,7 @@ body{padding:16px;box-sizing:border-box}
 
 /* PAGE */
 .page{display:none}
-.page.active{display:flex;justify-content:flex-start;overflow:visible;min-width:1888px}
+.page.active{display:flex;justify-content:center;overflow:visible;min-width:1888px}
 
 /* DASHBOARD */
 .dash-wrap{min-height:calc(100vh - 56px);background:#F6F6F6;padding:24px 28px 24px}
@@ -1588,26 +1588,35 @@ loadData();
 // ==============================
 // 뷰포트별 스케일 적용
 // ==============================
-function getScale() {
+function getZoom() {
   const vw = window.innerWidth;
-  if (vw <= 479)  return 0.85;
-  if (vw <= 767)  return 0.90;
-  if (vw <= 1919) return 0.95;
+  if (vw <= 479)  return 0.76;
+  if (vw <= 767)  return 0.84;
+  if (vw <= 1919) return 0.92;
   return 1.00;
 }
 
 function applyScale() {
-  const scale   = getScale();
+  const zoom    = getZoom();
   const root    = document.getElementById('scaleRoot');
   const wrapper = document.getElementById('appWrapper');
   if (!root || !wrapper) return;
 
-  if (scale < 1) {
-    root.style.transform = `scale(${scale})`;
-    wrapper.style.height = (root.offsetHeight * scale) + 'px';
+  root.style.width = '';
+  root.style.zoom  = '';
+
+  if (zoom < 1) {
+    // scaleRoot와 appWrapper 모두 top center 기준 scale 적용
+    root.style.transform    = `scale(${zoom})`;
+    wrapper.style.transform = `scale(${zoom})`;
+    // 높이 보정: appWrapper 시각적 높이만큼만 차지
+    // appWrapper의 부모(body)가 DOM 높이 기준으로 공간 차지하므로 보정 필요
+    wrapper.style.marginBottom = `-${wrapper.offsetHeight * (1 - zoom)}px`;
     wrapper.scrollLeft = 0;
   } else {
-    root.style.transform = '';
+    root.style.transform    = '';
+    wrapper.style.transform = '';
+    wrapper.style.marginBottom = '';
     wrapper.style.height = '';
   }
 
@@ -1769,21 +1778,19 @@ function adjustCollegeHeight() {
     if (wrapper) {
       const wRect  = wrapper.getBoundingClientRect();
       const sRoot  = document.getElementById('scaleRoot');
-      const scale  = getScale();
-      const GUIDE  = 28; // 가이드라인 기준 (dash-wrap padding)
+      const zoom   = getZoom();
+      const GUIDE  = 28;
 
-      // ① 브라우저 좌측 ~ appWrapper 좌측 (scrollLeft 무관, body padding)
+      // ① 브라우저 좌측 ~ appWrapper 좌측
       const m1 = Math.round(wRect.left);
-      // ② appWrapper 좌측 ~ 좌측 가이드라인 (고정 28px)
-      const m2 = GUIDE;
+      // ② appWrapper 좌측 ~ 좌측 가이드라인 (zoom 반영)
+      const m2 = Math.round(GUIDE * zoom);
       // ③ appWrapper 우측 ~ 우측 가이드라인
-      //    scaleRoot 시각적 너비 = offsetWidth * scale
-      //    appWrapper 시각적 너비 = wrapper.clientWidth
-      //    우측 여백 = scaleRoot 시각 너비 - appWrapper 너비 + GUIDE
-      const srW = 1888 * scale; // scaleRoot 기준 너비 1888px 고정 (offsetWidth는 flex 영향으로 부정확)
-      const m3  = Math.round(srW - wrapper.clientWidth + GUIDE);
+      //    zoom은 DOM 자체를 줄이므로 srW = root.offsetWidth * zoom
+      const srW = (sRoot ? sRoot.offsetWidth : 1888) * zoom;
+      const m3  = Math.round(srW - wrapper.clientWidth + GUIDE * zoom);
       // ④ 브라우저 우측 ~ appWrapper 우측
-      const m4  = Math.round(cvw - wRect.right); // 세로 스크롤바 제외
+      const m4  = Math.round(cvw - wRect.right);
 
       document.getElementById('dv-margins').innerHTML = [
         `<div>① 브라우저좌 ~ wrapper좌: <span style="color:#fcd34d">${m1}px</span></div>`,
