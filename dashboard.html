@@ -70,8 +70,11 @@ body{box-sizing:border-box}
 .status-txt strong{color:#111827}
 
 /* FILTER BAR */
-.filter-bar{background:transparent;border:1px solid #e5eaf5;border-radius:12px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;gap:8px;flex-wrap:nowrap;overflow-x:auto}
-.filter-section{display:flex;align-items:center;gap:6px}
+.filter-bar{background:transparent;border:1px solid #e5eaf5;border-radius:12px;padding:10px 16px;margin-bottom:18px;display:flex;align-items:center;justify-content:space-between;flex-wrap:nowrap;overflow-x:auto}
+.filter-section{display:flex;align-items:center;gap:6px;padding:0 16px}
+.filter-section:first-child{padding-left:0}
+.filter-section:last-child{padding-right:0}
+.filter-section:not(:last-child){border-right:1px solid #e5eaf5}
 .filter-label{font-size:13px;color:#6b7280;font-weight:600;white-space:nowrap;background:#f3f4f6;border:1px solid #e5eaf5;border-radius:8px;padding:6px 14px}
 .fchip{padding:6px 14px;border-radius:8px;font-size:13px;border:1px solid #161616;background:#ffffff;color:#161616;cursor:pointer;transition:all .15s;font-family:'Pretendard',sans-serif;white-space:nowrap}
 .fchip:hover{border-color:#161616;background:#161616;color:#ffffff}
@@ -450,7 +453,6 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>학년도</span>
         <div id="yearFilter" style="display:flex;gap:4px"></div>
       </div>
-      <span class="fsep" style="margin:0 8px">|</span>
       <div class="filter-section">
         <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>트랙</span>
         <div id="trackFilter" style="display:flex;gap:4px">
@@ -459,7 +461,6 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('track','비정년트랙',this)">비정년트랙</span>
         </div>
       </div>
-      <span class="fsep" style="margin:0 8px">|</span>
       <div class="filter-section">
         <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>비정년트랙</span>
         <div id="nonTenureFilter" style="display:flex;gap:4px" class="disabled-bar">
@@ -470,7 +471,6 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" onclick="setFilter('non_tenure','외국인',this)">외국인</span>
         </div>
       </div>
-      <span class="fsep" style="margin:0 8px">|</span>
       <div class="filter-section">
         <span class="filter-label"><svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor" style="margin-right:3px;vertical-align:middle"><path d="M3 4a1 1 0 011-1h16a1 1 0 01.8 1.6L14 13.333V20a1 1 0 01-1.447.894l-4-2A1 1 0 018 18v-4.667L3.2 5.6A1 1 0 013 4z"/></svg>의학계열</span>
         <div style="display:flex;gap:4px">
@@ -478,7 +478,6 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
           <span class="fchip" id="btnInclude" onclick="setMedical('include')">포함</span>
         </div>
       </div>
-      <button class="filter-reset-btn" style="margin-left:auto" onclick="resetAllFilters()">✕ 초기화</button>
     </div>
 
     <!-- 메인 레이아웃: 3열 통합 그리드 -->
@@ -1665,8 +1664,10 @@ function initScrollProxy() {
   if (window.innerWidth < 1920) {
     inner.style.width = container.scrollWidth + 'px';
     proxy.classList.add('active');
+    document.body.style.paddingBottom = '30px';
   } else {
     proxy.classList.remove('active');
+    document.body.style.paddingBottom = '';
     container.scrollLeft = 0;
     return;
   }
