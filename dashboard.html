@@ -259,7 +259,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 .dev-height-label {
   position:absolute;top:2px;left:2px;
   background:rgba(0,0,0,0.65);color:#fcd34d;
-  font-size:9px;padding:1px 5px;border-radius:3px;
+  font-size:12px;padding:1px 5px;border-radius:3px;
   z-index:9997;pointer-events:none;font-family:monospace;
   white-space:nowrap;
 }
@@ -271,7 +271,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 .dev-chart-label {
   position:absolute;bottom:2px;right:2px;
   background:rgba(255,140,0,0.85);color:#fff;
-  font-size:9px;padding:1px 5px;border-radius:3px;
+  font-size:12px;padding:1px 5px;border-radius:3px;
   z-index:9997;pointer-events:none;font-family:monospace;
   white-space:nowrap;
 }
@@ -285,7 +285,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 }
 .dev-bottom-gap-label {
   background:rgba(255,140,0,0.85);color:#fff;
-  font-size:9px;padding:1px 5px;border-radius:3px;
+  font-size:12px;padding:1px 5px;border-radius:3px;
   font-family:monospace;white-space:nowrap;
 }
 .dev-guide-line {
@@ -293,31 +293,12 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
   background:rgba(255,0,0,0.7);
   pointer-events:none;z-index:9995;
 }
-/* 여백 화살표 */
-.dev-margin-arrow {
-  position:fixed;pointer-events:none;z-index:9994;
-  display:flex;align-items:center;
-  font-family:monospace;font-size:10px;
+.dv-layer-btn {
+  background:#2d3748;color:#9ca3af;border:1px solid #4b5563;
+  border-radius:5px;padding:3px 9px;font-size:11px;cursor:pointer;
+  font-family:monospace;line-height:1.4;transition:background .15s,color .15s;
 }
-.dev-margin-arrow-line {
-  flex:1;height:2px;background:rgba(99,179,237,0.9);position:relative;
-}
-.dev-margin-arrow-line::before,
-.dev-margin-arrow-line::after {
-  content:'';position:absolute;top:50%;transform:translateY(-50%);
-  border:4px solid transparent;
-}
-.dev-margin-arrow-line::before { left:0; border-right-color:rgba(99,179,237,0.9); border-left:none; }
-.dev-margin-arrow-line::after  { right:0; border-left-color:rgba(99,179,237,0.9); border-right:none; }
-.dev-margin-label {
-  background:rgba(99,179,237,0.85);color:#fff;
-  font-size:9px;padding:1px 4px;border-radius:3px;white-space:nowrap;margin:0 3px;
-}
-/* ②③ 빨간 화살표 */
-.dev-margin-arrow-red .dev-margin-arrow-line { background:rgba(255,60,60,0.9); }
-.dev-margin-arrow-red .dev-margin-arrow-line::before { border-right-color:rgba(255,60,60,0.9); }
-.dev-margin-arrow-red .dev-margin-arrow-line::after  { border-left-color:rgba(255,60,60,0.9); }
-.dev-margin-arrow-red .dev-margin-label { background:rgba(255,60,60,0.85); }
+.dv-layer-btn.active { background:#1d4ed8;color:#fff;border-color:#1d4ed8; }
 </style>
 </head>
 <body>
@@ -481,68 +462,68 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
     </div>
 
     <!-- 메인 레이아웃: 3열 통합 그리드 -->
-    <div id="main-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);gap:14px;margin-bottom:14px">
+    <div id="main-grid" style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr) minmax(0,1fr);grid-template-rows:226px 165px 226px 226px;gap:14px">
 
             <!-- Row1 Col1: 트랙별 -->
-      <div class="card" id="card-track">
+      <div class="card" id="card-track" style="height:226px;box-sizing:border-box">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#3b82f6"></div>트랙별 현황</div></div>
-        <div style="display:flex;align-items:center;gap:12px">
+        <div id="trackChartWrap" style="display:flex;align-items:center;gap:12px">
+          <div class="legend" id="trackDonutLegend" style="flex:0 0 350px"></div>
           <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="trackDonutChart"></canvas></div>
-          <div class="legend" id="trackDonutLegend" style="flex:1"></div>
         </div>
       </div>
 
       <!-- Row1 Col2: 비정년트랙별 -->
-      <div class="card" id="card-nt">
+      <div class="card" id="card-nt" style="height:226px;box-sizing:border-box">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#8b5cf6"></div>비정년트랙별 현황</div></div>
-        <div style="display:flex;align-items:center;gap:12px">
+        <div id="ntChartWrap" style="display:flex;align-items:center;gap:12px">
+          <div class="legend" id="nonTenureDonutLegend" style="flex:0 0 350px"></div>
           <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="nonTenureDonutChart"></canvas></div>
-          <div class="legend" id="nonTenureDonutLegend" style="flex:1"></div>
         </div>
       </div>
 
       <!-- Col3 Row1~2 span: 단과대학별 (CSS grid-row:span 2 → 자동 높이!) -->
-      <div class="card" id="card-college" style="grid-row:span 3;display:flex;flex-direction:column;padding:0">
-        <div class="card-hd" style="padding:18px 18px 0"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
-        <div class="college-scroll" id="collegeTable" style="overflow-y:auto;flex:1;min-height:0;padding:12px 18px 18px"></div>
+      <div class="card" id="card-college" style="grid-row:span 3;display:flex;flex-direction:column">
+        <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#6366f1"></div>단과대학별 현황</div></div>
+        <div class="college-scroll" id="collegeTable" style="overflow-y:auto;flex:1;min-height:0"></div>
       </div>
 
       <!-- Row2 Col1: 직급별 -->
-      <div class="card" id="card-rank">
+      <div class="card" id="card-rank" style="height:165px;box-sizing:border-box">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>직급별 현황</div></div>
         <div style="position:relative;height:28px;margin:4px 0"><canvas id="rankChart"></canvas></div>
         <div class="legend" id="rankLegend" style="margin-top:10px"></div>
       </div>
 
       <!-- Row2 Col2: 성별 -->
-      <div class="card" id="card-gender">
+      <div class="card" id="card-gender" style="height:165px;box-sizing:border-box">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#ec4899"></div>성별 현황</div></div>
         <div style="position:relative;height:28px;margin:4px 0"><canvas id="genderChart"></canvas></div>
         <div class="legend" id="genderLegend" style="margin-top:10px"></div>
       </div>
 
       <!-- Row3 Col1: 히트맵 -->
-      <div class="card" id="card-heatmap" style="grid-row:span 2;overflow-y:auto;overflow-x:auto">
+      <div class="card" id="card-heatmap" style="grid-row:span 2;display:flex;flex-direction:column">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#1365FE"></div>연령 × 재직기간 분포</div></div>
-        <div id="heatmapWrap"></div>
+        <div id="heatmapWrap" style="overflow-y:auto;overflow-x:auto"></div>
       </div>
 
       <!-- Row3 Col2: 재직기간별 + 연령별 -->
       <!-- Row3 Col2: 재직기간별 -->
-      <div class="card" id="card-tenure">
+      <div class="card" id="card-tenure" style="height:226px;box-sizing:border-box">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#10b981"></div>재직기간별 분포</div></div>
-        <div style="display:flex;align-items:center;gap:8px">
+        <div id="tenureChartWrap" style="display:flex;align-items:center;gap:8px">
+          <div id="tenureHistoLegend" style="flex:0 0 350px"></div>
           <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="tenureHisto"></canvas></div>
-          <div id="tenureHistoLegend" style="flex:1"></div>
         </div>
       </div>
 
       <!-- Row4 Col2: 연령별 -->
-      <div class="card" id="card-age">
+      <div class="card" id="card-age" style="height:226px;box-sizing:border-box">
         <div class="card-hd"><div class="card-title"><div class="cdot" style="background:#f59e0b"></div>연령별 분포</div></div>
-        <div style="display:flex;align-items:center;gap:8px">
+        <div id="ageChartWrap" style="display:flex;align-items:center;gap:8px">
+          <div id="ageHistoLegend" style="flex:0 0 350px"></div>
           <div style="position:relative;height:160px;flex:0 0 auto;width:min(160px,45%)"><canvas id="ageHisto"></canvas></div>
-          <div id="ageHistoLegend" style="flex:1"></div>
         </div>
       </div>
 
@@ -1498,10 +1479,6 @@ function renderHeatmap(s) {
   const AGE_LBL={'30세 미만':'▽ 30세','30세-35세':'▽ 35세','35세-40세':'▽ 40세','40세-45세':'▽ 45세','45세-50세':'▽ 50세','50세-55세':'▽ 55세','55세-60세':'▽ 60세','60세-65세':'▽ 65세','65세 초과':'▲ 65세'};
 
   let html=`<div style=""><table class="heatmap-table" style="margin:0 auto">
-    <thead><tr>
-      <th class="row-header" style="min-width:38px;width:38px"></th>
-      ${TEN.map(()=>`<th style="min-width:45px;width:45px;height:38px"></th>`).join('')}
-    </tr></thead>
     <tbody>`;
 
   [...AGE].reverse().forEach(ag=>{
@@ -1520,7 +1497,7 @@ function renderHeatmap(s) {
 
   html+=`<tr>
     <th class="row-header" style="min-width:38px;width:38px"></th>
-    ${TEN.map(t=>`<th style="min-width:45px;width:45px;height:38px;font-size:11px;color:#9ca3af;font-weight:500;padding:3px 1px;text-align:center;white-space:nowrap;vertical-align:middle">${TEN_LBL[t]||t}</th>`).join('')}
+    ${TEN.map(t=>`<th style="min-width:45px;width:45px;height:36px;font-size:11px;color:#9ca3af;font-weight:500;padding:3px 1px;text-align:center;white-space:nowrap;vertical-align:middle">${TEN_LBL[t]||t}</th>`).join('')}
   </tr>`;
 
   html+='</tbody></table></div>';
@@ -1673,11 +1650,14 @@ function adjustCollegeHeight() {
       <div style="color:#93c5fd;font-weight:700;font-size:12px">🔧 개발모드 정보</div>
       <button id="dev-panel-close" style="background:none;border:none;color:#6b7280;font-size:14px;cursor:pointer;padding:0 2px;line-height:1">✕</button>
     </div>
+    <div style="display:flex;gap:4px;margin-bottom:7px">
+      <button id="dv-toggle-card"  class="dv-layer-btn active">카드</button>
+      <button id="dv-toggle-chart" class="dv-layer-btn active">차트</button>
+      <button id="dv-toggle-title" class="dv-layer-btn active">제목</button>
+    </div>
     <div id="dv-viewport">뷰포트: -</div>
     <div id="dv-scroll">scrollLeft: -</div>
-    <div style="border-top:1px solid #374151;margin:5px 0"></div>
-    <div style="color:#6b7280;font-size:10px;margin-bottom:2px">여백 정보</div>
-    <div id="dv-margins"></div>
+    <div id="dv-filter-gap">필터↔wrap 상단 간격: -</div>
     <div style="border-top:1px solid #374151;margin:5px 0"></div>
     <div style="color:#6b7280;font-size:10px;margin-bottom:2px">카드 가로×세로</div>
     <div id="dv-heights"></div>
@@ -1686,8 +1666,12 @@ function adjustCollegeHeight() {
 
   let devOn = false;
   let panelOpen = true;
-  let overlayEls = [];
+  let cardOverlays  = [];
+  let chartOverlays = [];
   let guideLines = [];
+  let layerCard  = true;
+  let layerChart = true;
+  let layerTitle = true;
 
   const CARDS = [
     {id:'card-track',   name:'트랙별'},
@@ -1706,24 +1690,31 @@ function adjustCollegeHeight() {
     {card:'card-nt',      sel:'canvas#nonTenureDonutChart',name:'비정년 도넛'},
     {card:'card-rank',    sel:'canvas#rankChart',          name:'직급 바'},
     {card:'card-gender',  sel:'canvas#genderChart',        name:'성별 바'},
-    {card:'card-heatmap', sel:'#heatmapWrap',              name:'히트맵'},
+    {card:'card-heatmap', sel:'#heatmapWrap',              name:'히트맵',    selfOverlay:true},
     {card:'card-tenure',  sel:'canvas#tenureHisto',        name:'재직기간 호'},
     {card:'card-age',     sel:'canvas#ageHisto',           name:'연령별 호'},
-    {card:'card-college', sel:'#collegeTable',             name:'단과대학 바'},
-    {card:'card-retire',  sel:'#retireChart',              name:'정년퇴직 바'},
+    {card:'card-college', sel:'#collegeTable',             name:'단과대학 바', selfOverlay:true},
+    {card:'card-retire',  sel:'#retireChart',              name:'정년퇴직 바', selfOverlay:true},
     {card:null,           sel:'canvas#rateChart',          name:'확보율 추이'},
   ];
 
   const CARD_BOTTOMS = [
-    {card:'card-track',   lastSel:'#trackDonutLegend'},
-    {card:'card-nt',      lastSel:'#nonTenureDonutLegend'},
+    {card:'card-track',   lastSel:'#trackChartWrap'},
+    {card:'card-nt',      lastSel:'#ntChartWrap'},
     {card:'card-rank',    lastSel:'#rankLegend'},
     {card:'card-gender',  lastSel:'#genderLegend'},
     {card:'card-heatmap', lastSel:'#heatmapWrap'},
-    {card:'card-tenure',  lastSel:'#tenureHistoLegend'},
-    {card:'card-age',     lastSel:'#ageHistoLegend'},
+    {card:'card-tenure',  lastSel:'#tenureChartWrap'},
+    {card:'card-age',     lastSel:'#ageChartWrap'},
     {card:'card-college', lastSel:'#collegeTable'},
     {card:'card-retire',  lastSel:'#retireChart'},
+  ];
+
+  const LEGENDS = [
+    {sel:'#trackDonutLegend',     name:'트랙별 범례'},
+    {sel:'#nonTenureDonutLegend', name:'비정년 범례'},
+    {sel:'#tenureHistoLegend',    name:'재직기간 범례'},
+    {sel:'#ageHistoLegend',       name:'연령별 범례'},
   ];
 
   function updatePanel() {
@@ -1737,27 +1728,13 @@ function adjustCollegeHeight() {
     document.getElementById('dv-viewport').textContent = `뷰포트: ${vw} × ${vh}`;
     document.getElementById('dv-scroll').textContent   = `scrollLeft: ${Math.round(scrollL)}px`;
 
-    // 여백 계산 (transform 없으므로 getBoundingClientRect 직접 사용)
-    if (wrapper) {
-      const GUIDE  = 28;
-      const wRect  = wrapper.getBoundingClientRect();
-      const scaleRootEl = document.getElementById('scaleRoot');
-      const srRect = scaleRootEl ? scaleRootEl.getBoundingClientRect() : null;
-
-      const m1 = Math.round(wRect.left);
-      const m2 = srRect ? Math.round(srRect.left - wRect.left + GUIDE) : 0;
-      const m3 = m2;
-      const m4 = Math.round(cvw - wRect.right);
-
-      document.getElementById('dv-margins').innerHTML = [
-        `<div>① 브라우저좌 ~ wrapper좌: <span style="color:#fcd34d">${m1}px</span></div>`,
-        `<div>② wrapper좌 ~ 좌가이드: <span style="color:#fcd34d">${m2}px</span></div>`,
-        `<div>③ wrapper우 ~ 우가이드: <span style="color:#fcd34d">${m3}px</span></div>`,
-        `<div>④ 브라우저우 ~ wrapper우: <span style="color:#fcd34d">${m4}px</span></div>`,
-      ].join('');
-
-      updateMarginArrows(wRect, m1, m2, m3, m4, srRect ? srRect.width - GUIDE * 2 : 0);
+    const dashWrapEl  = document.querySelector('.dash-wrap');
+    const filterBarEl = document.querySelector('.filter-bar');
+    if (dashWrapEl && filterBarEl) {
+      const gap = Math.round(filterBarEl.getBoundingClientRect().top - dashWrapEl.getBoundingClientRect().top);
+      document.getElementById('dv-filter-gap').textContent = `필터↔wrap 상단 간격: ${gap}px`;
     }
+
 
     document.getElementById('dv-heights').innerHTML = CARDS.map(c => {
       const el = document.getElementById(c.id);
@@ -1765,129 +1742,114 @@ function adjustCollegeHeight() {
       return `<div>${c.name}: <span style="color:#fcd34d">${el.offsetWidth}×${el.offsetHeight}px</span></div>`;
     }).join('');
 
-    overlayEls.forEach(e => e.remove());
-    overlayEls = [];
+    cardOverlays.forEach(e => e.remove());  cardOverlays = [];
+    chartOverlays.forEach(e => e.remove()); chartOverlays = [];
 
-    // ① 카드 크기 레이블
-    CARDS.forEach(c => {
-      const el = document.getElementById(c.id);
-      if (!el) return;
-      if (!el.style.position || el.style.position === 'static') el.style.position = 'relative';
-      const lbl = document.createElement('div');
-      lbl.className = 'dev-height-label';
-      lbl.textContent = `${c.name}: ${el.offsetWidth}×${el.offsetHeight}`;
-      el.appendChild(lbl);
-      overlayEls.push(lbl);
-    });
+    // ① 카드 크기 레이블 (카드 레이어)
+    if (layerCard) {
+      CARDS.forEach(c => {
+        const el = document.getElementById(c.id);
+        if (!el) return;
+        if (!el.style.position || el.style.position === 'static') el.style.position = 'relative';
+        const lbl = document.createElement('div');
+        lbl.className = 'dev-height-label';
+        lbl.textContent = `${c.name}: ${el.offsetWidth}×${el.offsetHeight}`;
+        el.appendChild(lbl);
+        cardOverlays.push(lbl);
+      });
+    }
 
-    // ② 차트 경계선(주황) + 차트 크기 레이블
-    CHARTS.forEach(ct => {
-      const chartEl = document.querySelector(ct.sel);
-      if (!chartEl) return;
-      const parent = chartEl.parentElement;
-      if (!parent) return;
-      if (!parent.style.position || parent.style.position === 'static') parent.style.position = 'relative';
-      const ov = document.createElement('div');
-      ov.className = 'dev-chart-overlay';
-      parent.appendChild(ov);
-      overlayEls.push(ov);
-      const lbl = document.createElement('div');
-      lbl.className = 'dev-chart-label';
-      lbl.textContent = `${ct.name}: ${chartEl.offsetWidth}×${chartEl.offsetHeight}`;
-      parent.appendChild(lbl);
-      overlayEls.push(lbl);
-    });
+    // ② 차트 경계선 + 레이블 + 스파크라인 + 하단 여백 (차트 레이어)
+    if (layerChart) {
+      CHARTS.forEach(ct => {
+        const chartEl = document.querySelector(ct.sel);
+        if (!chartEl) return;
 
-    // ③ 스파크라인 경계선
-    ['sparkTotal','sparkTenure','sparkNonTenure'].forEach(id => {
-      const canvas = document.getElementById(id);
-      if (!canvas) return;
-      const p = canvas.parentElement;
-      if (!p) return;
-      p.style.outline = '1px solid rgba(255,140,0,0.9)';
-      overlayEls.push({ remove: () => { p.style.outline = ''; } });
-    });
+        if (ct.selfOverlay) {
+          // overflow 컨테이너는 inset box-shadow로 경계 표시 (outline은 overflow에 잘림)
+          chartEl.style.boxShadow = 'inset 0 0 0 1px rgba(255,140,0,0.9)';
+          chartOverlays.push({ remove: () => { chartEl.style.boxShadow = ''; } });
+          // 레이블은 카드에 부착 (overflow 클리핑 회피)
+          const card = ct.card ? document.getElementById(ct.card) : null;
+          if (card) {
+            if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
+            const cardRect = card.getBoundingClientRect();
+            const elRect   = chartEl.getBoundingClientRect();
+            const lbl = document.createElement('div');
+            lbl.className = 'dev-chart-label';
+            lbl.style.bottom = Math.round(cardRect.bottom - elRect.bottom + 2) + 'px';
+            lbl.textContent = `${ct.name}: ${chartEl.offsetWidth}×${chartEl.offsetHeight}`;
+            card.appendChild(lbl);
+            chartOverlays.push(lbl);
+          }
+        } else {
+          const target = chartEl.parentElement;
+          if (!target) return;
+          if (!target.style.position || target.style.position === 'static') target.style.position = 'relative';
+          const ov = document.createElement('div');
+          ov.className = 'dev-chart-overlay';
+          target.appendChild(ov);
+          chartOverlays.push(ov);
+          const lbl = document.createElement('div');
+          lbl.className = 'dev-chart-label';
+          lbl.textContent = `${ct.name}: ${chartEl.offsetWidth}×${chartEl.offsetHeight}`;
+          target.appendChild(lbl);
+          chartOverlays.push(lbl);
+        }
+      });
 
-    // ④ 카드 하단 여백 박스
-    CARD_BOTTOMS.forEach(cb => {
-      const card   = document.getElementById(cb.card);
-      const lastEl = document.querySelector(cb.lastSel);
-      if (!card || !lastEl) return;
-      if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
-      const cardRect = card.getBoundingClientRect();
-      const lastRect = lastEl.getBoundingClientRect();
-      const gapTop   = lastRect.bottom - cardRect.top;
-      const gapH     = cardRect.bottom - lastRect.bottom;
-      if (gapH <= 1) return;
-      const box = document.createElement('div');
-      box.className = 'dev-bottom-gap';
-      box.style.top    = gapTop + 'px';
-      box.style.height = gapH + 'px';
-      const lbl = document.createElement('span');
-      lbl.className = 'dev-bottom-gap-label';
-      lbl.textContent = `하단 여백: ${Math.round(card.offsetWidth)}×${Math.round(gapH)}`;
-      box.appendChild(lbl);
-      card.appendChild(box);
-      overlayEls.push(box);
-    });
+      ['sparkTotal','sparkTenure','sparkNonTenure'].forEach(id => {
+        const canvas = document.getElementById(id);
+        if (!canvas) return;
+        const p = canvas.parentElement;
+        if (!p) return;
+        p.style.outline = '1px solid rgba(255,140,0,0.9)';
+        chartOverlays.push({ remove: () => { p.style.outline = ''; } });
+      });
+
+      CARD_BOTTOMS.forEach(cb => {
+        const card   = document.getElementById(cb.card);
+        const lastEl = document.querySelector(cb.lastSel);
+        if (!card || !lastEl) return;
+        if (!card.style.position || card.style.position === 'static') card.style.position = 'relative';
+        const cardRect = card.getBoundingClientRect();
+        const lastRect = lastEl.getBoundingClientRect();
+        const gapTop   = lastRect.bottom - cardRect.top;
+        const gapH     = cardRect.bottom - lastRect.bottom;
+        if (gapH <= 1) return;
+        const box = document.createElement('div');
+        box.className = 'dev-bottom-gap';
+        box.style.top    = gapTop + 'px';
+        box.style.height = gapH + 'px';
+        const lbl = document.createElement('span');
+        lbl.className = 'dev-bottom-gap-label';
+        lbl.textContent = `하단 여백: ${Math.round(card.offsetWidth)}×${Math.round(gapH)}`;
+        box.appendChild(lbl);
+        card.appendChild(box);
+        chartOverlays.push(box);
+      });
+    }
+
+    // ③ 범례 크기 레이블 (제목 레이어)
+    if (layerTitle) {
+      LEGENDS.forEach(lg => {
+        const el = document.querySelector(lg.sel);
+        if (!el) return;
+        if (!el.style.position || el.style.position === 'static') el.style.position = 'relative';
+        const lbl = document.createElement('div');
+        lbl.className = 'dev-chart-label';
+        lbl.textContent = `${lg.name}: ${el.offsetWidth}×${el.offsetHeight}`;
+        el.appendChild(lbl);
+        chartOverlays.push(lbl);
+      });
+    }
+
+    document.body.classList.toggle('dev-card-outline', layerCard);
+    document.body.classList.toggle('dev-grid-line',    layerCard);
+    document.body.classList.toggle('dev-kpi-outline',  layerTitle);
+    document.body.classList.toggle('dev-nav-outline',  devOn);
 
     updateGuideLines();
-  }
-
-  let marginArrows = [];
-
-  function updateMarginArrows(wRect, m1, m2, m3, m4, srW) {
-    marginArrows.forEach(e => e.remove());
-    marginArrows = [];
-
-    const Y1 = 8;  // ①④ 파란 화살표 높이
-    const Y2 = 24; // ②③ 빨간 화살표 높이
-    const vw = document.documentElement.clientWidth; // 세로 스크롤바 제외
-
-    // ① 브라우저 좌측 ~ appWrapper 좌측 (파란, 수치 표시)
-    if (m1 > 0) {
-      const el = document.createElement('div');
-      el.className = 'dev-margin-arrow';
-      el.style.cssText = `left:0;top:${Y1}px;width:${wRect.left}px;`;
-      el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">①</span>`;
-      document.body.appendChild(el);
-      marginArrows.push(el);
-    }
-
-    // ② appWrapper 좌측 ~ 좌측 가이드라인 (빨간, 번호만)
-    if (m2 > 0) {
-      const el = document.createElement('div');
-      el.className = 'dev-margin-arrow dev-margin-arrow-red';
-      el.style.cssText = `left:${wRect.left}px;top:${Y2}px;width:${m2}px;`;
-      el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">②</span>`;
-      document.body.appendChild(el);
-      marginArrows.push(el);
-    }
-
-    // ③ 우측 가이드라인 ~ appWrapper 우측 (빨간, 번호만)
-    // 우측 가이드라인 x좌표 = appWrapper 우측 끝 - m3
-    const guideRightX = wRect.right - m3;
-    if (m3 > 0 && guideRightX >= 0 && guideRightX < vw) {
-      const dispW = Math.min(m3, vw - guideRightX);
-      if (dispW > 0) {
-        const el = document.createElement('div');
-        el.className = 'dev-margin-arrow dev-margin-arrow-red';
-        el.style.cssText = `left:${guideRightX}px;top:${Y2}px;width:${dispW}px;`;
-        el.innerHTML = `<div class="dev-margin-arrow-line"></div><span class="dev-margin-label">③</span>`;
-        document.body.appendChild(el);
-        marginArrows.push(el);
-      }
-    }
-
-    // ④ 브라우저 우측 ~ appWrapper 우측 (파란, 수치 표시)
-    if (m4 > 0) {
-      const el = document.createElement('div');
-      el.className = 'dev-margin-arrow';
-      el.style.cssText = `left:${wRect.right}px;top:${Y1}px;width:${m4}px;`;
-      el.innerHTML = `<span class="dev-margin-label">④</span><div class="dev-margin-arrow-line"></div>`;
-      document.body.appendChild(el);
-      marginArrows.push(el);
-    }
   }
 
   function updateGuideLines() {
@@ -1908,12 +1870,10 @@ function adjustCollegeHeight() {
   }
 
   function clearAll() {
-    overlayEls.forEach(e => e.remove());
-    overlayEls = [];
-    guideLines.forEach(l => l.remove());
-    guideLines = [];
-    marginArrows.forEach(e => e.remove());
-    marginArrows = [];
+    cardOverlays.forEach(e => e.remove());  cardOverlays = [];
+    chartOverlays.forEach(e => e.remove()); chartOverlays = [];
+    guideLines.forEach(l => l.remove());    guideLines = [];
+    document.body.classList.remove('dev-card-outline','dev-grid-line','dev-kpi-outline','dev-nav-outline');
   }
 
   // 패널 드래그 이동
@@ -1973,6 +1933,17 @@ function adjustCollegeHeight() {
     panel.classList.remove('show');
   });
 
+  // 레이어 토글 버튼
+  ['card','chart','title'].forEach(layer => {
+    document.getElementById(`dv-toggle-${layer}`).addEventListener('click', function() {
+      if (layer === 'card')  layerCard  = !layerCard;
+      if (layer === 'chart') layerChart = !layerChart;
+      if (layer === 'title') layerTitle = !layerTitle;
+      this.classList.toggle('active');
+      updatePanel();
+    });
+  });
+
   // 개발모드 토글 버튼
   btn.addEventListener('click', () => {
     devOn = !devOn;
@@ -1984,10 +1955,6 @@ function adjustCollegeHeight() {
     } else {
       panel.classList.remove('show');
     }
-    document.body.classList.toggle('dev-card-outline', devOn);
-    document.body.classList.toggle('dev-grid-line', devOn);
-    document.body.classList.toggle('dev-nav-outline', devOn);
-    document.body.classList.toggle('dev-kpi-outline', devOn);
     if (devOn) updatePanel();
     else clearAll();
   });
