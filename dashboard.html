@@ -124,7 +124,7 @@ body{box-sizing:border-box}
 .histo-wrap{display:flex;flex-direction:column;gap:6px}
 .histo-row{display:grid;grid-template-columns:90px 1fr auto;align-items:center;gap:6px;min-height:26px}
 .histo-lbl{font-size:12px;color:#374151;text-align:right;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden}
+.bar-bg{height:15px;background:#FFEDEA;border-radius:8px;overflow:hidden}
 .bar-fill{height:100%;border-radius:8px;transition:width 1s ease;width:0%}
 .histo-cnt{font-size:14px;font-weight:700;color:#111827;text-align:right;white-space:nowrap}
 .histo-pct{font-size:12px;font-weight:400;color:#9ca3af;text-align:right;white-space:nowrap}
@@ -146,8 +146,8 @@ body{box-sizing:border-box}
 .col-num{font-weight:700;color:#111827;text-align:right;font-size:14px}
 .col-name{font-size:12px;color:#374151}
 .col-pct{color:#9ca3af;font-size:12px;font-weight:400;text-align:right}
-.col-bar-bg{height:15px;background:#f0f4ff;border-radius:8px;overflow:hidden;width:60px;min-width:40px}
-.col-bar{height:100%;background:#1365FE;border-radius:8px;transition:width 1s ease}
+.col-bar-bg{height:15px;background:#FFEDEA;border-radius:8px;overflow:hidden;width:60px;min-width:40px}
+.col-bar{height:100%;background:#FD705A;border-radius:8px;transition:width 1s ease}
 
 /* LOADING */
 .loading-wrap{display:flex;flex-direction:column;align-items:center;justify-content:center;height:60vh;gap:14px}
@@ -355,7 +355,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
       <div style="display:flex;flex-direction:column;justify-content:space-between;gap:14px;min-width:0">
         <div style="padding:4px 2px 18px;overflow:hidden">
           <h1 style="font-size:40px;font-weight:800;color:#111827;margin-bottom:6px">Integrated Faculty Analytics Dashboard</h1>
-          <p style="font-size:20px;color:#9ca3af;line-height:1.6">Data-driven insights into faculty structure, organizational distribution, tenure coverage,<br>and workforce sustainability.</p>
+          <p style="font-size:20px;color:#9ca3af;line-height:1.6">Data-driven insights into faculty structure, organizational distribution, tenure coverage<br>and workforce sustainability.</p>
         </div>
         <div class="kpi-row">
           <div class="kpi-card-sm">
@@ -416,7 +416,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
         <div class="card-hd">
           <div class="card-title"><div class="cdot" style="background:#0ea5e9"></div>전임교원 확보율 추이</div>
           <div style="display:flex;align-items:center;gap:16px;font-size:12px;color:#6b7280">
-            <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:24px;height:2px;background:#1365FE;border-radius:2px"></span>의학계열 제외</span>
+            <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:24px;height:2px;background:#FD5B42;border-radius:2px"></span>의학계열 제외</span>
             <span style="display:flex;align-items:center;gap:5px"><span style="display:inline-block;width:24px;height:0;border-top:2px dashed #d1d5db"></span>의학계열 포함</span>
           </div>
         </div>
@@ -631,12 +631,12 @@ let charts={}, rosterCache={}, rawRecordsCache={};
 let activeFilters={track:'전체',non_tenure:'전체'};
 
 const GRID='rgba(243,244,246,1)';
-const TRACK_COLORS=['#1365FE','#BFDBFE'];
-const NT_COLORS=['#1365FE','#60A5FA','#93C5FD','#BFDBFE'];
-const RANK_COLORS=['#1365FE','#60A5FA','#BFDBFE'];
-const GENDER_COLORS=['#1365FE','#BFDBFE'];
-const AGE_COLORS=['#1365FE','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'];
-const TENURE_COLORS=['#1365FE','#3b82f6','#60a5fa','#93c5fd','#bfdbfe'];
+const TRACK_COLORS=['#FD705A','#FEAEA2'];
+const NT_COLORS=['#FD705A','#FE8572','#FE9A8A','#FEAEA2'];
+const RANK_COLORS=['#FD705A','#FE9A8A','#FEC3BA'];
+const GENDER_COLORS=['#FD705A','#FEAEA2'];
+const AGE_COLORS=['#FD705A','#FE8572','#FE9A8A','#FEAEA2','#FEC3BA'];
+const TENURE_COLORS=['#FD705A','#FE8572','#FE9A8A','#FEAEA2','#FEC3BA'];
 
 // LOAD
 async function loadData() {
@@ -993,17 +993,17 @@ function renderRateChart() {
   if (charts.rate) charts.rate.destroy();
 
   const grad = ctx.createLinearGradient(0, 0, 0, 250);
-  grad.addColorStop(0, 'rgba(19,101,254,0.2)');
-  grad.addColorStop(0.5, 'rgba(19,101,254,0.07)');
-  grad.addColorStop(1, 'rgba(19,101,254,0.01)');
+  grad.addColorStop(0, 'rgba(253,91,66,0.2)');
+  grad.addColorStop(0.5, 'rgba(253,91,66,0.07)');
+  grad.addColorStop(1, 'rgba(253,91,66,0.01)');
 
   const datasets = [{
     label: '의학계열 제외',
     data: dataExcl,
-    borderColor: '#1365FE',
+    borderColor: '#FD5B42',
     backgroundColor: grad,
     borderWidth: 2.5,
-    pointBackgroundColor: '#1365FE',
+    pointBackgroundColor: '#FD5B42',
     pointBorderColor: '#fff',
     pointBorderWidth: 2,
     pointRadius: 0,
@@ -1108,7 +1108,7 @@ function renderRateChart() {
         data.datasets.forEach((ds, di) => {
           const meta = chart.getDatasetMeta(di);
           if (!meta || meta.hidden) return;
-          const color = di === 0 ? '#1365FE' : '#9ca3af';
+          const color = di === 0 ? '#FD5B42' : '#9ca3af';
           ds.data.forEach((val, i) => {
             // 더미 포인트(첫번째·마지막) 레이블 숨김
             if (i === 0 || i === labels.length - 1) return;
@@ -1149,7 +1149,7 @@ function renderRateChart() {
               ctx.textBaseline = 'middle';
               ctx.fillText(label, bx + bw / 2, by + bh / 2);
             } else {
-              ctx.fillStyle = di === 0 ? '#1365FE' : '#9ca3af';
+              ctx.fillStyle = di === 0 ? '#FD5B42' : '#9ca3af';
               ctx.textAlign = 'center';
               ctx.textBaseline = 'bottom';
               ctx.fillText(label, x, y - 10);
@@ -1352,7 +1352,7 @@ function renderHisto(cid, dataObj, colors, total, legendId) {
         // 배경 호
         c.beginPath();
         c.arc(cx, cy, r, startAngle, startAngle + maxAngle);
-        c.strokeStyle = '#f0f4ff'; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
+        c.strokeStyle = '#FFEDEA'; c.lineWidth = barH; c.lineCap = 'round'; c.stroke();
 
         // 데이터 호 (값 0이면 배경만)
         if(ratio > 0){
@@ -1437,7 +1437,7 @@ function renderRetire(s){
   const html=items.map((it,idx)=>{
     const barPct=(it.value/max*100).toFixed(1);
     const ratePct=(it.value/total*100).toFixed(2);
-    const barColor=idx===0?'#1365FE':'#93c5fd';
+    const barColor=idx===0?'#FD705A':'#FEC3BA';
     return `<div class="histo-row">
       <div class="histo-lbl">${it.label}</div>
       <div class="bar-bg"><div class="bar-fill" style="background:${barColor}" data-target="${barPct}"></div></div>
@@ -1463,16 +1463,16 @@ function renderHeatmap(s) {
   AGE.forEach(a=>TEN.forEach(t=>{const v=heatmap[a]?.[t]||0;if(v>maxVal)maxVal=v;}));
 
   function cellColor(val){
-    if(!val||!maxVal)return'#f8faff';
+    if(!val||!maxVal)return'#FFEDEA';
     const ratio=val/maxVal;
-    const r=Math.round(19+(241-19)*(1-ratio));
-    const g=Math.round(101+(250-101)*(1-ratio));
-    const b=Math.round(254+(255-254)*(1-ratio));
-    return`rgba(${r},${g},${b},${0.15+ratio*0.85})`;
+    const r=Math.round(253+(255-253)*(1-ratio));
+    const g=Math.round(112+(237-112)*(1-ratio));
+    const b=Math.round(90+(234-90)*(1-ratio));
+    return`rgb(${r},${g},${b})`;
   }
   function textColor(val){
-    if(!val||!maxVal)return'#c7d9fb';
-    return val/maxVal>0.5?'#fff':'#1365FE';
+    if(!val||!maxVal)return'#FFEDEA';
+    return'#000000';
   }
 
   const TEN_LBL={'3년 미만':'▽ 3년','3년-5년':'▽ 5년','5년-10년':'▽ 10년','10년-15년':'▽ 15년','15년-20년':'▽ 20년','20년-25년':'▽ 25년','25년-30년':'▽ 30년','30년-35년':'▽ 35년','35년 초과':'▲ 35년'};
@@ -1504,7 +1504,7 @@ function renderHeatmap(s) {
 
   const legendHtml=`<div style="display:flex;align-items:center;gap:6px;font-size:11px;color:#9ca3af">
     <span>적음</span>
-    ${[0.1,0.3,0.5,0.7,0.9].map(r=>`<div style="width:18px;height:10px;border-radius:2px;background:rgba(19,101,254,${0.15+r*0.85})"></div>`).join('')}
+    ${['#FEC3BA','#FEAEA2','#FE9A8A','#FE8572','#FD705A'].map(c=>`<div style="width:18px;height:10px;border-radius:2px;background:${c}"></div>`).join('')}
     <span>많음</span>
   </div>`;
 
@@ -1547,7 +1547,7 @@ function renderCollege(s){
     const barPct=(cnt/max*100).toFixed(1);
     return `<div class="histo-row">
       <div class="histo-lbl">${name}</div>
-      <div class="bar-bg"><div class="bar-fill" style="background:${idx===0?'#1365FE':'#93c5fd'}" data-target="${barPct}"></div></div>
+      <div class="bar-bg"><div class="bar-fill" style="background:${idx===0?'#FD705A':'#FEC3BA'}" data-target="${barPct}"></div></div>
       <span class="histo-cnt">${cnt}명<span class="histo-pct"> (${pct}%)</span></span>
     </div>`;
   }).join('');
