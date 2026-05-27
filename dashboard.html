@@ -16,8 +16,10 @@ body{box-sizing:border-box}
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:0 auto;width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px auto;width:1888px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
 #appWrapper::-webkit-scrollbar{display:none}
+#scrollContainer{width:100%;overflow-x:auto;overflow-y:visible;scrollbar-width:none;-ms-overflow-style:none}
+#scrollContainer::-webkit-scrollbar{display:none}
 
 /* SCALE ROOT */
 #scaleRoot{width:1856px;margin:0 auto;position:relative;flex-shrink:0;transform-origin:top center}
@@ -316,6 +318,7 @@ footer{text-align:center;font-size:11px;color:#9ca3af;padding:16px 0 8px}
 </style>
 </head>
 <body>
+<div id="scrollContainer">
 <div id="appWrapper" style="background:#F6F6F6;border-radius:20px;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative">
 
 
@@ -1612,7 +1615,8 @@ function applyScale() {
     wrapper.style.transform = `scale(${zoom})`;
     // body 기준 높이 보정 (scale로 줄어든 시각적 높이만큼 여백 제거)
     wrapper.style.marginBottom = `-${wrapper.offsetHeight * (1 - zoom)}px`;
-    wrapper.scrollLeft = 0;
+    const sc = document.getElementById('scrollContainer');
+    if (sc) sc.scrollLeft = 0;
   } else {
     root.style.transform    = '';
     wrapper.style.transform = '';
@@ -1649,29 +1653,27 @@ setTimeout(() => {
 }, 200);
 
 function initScrollProxy() {
-  const wrapper = document.getElementById('appWrapper');
-  const proxy   = document.getElementById('scrollProxy');
-  const inner   = document.getElementById('scrollProxyInner');
-  if (!wrapper || !proxy || !inner) return;
+  const container = document.getElementById('scrollContainer');
+  const proxy     = document.getElementById('scrollProxy');
+  const inner     = document.getElementById('scrollProxyInner');
+  if (!container || !proxy || !inner) return;
 
   // 세로 스크롤바 너비 계산
   const sbWidth = window.innerWidth - document.documentElement.clientWidth;
   document.documentElement.style.setProperty('--sb-width', sbWidth + 'px');
 
-  // scrollProxyInner 너비 = appWrapper 실제 DOM scrollWidth (scale 무관)
-  // transform:scale()은 DOM 레이아웃에 영향 없으므로 항상 1888px
   if (window.innerWidth < 1920) {
-    inner.style.width = wrapper.scrollWidth + 'px';
+    inner.style.width = container.scrollWidth + 'px';
     proxy.classList.add('active');
   } else {
     proxy.classList.remove('active');
-    wrapper.scrollLeft = 0;
+    container.scrollLeft = 0;
     return;
   }
 
   // 스크롤 동기화
-  proxy.onscroll = () => { wrapper.scrollLeft = proxy.scrollLeft; };
-  wrapper.onscroll = () => { proxy.scrollLeft = wrapper.scrollLeft; };
+  proxy.onscroll     = () => { container.scrollLeft = proxy.scrollLeft; };
+  container.onscroll = () => { proxy.scrollLeft = container.scrollLeft; };
 }
 
 
@@ -1768,7 +1770,7 @@ function adjustCollegeHeight() {
     const cvw = document.documentElement.clientWidth; // 세로 스크롤바 제외
     const vh  = window.innerHeight;
     const wrapper = document.getElementById('appWrapper');
-    const scrollL = wrapper ? wrapper.scrollLeft : 0;
+    const scrollL = document.getElementById('scrollContainer')?.scrollLeft ?? 0;
 
     document.getElementById('dv-viewport').textContent = `뷰포트: ${vw} × ${vh}`;
     document.getElementById('dv-scroll').textContent   = `scrollLeft: ${Math.round(scrollL)}px`;
@@ -2050,11 +2052,13 @@ function adjustCollegeHeight() {
   setInterval(updatePanel, 500);
   window.addEventListener('resize', updatePanel);
   const wrapper = document.getElementById('appWrapper');
-  if (wrapper) wrapper.addEventListener('scroll', updatePanel);
+  const sc = document.getElementById('scrollContainer');
+  if (sc) sc.addEventListener('scroll', updatePanel);
 })();
 
 </script>
 </div><!-- /appWrapper -->
+</div><!-- /scrollContainer -->
 <div id="scrollProxy"><div id="scrollProxyInner"></div></div>
 </body>
 </html>
