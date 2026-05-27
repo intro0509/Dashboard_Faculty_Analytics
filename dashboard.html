@@ -16,7 +16,7 @@ body{box-sizing:border-box}
 
 
 /* APP WRAPPER */
-#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px auto 14px;width:1862px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
+#appWrapper{background:#F6F6F6;border-radius:20px;margin:16px auto;width:1864px;overflow-x:scroll;overflow-y:visible;box-shadow:0 4px 24px rgba(0,0,0,0.10);position:relative;scrollbar-width:none;-ms-overflow-style:none;transform-origin:top center}
 #appWrapper::-webkit-scrollbar{display:none}
 #scrollContainer{width:100%;overflow-x:auto;overflow-y:visible;scrollbar-width:none;-ms-overflow-style:none;padding:0 22px;box-sizing:border-box}
 #scrollContainer::-webkit-scrollbar{display:none}
@@ -1625,7 +1625,7 @@ function initScrollProxy() {
   if (window.innerWidth < 1920) {
     inner.style.width = container.scrollWidth + 'px';
     proxy.classList.add('active');
-    document.body.style.paddingBottom = '30px';
+    document.body.style.paddingBottom = '14px';
   } else {
     proxy.classList.remove('active');
     document.body.style.paddingBottom = '';
