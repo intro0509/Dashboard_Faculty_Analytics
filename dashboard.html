@@ -2,7 +2,7 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>동아대학교 교원관리 시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css">
@@ -672,8 +672,8 @@ async function loadData() {
 async function initDashboard() {
   document.getElementById('loadingState').style.display='none';
   document.getElementById('dashContent').style.display='block';
-  // dashContent 표시 후 스케일 + 스크롤 프록시 초기화
-  applyScale();
+  // dashContent 표시 후 스크롤 프록시 초기화
+  initScrollProxy();
   const yearFilter = document.getElementById('yearFilter');
   DB.meta.years.slice().reverse().forEach(yr => {
     const chip = document.createElement('span');
@@ -870,7 +870,6 @@ async function renderAll() {
         adjustHeatmapHeight();
         adjustRetireHeight();
         adjustCollegeHeight();
-        applyScale();
       });
     });
   }, 150);
@@ -1584,48 +1583,10 @@ function renderCollege(s){
 loadData();
 
 // ★ 고정 레이아웃 (1920px 기준)
-// scaleRoot/topnav: 1920px 고정, transform 없음
 // 화면이 넓으면 좌우 여백만 생김, 화면이 좁으면 scrollProxy가 가로 스크롤 담당
+// 모바일에서는 브라우저 핀치 줌으로 확대/축소
 
-// ==============================
-// 뷰포트별 스케일 적용
-// ==============================
-function getZoom() {
-  const vw = window.innerWidth;
-  if (vw <= 479)  return 0.76;
-  if (vw <= 767)  return 0.84;
-  if (vw <= 1919) return 0.92;
-  return 1.00;
-}
-
-function applyScale() {
-  const zoom    = getZoom();
-  const root    = document.getElementById('scaleRoot');
-  const wrapper = document.getElementById('appWrapper');
-  if (!root || !wrapper) return;
-
-  root.style.width = '';
-  root.style.zoom  = '';
-
-  if (zoom < 1) {
-    // appWrapper와 scaleRoot 모두 top center 기준 scale 적용
-    // → 두 요소가 함께 축소되어 간격 비율 유지
-    root.style.transform    = `scale(${zoom})`;
-    wrapper.style.transform = `scale(${zoom})`;
-    // body 기준 높이 보정 (scale로 줄어든 시각적 높이만큼 여백 제거)
-    wrapper.style.marginBottom = `-${wrapper.offsetHeight * (1 - zoom)}px`;
-    const sc = document.getElementById('scrollContainer');
-    if (sc) sc.scrollLeft = 0;
-  } else {
-    root.style.transform    = '';
-    wrapper.style.transform = '';
-    wrapper.style.marginBottom = '';
-  }
-
-  initScrollProxy();
-}
-
-// resize 시 adjust + scale + scrollProxy 갱신
+// resize 시 adjust + scrollProxy 갱신
 let resizeTimer = null;
 window.addEventListener('resize', () => {
   if (resizeTimer) clearTimeout(resizeTimer);
@@ -1635,7 +1596,7 @@ window.addEventListener('resize', () => {
         adjustHeatmapHeight();
         adjustRetireHeight();
         adjustCollegeHeight();
-        applyScale();
+        initScrollProxy();
       });
     });
   }, 100);
@@ -1646,7 +1607,7 @@ setTimeout(() => {
       adjustHeatmapHeight();
       adjustRetireHeight();
       adjustCollegeHeight();
-      applyScale();
+      initScrollProxy();
     });
   });
 }, 200);
@@ -1776,34 +1737,17 @@ function adjustCollegeHeight() {
     document.getElementById('dv-viewport').textContent = `뷰포트: ${vw} × ${vh}`;
     document.getElementById('dv-scroll').textContent   = `scrollLeft: ${Math.round(scrollL)}px`;
 
-    // 여백 계산 (scale 보정 적용 - getBoundingClientRect 대신 고정값 직접 계산)
+    // 여백 계산 (transform 없으므로 getBoundingClientRect 직접 사용)
     if (wrapper) {
-      const zoom   = getZoom();
       const GUIDE  = 28;
+      const wRect  = wrapper.getBoundingClientRect();
+      const scaleRootEl = document.getElementById('scaleRoot');
+      const srRect = scaleRootEl ? scaleRootEl.getBoundingClientRect() : null;
 
-      // transform:scale()이 appWrapper에 적용되므로 getBoundingClientRect()가 부정확
-      // → DOM 고정값(1888px, 1856px)으로 직접 시각적 좌표 계산
-
-      // appWrapper 시각적 너비 = 1888 * zoom
-      // appWrapper 시각적 좌측 = (cvw - 1888*zoom) / 2  (margin:0 auto 중앙 정렬)
-      const wrapVisualW = 1888 * zoom;
-      const wrapVisualL = (cvw - wrapVisualW) / 2;
-      const wrapVisualR = wrapVisualL + wrapVisualW;
-
-      // appWrapper ~ scaleRoot 시각적 좌우 여백 = (1888-1856)/2 * zoom = 16 * zoom
-      const gap = (1888 - 1856) / 2 * zoom;
-
-      // ① 브라우저 좌측 ~ appWrapper 좌측 (시각적)
-      const m1 = Math.round(wrapVisualL);
-
-      // ② appWrapper 좌측 ~ 좌측 가이드라인 (시각적)
-      const m2 = Math.round(gap + GUIDE * zoom);
-
-      // ③ appWrapper 우측 ~ 우측 가이드라인 (= ②, 좌우 대칭)
+      const m1 = Math.round(wRect.left);
+      const m2 = srRect ? Math.round(srRect.left - wRect.left + GUIDE) : 0;
       const m3 = m2;
-
-      // ④ 브라우저 우측 ~ appWrapper 우측 (시각적)
-      const m4 = Math.round(cvw - wrapVisualR);
+      const m4 = Math.round(cvw - wRect.right);
 
       document.getElementById('dv-margins').innerHTML = [
         `<div>① 브라우저좌 ~ wrapper좌: <span style="color:#fcd34d">${m1}px</span></div>`,
@@ -1812,9 +1756,7 @@ function adjustCollegeHeight() {
         `<div>④ 브라우저우 ~ wrapper우: <span style="color:#fcd34d">${m4}px</span></div>`,
       ].join('');
 
-      // 화살표 시각화 업데이트
-      const wRect = { left: wrapVisualL, right: wrapVisualR };
-      updateMarginArrows(wRect, m1, m2, m3, m4, 1856 * zoom);
+      updateMarginArrows(wRect, m1, m2, m3, m4, srRect ? srRect.width - GUIDE * 2 : 0);
     }
 
     document.getElementById('dv-heights').innerHTML = CARDS.map(c => {
