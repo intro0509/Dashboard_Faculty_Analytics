@@ -1,0 +1,823 @@
+﻿<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>데이터 업로드 도구 | 전임교원 대시보드</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&family=DM+Mono:wght@400;500&display=swap');
+
+  :root{
+    --bg:#0a0e1a;--surface:#111827;--surface2:#1a2235;--border:#1e2d45;
+    --accent:#3b82f6;--accent2:#06b6d4;--accent5:#10b981;--danger:#ef4444;
+    --text:#e2e8f0;--text-muted:#64748b;--text-dim:#94a3b8;
+  }
+  *{margin:0;padding:0;box-sizing:border-box}
+  body{font-family:'Noto Sans KR',sans-serif;background:var(--bg);color:var(--text);min-height:100vh}
+  body::before{content:'';position:fixed;inset:0;background-image:linear-gradient(rgba(59,130,246,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(59,130,246,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0}
+
+  .container{position:relative;z-index:1;max-width:800px;margin:0 auto;padding:40px 24px}
+
+  header{text-align:center;margin-bottom:40px}
+  header h1{font-size:24px;font-weight:700;background:linear-gradient(135deg,#fff,var(--accent2));-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;margin-bottom:8px}
+  header p{font-size:13px;color:var(--text-muted)}
+
+  .step{display:flex;gap:12px;margin-bottom:32px}
+  .step-num{width:28px;height:28px;border-radius:50%;background:linear-gradient(135deg,var(--accent),var(--accent2));display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0;margin-top:2px}
+  .step-body h3{font-size:14px;font-weight:600;margin-bottom:4px}
+  .step-body p{font-size:12px;color:var(--text-muted);line-height:1.6}
+
+  /* DROP ZONE */
+  .drop-zone{
+    border:2px dashed var(--border);border-radius:16px;padding:48px 32px;
+    text-align:center;cursor:pointer;transition:all .2s;background:var(--surface);
+    position:relative;margin-bottom:24px
+  }
+  .drop-zone:hover,.drop-zone.dragover{border-color:var(--accent);background:rgba(59,130,246,.05)}
+  .drop-zone.dragover{transform:scale(1.01)}
+  .drop-icon{font-size:48px;margin-bottom:16px}
+  .drop-title{font-size:16px;font-weight:600;margin-bottom:6px}
+  .drop-sub{font-size:12px;color:var(--text-muted)}
+  .drop-zone input[type=file]{position:absolute;inset:0;opacity:0;cursor:pointer;width:100%;height:100%}
+
+  /* FILE INFO */
+  .file-info{display:none;align-items:center;gap:12px;padding:14px 18px;background:var(--surface2);border:1px solid var(--border);border-radius:10px;margin-bottom:16px}
+  .file-info.show{display:flex}
+  .file-icon{font-size:24px}
+  .file-name{font-size:13px;font-weight:600;color:var(--text)}
+  .file-size{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace}
+  .file-remove{margin-left:auto;cursor:pointer;color:var(--text-muted);font-size:18px;line-height:1;transition:color .2s}
+  .file-remove:hover{color:var(--danger)}
+
+  /* SHEET PICKER */
+  .sheet-picker{display:none;margin-bottom:20px}
+  .sheet-picker.show{display:block}
+  .sheet-picker h4{font-size:12px;color:var(--text-muted);margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px}
+  .sheet-picker select{width:100%;padding:10px 14px;border-radius:8px;border:1px solid var(--border);background:var(--surface);color:var(--text);font-size:13px;font-family:'Noto Sans KR',sans-serif;outline:none}
+
+  /* RATE INPUTS */
+  
+
+  /* PROCESS BTN */
+  .process-btn{
+    width:100%;padding:14px;border-radius:10px;border:none;
+    background:linear-gradient(135deg,var(--accent),var(--accent2));
+    color:#fff;font-size:14px;font-weight:700;font-family:'Noto Sans KR',sans-serif;
+    cursor:pointer;transition:opacity .2s,transform .2s;margin-bottom:16px
+  }
+  .process-btn:hover{opacity:.9;transform:translateY(-1px)}
+  .process-btn:disabled{opacity:.4;cursor:not-allowed;transform:none}
+
+  /* PROGRESS */
+  .progress{display:none;margin-bottom:20px}
+  .progress.show{display:block}
+  .progress-bar-bg{height:6px;background:var(--border);border-radius:3px;overflow:hidden;margin-bottom:8px}
+  .progress-bar{height:100%;background:linear-gradient(90deg,var(--accent),var(--accent2));border-radius:3px;transition:width .3s ease;width:0}
+  .progress-log{font-size:11px;color:var(--text-muted);font-family:'DM Mono',monospace;line-height:1.8;max-height:120px;overflow-y:auto}
+  .log-ok{color:var(--accent5)} .log-warn{color:var(--accent4)} .log-err{color:var(--danger)}
+
+  /* RESULT */
+  .result{display:none;background:rgba(16,185,129,.08);border:1px solid rgba(16,185,129,.3);border-radius:12px;padding:24px;text-align:center;margin-bottom:20px}
+  .result.show{display:block}
+  .result h3{font-size:16px;font-weight:700;color:var(--accent5);margin-bottom:8px}
+  .result p{font-size:12px;color:var(--text-muted);margin-bottom:16px;line-height:1.6}
+  .dl-btn{
+    display:inline-block;padding:10px 24px;border-radius:8px;
+    background:var(--accent5);color:#fff;font-size:13px;font-weight:700;
+    text-decoration:none;cursor:pointer;border:none;font-family:'Noto Sans KR',sans-serif;
+    transition:opacity .2s
+  }
+  .dl-btn:hover{opacity:.85}
+
+  /* STATS PREVIEW */
+  .preview{display:none;background:var(--surface2);border:1px solid var(--border);border-radius:10px;padding:16px;margin-bottom:20px}
+  .preview.show{display:block}
+  .preview h4{font-size:12px;color:var(--text-muted);margin-bottom:12px;text-transform:uppercase;letter-spacing:.5px}
+  .preview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:8px}
+  .pv-card{background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:10px;text-align:center}
+  .pv-num{font-size:20px;font-weight:900;font-family:'DM Mono',monospace;color:var(--accent2)}
+  .pv-lbl{font-size:10px;color:var(--text-muted);margin-top:2px}
+
+  /* GUIDE */
+  .guide{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:20px;margin-top:32px}
+  .guide h3{font-size:13px;font-weight:600;margin-bottom:12px;color:var(--accent2)}
+  .guide-list{display:flex;flex-direction:column;gap:8px}
+  .guide-item{display:flex;gap:10px;font-size:12px;color:var(--text-muted);line-height:1.5}
+  .guide-item code{font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--accent)}
+  .guide-tag{font-size:10px;background:rgba(59,130,246,.15);color:var(--accent);padding:1px 6px;border-radius:4px;white-space:nowrap}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📂 데이터 업로드 도구</h1>
+    <p>전임교원 현황표 엑셀 파일을 업로드하면 대시보드용 JSON을 자동 생성합니다</p>
+  </header>
+
+  <!-- STEPS -->
+  <div class="step"><div class="step-num">1</div><div class="step-body"><h3>엑셀 파일 선택</h3><p>RAWDATA.xlsx 파일을 드래그하거나 클릭해서 선택하세요. (RAWDATA 시트 + 확보율 표 포함)</p></div></div>
+  <div class="step"><div class="step-num">2</div><div class="step-body"><h3>확보율 자동 읽기</h3><p>RAWDATA.xlsx 파일의 B~D열(학년도, 확보율 의학제외/포함)에서 확보율을 자동으로 읽어옵니다.</p></div></div>
+  <div class="step"><div class="step-num">3</div><div class="step-body"><h3>JSON 생성 및 서버 업로드</h3><p>생성된 <code style="font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--accent)">dashboard_data.json</code>을 서버의 <code style="font-family:'DM Mono',monospace;background:var(--surface2);padding:1px 6px;border-radius:4px;font-size:11px;color:var(--accent)">dashboard.html</code>과 같은 폴더에 올리면 즉시 반영됩니다.</p></div></div>
+
+  <!-- DROP ZONE -->
+  <div class="drop-zone" id="dropZone">
+    <input type="file" id="fileInput" accept=".xlsx,.xlsm,.xls" onchange="handleFile(this.files[0])">
+    <div class="drop-icon">📊</div>
+    <div class="drop-title">엑셀 파일을 여기에 드래그하거나 클릭하세요</div>
+    <div class="drop-sub">.xlsx · .xlsm · .xls 지원</div>
+  </div>
+
+  <!-- FILE INFO -->
+  <div class="file-info" id="fileInfo">
+    <span class="file-icon">📄</span>
+    <div>
+      <div class="file-name" id="fileName">-</div>
+      <div class="file-size" id="fileSize">-</div>
+    </div>
+    <span class="file-remove" onclick="resetFile()">✕</span>
+  </div>
+
+  <!-- SHEET PICKER -->
+  <div class="sheet-picker" id="sheetPicker">
+    <h4>RAWDATA 시트 선택</h4>
+    <select id="sheetSelect" onchange="onSheetChange()">
+      <option value="">시트를 선택하세요</option>
+    </select>
+  </div>
+
+  <!-- RATE INPUTS -->
+
+
+  <!-- PROCESS -->
+  <button class="process-btn" id="processBtn" disabled onclick="processFile()">
+    ⚙️ dashboard_data.json 생성
+  </button>
+
+  <!-- PROGRESS -->
+  <div class="progress" id="progress">
+    <div class="progress-bar-bg"><div class="progress-bar" id="progressBar"></div></div>
+    <div class="progress-log" id="progressLog"></div>
+  </div>
+
+  <!-- PREVIEW -->
+  <div class="preview" id="previewBox">
+    <h4>📋 처리 결과 미리보기</h4>
+    <div class="preview-grid" id="previewGrid"></div>
+  </div>
+
+  <!-- RESULT -->
+  <div class="result" id="resultBox">
+    <h3>✅ 파일 생성 완료!</h3>
+    <p id="resultDesc">-</p>
+    <p style="font-size:11px;color:var(--text-muted);margin-bottom:12px">아래 파일들을 모두 다운로드하여 Dashbaord-Test 폴더에 넣고 업로드하세요.</p>
+    <div id="downloadBtns" style="display:flex;flex-wrap:wrap;gap:8px;justify-content:center"></div>
+  </div>
+
+  <!-- GUIDE -->
+  <div class="guide">
+    <h3>📌 서버 배포 가이드</h3>
+    <div class="guide-list">
+      <div class="guide-item"><span class="guide-tag">필수</span><span>서버에 <code>dashboard.html</code>, <code>dashboard_data.json</code>, <code>upload.html</code> 세 파일을 같은 폴더에 업로드</span></div>
+      <div class="guide-item"><span class="guide-tag">매년</span><span>새 학년도 데이터가 추가된 엑셀 파일을 이 페이지에서 업로드 → JSON 다운로드 → 서버의 기존 JSON 파일 덮어쓰기</span></div>
+      <div class="guide-item"><span class="guide-tag">확인</span><span>JSON 교체 후 <code>dashboard.html</code>에 접속하면 즉시 새 데이터가 반영됩니다 (새로고침 필요)</span></div>
+      <div class="guide-item"><span class="guide-tag">주의</span><span>엑셀 RAWDATA 시트의 헤더 행(학년도, 교직원번호, 성명...)은 바꾸지 마세요</span></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let workbook = null;
+let selectedSheet = null;
+let generatedJSON = null;
+// 확보율은 엑셀에서 자동으로 읽어옴
+
+
+// ─── DRAG & DROP ───
+const dz = document.getElementById('dropZone');
+dz.addEventListener('dragover', e => { e.preventDefault(); dz.classList.add('dragover'); });
+dz.addEventListener('dragleave', () => dz.classList.remove('dragover'));
+dz.addEventListener('drop', e => {
+  e.preventDefault();
+  dz.classList.remove('dragover');
+  const f = e.dataTransfer.files[0];
+  if (f) handleFile(f);
+});
+
+// ─── FILE HANDLING ───
+function handleFile(file) {
+  if (!file) return;
+  document.getElementById('fileName').textContent = file.name;
+  document.getElementById('fileSize').textContent = formatBytes(file.size);
+  document.getElementById('fileInfo').classList.add('show');
+
+  const reader = new FileReader();
+  reader.onload = e => {
+    try {
+      workbook = XLSX.read(e.target.result, { type: 'array', cellDates: false });
+      populateSheetPicker();
+    } catch(err) {
+      alert('파일을 읽을 수 없습니다: ' + err.message);
+    }
+  };
+  reader.readAsArrayBuffer(file);
+}
+
+
+
+function populateSheetPicker() {
+  const sel = document.getElementById('sheetSelect');
+  sel.innerHTML = '<option value="">시트를 선택하세요</option>';
+  workbook.SheetNames.forEach(name => {
+    const opt = document.createElement('option');
+    opt.value = name;
+    opt.textContent = name;
+    if (name === 'RAWDATA') opt.selected = true;
+    sel.appendChild(opt);
+  });
+  document.getElementById('sheetPicker').classList.add('show');
+  onSheetChange();
+}
+
+function onSheetChange() {
+  selectedSheet = document.getElementById('sheetSelect').value;
+  document.getElementById('processBtn').disabled = !selectedSheet;
+}
+
+
+
+
+
+
+
+// ─── PROCESS ───
+// ── 파생 컬럼 계산 함수 ──
+function calcTenureGroup(qStr) {
+  if (!qStr) return null;
+  const slashMatch = qStr.match(/^(\d+)\//);
+  const yearMatch = qStr.match(/^(\d+)년/);
+  const yr = slashMatch ? parseInt(slashMatch[1]) : yearMatch ? parseInt(yearMatch[1]) : NaN;
+  if (isNaN(yr)) return null;
+  if (yr < 5)  return '▽ 5년';
+  if (yr < 15) return '▽ 15년';
+  if (yr < 25) return '▽ 25년';
+  if (yr < 35) return '▽ 35년';
+  return '▲ 35년';
+}
+
+function calcAgeGroup(age) {
+  if (isNaN(age)) return null;
+  if (age < 30) return '▽ 30세';
+  if (age < 40) return '▽ 40세';
+  if (age < 50) return '▽ 50세';
+  if (age < 60) return '▽ 60세';
+  return '▲ 60세';
+}
+
+function excelSerialToDate(serial) {
+  // 엑셀 날짜 시리얼 → JS Date 변환 (1900년 기준)
+  if (typeof serial === 'number') {
+    const date = new Date((serial - 25569) * 86400 * 1000);
+    return date;
+  }
+  return new Date(serial);
+}
+
+function calcRetireLabel(yVal) {
+  if (!yVal) return null;
+  try {
+    let d;
+    if (typeof yVal === 'number') {
+      d = excelSerialToDate(yVal);
+    } else {
+      const s = String(yVal).trim();
+      const slash = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+      if (slash) {
+        const yyyy = slash[3].length === 4 ? parseInt(slash[3]) : 2000 + parseInt(slash[3]);
+        d = new Date(yyyy, parseInt(slash[1]) - 1, parseInt(slash[2]));
+      } else {
+        d = new Date(s);
+        if (!isNaN(d.getTime()) && d.getFullYear() < 2000) d.setFullYear(d.getFullYear() + 100);
+      }
+    }
+    if (!d || isNaN(d.getTime())) return null;
+    if (d.getMonth() < 3) return `${d.getFullYear() - 1}학년도 2학기`;
+    return `${d.getFullYear()}학년도 1학기`;
+  } catch(e) { return null; }
+}
+
+function calcRetireType(yVal, currentYr) {
+  const label = calcRetireLabel(yVal);
+  if (!label) return null;
+  const retireYr = parseInt(label.split('학년도')[0]);
+  if (retireYr <= currentYr) return '퇴직예정(-)';
+  if (retireYr === currentYr + 1) return '퇴직예정(+1)';
+  if (retireYr === currentYr + 2) return '퇴직예정(+2)';
+  return null;
+}
+
+async function processFile() {
+  const btn = document.getElementById('processBtn');
+  btn.disabled = true;
+
+  document.getElementById('progress').classList.add('show');
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('downloadBtns').innerHTML = '';
+
+  const logs = [];
+  const logEl = document.getElementById('progressLog');
+
+  function log(msg, cls='') {
+    logs.push(msg);
+    logEl.innerHTML += `<div class="${cls}">${msg}</div>`;
+    logEl.scrollTop = logEl.scrollHeight;
+  }
+
+  function setProgress(pct) {
+    document.getElementById('progressBar').style.width = pct + '%';
+  }
+
+  try {
+    log('📂 시트 읽는 중...');
+    setProgress(10);
+
+    const ws = workbook.Sheets[selectedSheet];
+    const rawRows = XLSX.utils.sheet_to_json(ws, { header: 1, defval: null, raw: false });
+
+    // ── 헤더 행 탐색 ──
+    let headerIdx = -1;
+    let dataStartCol = -1;
+    let rateColIdx = 2;    // 기본값: C열(인덱스2) = 확보율(의학계열 제외)
+    let rateIncColIdx = 3; // 기본값: D열(인덱스3) = 확보율(의학계열 포함)
+
+    for (let i = 0; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if (!row) continue;
+      if (row.includes('교직원번호') && row.includes('학년도')) {
+        headerIdx = i;
+        // 확보율 열 동적 탐색 (못찾으면 기본값 C,D열 사용)
+        row.forEach((cell, idx) => {
+          const s = String(cell||'').replace(/\s/g,''); // 줄바꿈/공백 모두 제거
+          if (s.includes('확보율') && s.includes('제외')) rateColIdx = idx;
+          if (s.includes('확보율') && s.includes('포함')) rateIncColIdx = idx;
+        });
+        const empIdx = row.indexOf('교직원번호');
+        dataStartCol = empIdx > 0 ? empIdx - 1 : row.indexOf('학년도');
+        break;
+      }
+    }
+
+    if (headerIdx < 0) throw new Error('헤더 행(학년도, 교직원번호...)을 찾을 수 없습니다.');
+
+    const fullHeader = rawRows[headerIdx];
+    const dataHeader = fullHeader.slice(dataStartCol).filter(h => h !== null && h !== undefined && h !== '');
+
+    log(`✅ 헤더 발견 (행 ${headerIdx+1}): ${dataHeader.slice(0,5).join(', ')}...`, 'log-ok');
+    log(`📊 확보율 열: C열(${rateColIdx+1}번째), D열(${rateIncColIdx+1}번째)`, '');
+    setProgress(20);
+
+    // ── 확보율 데이터 읽기: 확보율 헤더 행을 찾아 동적으로 열 탐색 ──
+    const rateData = {};
+    let rateHeaderRow = -1;
+    let rateYrColIdx = -1;
+
+    for (let i = 0; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if (!row) continue;
+      // 이 행에서 확보율(제외) 헤더 찾기
+      let foundExcl = -1, foundIncl = -1, foundYr = -1;
+      for (let j = 0; j < row.length; j++) {
+        const s = String(row[j]||'').replace(/[\s\r\n]/g,'');
+        if (s === '학년도' && foundYr < 0) foundYr = j; // 첫번째 학년도만
+        if (s.includes('확보율') && s.includes('제외')) foundExcl = j;
+        if (s.includes('확보율') && s.includes('포함')) foundIncl = j;
+      }
+      // 확보율 헤더가 있고, 학년도가 확보율보다 앞에 있는 행
+      if (foundExcl >= 0 && foundYr >= 0 && foundYr < foundExcl) {
+        rateHeaderRow = i;
+        rateYrColIdx = foundYr;
+        rateColIdx = foundExcl;
+        rateIncColIdx = foundIncl >= 0 ? foundIncl : foundExcl + 1;
+        log(`📊 확보율 열 탐색: 학년도=${rateYrColIdx}, 제외=${rateColIdx}, 포함=${rateIncColIdx}`, '');
+        // 다음 행부터 데이터 읽기
+        for (let k = i + 1; k < rawRows.length; k++) {
+          const r = rawRows[k];
+          if (!r) continue;
+          const yrRaw = r[rateYrColIdx];
+          if (yrRaw === null || yrRaw === undefined || yrRaw === '') continue;
+          const yrNum = parseFloat(String(yrRaw).replace(/[^0-9.]/g,''));
+          const yr = String(Math.round(yrNum));
+          if (!yr.match(/^\d{4}$/)) continue;
+          const exclRaw = r[rateColIdx];
+          const inclRaw = r[rateIncColIdx];
+          const excl = exclRaw !== null ? parseFloat(String(exclRaw).replace('%','')) : null;
+          const incl = inclRaw !== null ? parseFloat(String(inclRaw).replace('%','')) : null;
+          if (excl !== null && !isNaN(excl)) {
+            rateData[yr] = {
+              exclude: excl,
+              include: (incl !== null && !isNaN(incl)) ? incl : null
+            };
+          }
+        }
+        break;
+      }
+    }
+    log(`✅ 확보율 데이터: ${Object.keys(rateData).length}개년 (${Object.keys(rateData).sort().join(', ')})`, 'log-ok');
+
+    // ── RAWDATA 파싱 (F열~ 영역) ──
+    const records = [];
+    for (let i = headerIdx + 1; i < rawRows.length; i++) {
+      const row = rawRows[i];
+      if (!row || row[dataStartCol] === null || row[dataStartCol] === undefined || row[dataStartCol] === '') continue;
+      const rec = {};
+      dataHeader.forEach((h, j) => {
+        rec[h] = row[dataStartCol + j] ?? null;
+      });
+      if (rec['학년도'] && String(rec['학년도']).match(/^\d{4}$/)) {
+        // Q열(재직기간) → 재직기간대 자동 계산
+        const qVal = rec['재직기간'] || rec['재직기간_수정'] || '';
+        rec['재직기간대'] = calcTenureGroup(String(qVal));
+        rec['재직기간대_상세'] = calcTenureGroupDetail(String(qVal));
+
+        // U열(연령) → 연령대 자동 계산
+        const uVal = parseInt(rec['연령']);
+        rec['연령대'] = calcAgeGroup(uVal);
+        rec['연령대_상세'] = calcAgeGroupDetail(uVal);
+
+        // Y열(정년퇴직예정일) → 학년도-학기 자동 계산
+        const yVal = rec['정년퇴직예정일'];
+        rec['정년퇴직예정일_수정'] = calcRetireLabel(yVal);
+        rec['퇴직예정자'] = calcRetireType(yVal, parseInt(String(rec['학년도'])));
+
+        records.push(rec);
+      }
+    }
+
+    log(`✅ 총 ${records.length}건 데이터 로드`, 'log-ok');
+    setProgress(40);
+
+    // Get all years
+    const years = [...new Set(records.map(r => String(r['학년도'])))].sort();
+    log(`📅 발견된 학년도: ${years.join(', ')}`, 'log-ok');
+    setProgress(50);
+
+    // ── 명부 컬럼 정의 ──
+    const ROSTER_COLS = ['교직원번호','성명','원소속 상위','원소속 부서','원소속 전공','직급','생년월일','성별','임상','임용일자','재직기간대','호봉','연령대','트랙구분','비정년트랙구분','정년퇴직예정일_수정'];
+    const ROSTER_HEADERS = ['교직원번호','성명','원소속 상위','원소속 부서','원소속 전공','직급','생년월일','성별','임상','임용일자','재직기간','호봉','연령','트랙구분','비정년트랙구분','퇴직예정일(학년도-학기)'];
+
+    // ── 기본 집계 함수 ──
+    const AGE_ORDER=['▽ 30세','▽ 40세','▽ 50세','▽ 60세','▲ 60세'];
+    const TENURE_ORDER=['▽ 5년','▽ 15년','▽ 25년','▽ 35년','▲ 35년'];
+    const NON_TENURE_LIST=['강의전담','연구전담','산학협력전담','외국인'];
+
+    const HEATMAP_AGE_ORDER=['▽ 30세','▽ 35세','▽ 40세','▽ 45세','▽ 50세','▽ 55세','▽ 60세','▽ 65세','▲ 65세'];
+    const HEATMAP_TENURE_ORDER=['▽ 3년','▽ 5년','▽ 10년','▽ 15년','▽ 20년','▽ 25년','▽ 30년','▽ 35년','▲ 35년'];
+
+    function calcAgeGroupDetail(age) {
+      if (isNaN(age)) return null;
+      if (age < 30) return '▽ 30세';
+      if (age < 35) return '▽ 35세';
+      if (age < 40) return '▽ 40세';
+      if (age < 45) return '▽ 45세';
+      if (age < 50) return '▽ 50세';
+      if (age < 55) return '▽ 55세';
+      if (age < 60) return '▽ 60세';
+      if (age < 65) return '▽ 65세';
+      return '▲ 65세';
+    }
+
+    function calcTenureGroupDetail(qStr) {
+      if (!qStr) return null;
+      const slashMatch = qStr.match(/^(\d+)\//);
+      const yearMatch = qStr.match(/^(\d+)년/);
+      const yr = slashMatch ? parseInt(slashMatch[1]) : yearMatch ? parseInt(yearMatch[1]) : NaN;
+      if (isNaN(yr)) return null;
+      if (yr < 3)  return '▽ 3년';
+      if (yr < 5)  return '▽ 5년';
+      if (yr < 10) return '▽ 10년';
+      if (yr < 15) return '▽ 15년';
+      if (yr < 20) return '▽ 20년';
+      if (yr < 25) return '▽ 25년';
+      if (yr < 30) return '▽ 30년';
+      if (yr < 35) return '▽ 35년';
+      return '▲ 35년';
+    }
+
+    function makeRoster(rows) {
+      return rows.map(r => {
+        const row = {};
+        const tenureLabel = {'5년 미만':'▽ 5년','5년-15년':'▽ 15년','15년-25년':'▽ 25년','25년-35년':'▽ 35년','▲ 35년':'▲ 35년'};
+        const ageLabel = {'▽ 30세':'▽ 30세','30세-40세':'▽ 40세','40세-50세':'▽ 50세','50세-60세':'▽ 60세','60세 초과':'▲ 60세'};
+        const fmtBirth = v => {
+          if (typeof v === 'number') { const d = excelSerialToDate(v); return isNaN(d.getTime()) ? '' : d.toISOString().slice(0,10); }
+          const s = String(v).trim();
+          if (/^\d{4}-\d{2}-\d{2}$/.test(s)) return s;
+          const digits = s.replace(/\D/g,'');
+          if (digits.length === 8) return `${digits.slice(0,4)}-${digits.slice(4,6)}-${digits.slice(6,8)}`;
+          const s6 = digits.slice(0,6);
+          if (s6.length === 6) { const yy=s6.slice(0,2),mm=s6.slice(2,4),dd=s6.slice(4,6); return `${parseInt(yy)>25?'19':'20'}${yy}-${mm}-${dd}`; }
+          return s;
+        };
+        const fmtAppoint = v => {
+          if (typeof v === 'number') { const d = excelSerialToDate(v); return isNaN(d) ? '' : d.toISOString().slice(0,10); }
+          const s = String(v).trim();
+          const m = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2,4})$/);
+          if (m) { const yyyy = m[3].length===4 ? m[3] : (parseInt(m[3])>25?'19':'20')+m[3].padStart(2,'0'); return `${yyyy}-${m[1].padStart(2,'0')}-${m[2].padStart(2,'0')}`; }
+          return s;
+        };
+        ROSTER_COLS.forEach((col, i) => {
+          let val = r[col] ?? '';
+          if (typeof val === 'string') val = val.replace(' 00:00:00','');
+          if (col === '생년월일') val = fmtBirth(val);
+          if (col === '임용일자') val = fmtAppoint(val);
+          if (col === '재직기간대') val = tenureLabel[val] ?? val;
+          if (col === '연령대') val = ageLabel[val] ?? val;
+          row[ROSTER_HEADERS[i]] = val;
+        });
+        return row;
+      });
+    }
+
+    function buildHeatmap(rows) {
+      const hm={};
+      HEATMAP_AGE_ORDER.forEach(a=>{hm[a]={};HEATMAP_TENURE_ORDER.forEach(t=>{hm[a][t]=0;});});
+      rows.forEach(r=>{
+        const ag=r['연령대_상세'], tg=r['재직기간대_상세'];
+        if(ag in hm && tg in hm[ag]) hm[ag][tg]++;
+      });
+      return hm;
+    }
+
+    function buildStats(rows) {
+      if(!rows||!rows.length) return {
+        total:0,tenure_track:0,non_tenure:0,male:0,female:0,prof:0,assoc:0,asst:0,
+        tracks:{정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0},
+        ages:Object.fromEntries(AGE_ORDER.map(a=>[a,0])),
+        tenure_dist:Object.fromEntries(TENURE_ORDER.map(t=>[t,0])),
+        retire:{'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0},
+        colleges:{},heatmap:{}
+      };
+      const tracks={정년트랙:0,강의전담:0,연구전담:0,산학협력전담:0,외국인:0};
+      rows.forEach(r=>{if(r['트랙구분']==='정년트랙')tracks['정년트랙']++;else{const s=r['비정년트랙구분'];if(s&&s in tracks)tracks[s]++;}});
+      const ages=Object.fromEntries(AGE_ORDER.map(a=>[a,0]));
+      rows.forEach(r=>{if(r['연령대']in ages)ages[r['연령대']]++;});
+      const tenureDist=Object.fromEntries(TENURE_ORDER.map(t=>[t,0]));
+      rows.forEach(r=>{if(r['재직기간대']in tenureDist)tenureDist[r['재직기간대']]++;});
+      const retire={'퇴직예정(-)':0,'퇴직예정(+1)':0,'퇴직예정(+2)':0};
+      rows.forEach(r=>{if(r['퇴직예정자']in retire)retire[r['퇴직예정자']]++;});
+      const colleges={};
+      rows.forEach(r=>{const c=r['원소속 상위']||'기타';colleges[c]=(colleges[c]||0)+1;});
+      return {
+        total:rows.length,
+        tenure_track:rows.filter(r=>r['트랙구분']==='정년트랙').length,
+        non_tenure:rows.filter(r=>r['트랙구분']==='비정년트랙').length,
+        male:rows.filter(r=>r['성별']==='남자').length,
+        female:rows.filter(r=>r['성별']==='여자').length,
+        prof:rows.filter(r=>r['직급']==='교수').length,
+        assoc:rows.filter(r=>r['직급']==='부교수').length,
+        asst:rows.filter(r=>r['직급']==='조교수').length,
+        tracks,ages,tenure_dist:tenureDist,retire,colleges,
+        heatmap: buildHeatmap(rows)
+      };
+    }
+
+    // ── 필터 조합 집계 함수 (집계만, roster 없음) ──
+    function buildFiltered(baseRows) {
+      const filters = {};
+      ['정년트랙','비정년트랙'].forEach(track=>{
+        const t=baseRows.filter(r=>r['트랙구분']===track);
+        filters[`track:${track}`]=buildStats(t);
+        if(track==='비정년트랙'){
+          NON_TENURE_LIST.forEach(nt=>{
+            filters[`track:비정년트랙|non_tenure:${nt}`]=buildStats(t.filter(r=>r['비정년트랙구분']===nt));
+          });
+        }
+      });
+      ['교수','부교수','조교수'].forEach(rank=>{
+        filters[`rank:${rank}`]=buildStats(baseRows.filter(r=>r['직급']===rank));
+      });
+      ['남자','여자'].forEach(gender=>{
+        filters[`gender:${gender}`]=buildStats(baseRows.filter(r=>r['성별']===gender));
+      });
+      AGE_ORDER.forEach(age=>{
+        filters[`age:${age}`]=buildStats(baseRows.filter(r=>r['연령대']===age));
+      });
+      TENURE_ORDER.forEach(tenure=>{
+        filters[`tenure:${tenure}`]=buildStats(baseRows.filter(r=>r['재직기간대']===tenure));
+      });
+      return { base: buildStats(baseRows), filters };
+    }
+
+    // ── 학년도별 roster 인덱스 생성 ──
+    function buildRosterIndex(baseRows) {
+      const filters = {};
+      ['정년트랙','비정년트랙'].forEach(track=>{
+        const t=baseRows.filter(r=>r['트랙구분']===track);
+        filters[`track:${track}`]=makeRoster(t);
+        if(track==='비정년트랙'){
+          NON_TENURE_LIST.forEach(nt=>{
+            filters[`track:비정년트랙|non_tenure:${nt}`]=makeRoster(t.filter(r=>r['비정년트랙구분']===nt));
+          });
+        }
+      });
+      ['교수','부교수','조교수'].forEach(rank=>{
+        filters[`rank:${rank}`]=makeRoster(baseRows.filter(r=>r['직급']===rank));
+      });
+      ['남자','여자'].forEach(gender=>{
+        filters[`gender:${gender}`]=makeRoster(baseRows.filter(r=>r['성별']===gender));
+      });
+      AGE_ORDER.forEach(age=>{
+        filters[`age:${age}`]=makeRoster(baseRows.filter(r=>r['연령대']===age));
+      });
+      TENURE_ORDER.forEach(tenure=>{
+        filters[`tenure:${tenure}`]=makeRoster(baseRows.filter(r=>r['재직기간대']===tenure));
+      });
+      return { all: makeRoster(baseRows), filters };
+    }
+
+    // ── 학년도별 summary 생성 (집계만) ──
+    const summary = {};
+    years.forEach(yr => {
+      const yrData = records.filter(r => String(r['학년도']) === yr);
+      const exclData = yrData.filter(r => r['원소속 부서'] !== '의학과');
+      summary[yr] = {
+        include: buildFiltered(yrData),
+        exclude: buildFiltered(exclData),
+      };
+    });
+
+    log(`✅ 연도별 집계 완료 (${years.length}개년)`, 'log-ok');
+    setProgress(60);
+
+    // ── 퇴직예정 트렌드 (5개년) ──
+    function buildRetireTrend(baseRows, baseYr) {
+      const trend={};
+      for(let i=0;i<5;i++){
+        const yr=baseYr+i;
+        let cnt=0;
+        baseRows.forEach(r=>{
+          // 정년퇴직예정일_수정 또는 calcRetireLabel 사용
+          const label = r['정년퇴직예정일_수정'] || calcRetireLabel(r['정년퇴직예정일']) || '';
+          if(label && label.startsWith(String(yr))) cnt++;
+        });
+        trend[String(yr)]=cnt;
+      }
+      return trend;
+    }
+    const retireTrends={};
+    years.forEach(yr=>{
+      const yrData=records.filter(r=>String(r['학년도'])===yr);
+      const exclData=yrData.filter(r=>r['원소속']!=='의학과');
+      retireTrends[yr]={
+        include:buildRetireTrend(yrData,parseInt(yr)),
+        exclude:buildRetireTrend(exclData,parseInt(yr)),
+      };
+    });
+    log(`✅ 퇴직예정 트렌드 생성 완료`, 'log-ok');
+
+    // ── 학년도별 roster 생성 ──
+    const rosterByYear = {};
+    years.forEach(yr => {
+      const yrData = records.filter(r => String(r['학년도']) === yr);
+      const exclData = yrData.filter(r => r['원소속 부서'] !== '의학과');
+      rosterByYear[yr] = {
+        year: yr,
+        include: buildRosterIndex(yrData),
+        exclude: buildRosterIndex(exclData),
+      };
+    });
+
+    log(`✅ 연도별 명부 생성 완료 (${years.length}개년)`, 'log-ok');
+    setProgress(75);
+
+    log(`✅ 확보율 포함 JSON 준비 완료`, 'log-ok');
+    setProgress(85);
+
+    // ── dashboard_data.json 생성 (집계만) ──
+    const now = new Date();
+    const today = now.getFullYear() + '-' +
+      String(now.getMonth()+1).padStart(2,'0') + '-' +
+      String(now.getDate()).padStart(2,'0') + ' ' +
+      String(now.getHours()).padStart(2,'0') + ':' +
+      String(now.getMinutes()).padStart(2,'0') + ':' +
+      String(now.getSeconds()).padStart(2,'0');
+    generatedJSON = {
+      meta: {
+        updated: today,
+        source: document.getElementById('fileName').textContent,
+        years: years,
+        medical_exclude_criteria: '원소속=의학과 제외',
+        roster_headers: ROSTER_HEADERS,
+        filter_options: {
+          track: ['전체','정년트랙','비정년트랙'],
+          non_tenure: ['전체','강의전담','연구전담','산학협력전담','외국인'],
+          rank: ['전체','교수','부교수','조교수'],
+          gender: ['전체','남자','여자'],
+          age: ['전체',...AGE_ORDER],
+          tenure: ['전체',...TENURE_ORDER],
+          heatmap_age: HEATMAP_AGE_ORDER,
+          heatmap_tenure: HEATMAP_TENURE_ORDER
+        }
+      },
+      rate: rateData,
+      retire_trends: retireTrends,
+      summary: summary
+    };
+
+    log(`✅ dashboard_data.json 생성 완료 (${formatBytes(JSON.stringify(generatedJSON).length)})`, 'log-ok');
+    setProgress(100);
+
+    // Preview (의학과 제외 기준)
+    const latestYr = years[years.length-1];
+    const ls = summary[latestYr].exclude.base;
+    document.getElementById('previewGrid').innerHTML = `
+      <div class="pv-card"><div class="pv-num">${latestYr}</div><div class="pv-lbl">최신 학년도</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.total}</div><div class="pv-lbl">전임교원(의학과 제외)</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.tenure_track}</div><div class="pv-lbl">정년트랙</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.non_tenure}</div><div class="pv-lbl">비정년트랙</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.male}</div><div class="pv-lbl">남자</div></div>
+      <div class="pv-card"><div class="pv-num">${ls.female}</div><div class="pv-lbl">여자</div></div>`;
+    document.getElementById('previewBox').classList.add('show');
+
+    // ── 다운로드 버튼 목록 생성 ──
+    const resultDesc = `${years.length}개 학년도 · ${records.length}건 · 생성일: ${today}`;
+    document.getElementById('resultDesc').textContent = resultDesc;
+
+    // 다운로드 버튼 동적 생성
+    const dlWrap = document.getElementById('downloadBtns');
+    dlWrap.innerHTML = '';
+
+    // dashboard_data.json 버튼
+    const btn1 = document.createElement('button');
+    btn1.className = 'dl-btn';
+    btn1.textContent = '⬇️ dashboard_data.json';
+    btn1.onclick = downloadJSON;
+    dlWrap.appendChild(btn1);
+
+    // 학년도별 roster 버튼
+    years.forEach(yr => {
+      const btn = document.createElement('button');
+      btn.className = 'dl-btn';
+      btn.style.cssText = 'background:var(--accent5);margin-left:8px';
+      btn.textContent = `⬇️ dashboard_roster_${yr}.json`;
+      btn.onclick = () => downloadRoster(yr, rosterByYear[yr]);
+      dlWrap.appendChild(btn);
+    });
+
+    document.getElementById('resultBox').classList.add('show');
+
+  } catch(e) {
+    log('❌ 오류: ' + e.message, 'log-err');
+    console.error(e);
+  }
+
+  btn.disabled = false;
+}
+
+// ─── DOWNLOAD ───
+function downloadJSON() {
+  if (!generatedJSON) return;
+  const blob = new Blob([JSON.stringify(generatedJSON, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'dashboard_data.json';
+  a.click();
+}
+
+function downloadRoster(yr, rosterData) {
+  if (!rosterData) return;
+  const blob = new Blob([JSON.stringify(rosterData, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `dashboard_roster_${yr}.json`;
+  a.click();
+}
+
+// ─── RESET ───
+function resetFile() {
+  workbook = null;
+  selectedSheet = null;
+  generatedJSON = null;
+  document.getElementById('fileInput').value = '';
+  document.getElementById('fileInfo').classList.remove('show');
+  document.getElementById('sheetPicker').classList.remove('show');
+  document.getElementById('rateSection').classList.remove('show');
+  document.getElementById('progress').classList.remove('show');
+  document.getElementById('resultBox').classList.remove('show');
+  document.getElementById('previewBox').classList.remove('show');
+  document.getElementById('downloadBtns').innerHTML = '';
+  document.getElementById('processBtn').disabled = true;
+  document.getElementById('progressBar').style.width = '0';
+  document.getElementById('progressLog').innerHTML = '';
+}
+
+function formatBytes(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1048576) return (bytes/1024).toFixed(1) + ' KB';
+  return (bytes/1048576).toFixed(1) + ' MB';
+}
+</script>
+</body>
+</html>
