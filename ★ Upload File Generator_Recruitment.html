@@ -349,7 +349,10 @@ async function processFile() {
       const yearNum = parseInt(String(yearVal || '').replace(/[^0-9]/g, ''));
       if (isNaN(yearNum) || yearNum < 2000 || yearNum > 2099) { skipped++; continue; }
 
+      // COL_MAP의 모든 JSON 키를 null로 초기화 (누락 방지)
       const rec = {};
+      Object.values(COL_MAP).forEach(jsonKey => { rec[jsonKey] = null; });
+
       colMapping.forEach((jsonKey, colIdx) => {
         if (!jsonKey) return;
         rec[jsonKey] = parseVal(row[colIdx], jsonKey);
@@ -409,7 +412,15 @@ async function processFile() {
         source: document.getElementById('fileName').textContent,
         total_records: records.length,
         years: years,
-        columns: Object.values(COL_MAP).concat(['임용여부','연령구간','연령구간_상세','호봉구간']),
+        columns: [
+          '학년도','학기','차수','채용구분','대학','학과부','전공교실','모집전공','계열구분',
+          '모집인원','지원인원','서류합격','전공합격','학과합격','면접합격',
+          '제청인원','임용인원','포기인원','충원인원','미충원인원',
+          '성명','교직원번호','생년월일','연령','성별','출신학부',
+          '서류심사','전공심사','학과심사','면접심사',
+          '환산년_년','환산년_월','직급','호봉',
+          '임용여부','연령구간','연령구간_상세','호봉구간'
+        ],
         filter_options: {
           학년도: years,
           학기: [1, 2],
