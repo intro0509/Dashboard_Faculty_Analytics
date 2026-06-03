@@ -31,8 +31,8 @@ echo Step 4: Pushing to GitHub...
 
 echo.
 echo Done!
-echo [Overview]     https://intro0509.github.io/Dashbaord-Test/1_Overview_dashboard.html
-echo [Recruitment]  https://intro0509.github.io/Dashbaord-Test/3_Recruitment_dashboard.html
+echo [Overview]     https://intro0509.github.io/Dashbaord-Test/Dashboard_Overview.html
+echo [Recruitment]  https://intro0509.github.io/Dashbaord-Test/Dashboard_Recruitment.html
 echo [Main]         https://intro0509.github.io/Dashbaord-Test/index.html
 echo.
 pause
