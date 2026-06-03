@@ -1,0 +1,359 @@
+<!doctype html>
+<html lang="ko">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>동아대학교 Integrated Faculty Analytics Dashboard</title>
+    <link
+      rel="stylesheet"
+      href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
+    />
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+      }
+      html, body {
+        min-height: 100%;
+        font-family: 'Pretendard', sans-serif;
+        background: #e1e1e1;
+        color: #111827;
+        font-size: 14px;
+        display: flex;
+        align-items: flex-start;
+        justify-content: center;
+      }
+
+      /* APP WRAPPER */
+      #appWrapper {
+        background: #f6f6f6;
+        border-radius: 20px;
+        margin: 16px auto;
+        width: 900px;
+        box-shadow: 0 4px 24px rgba(0, 0, 0, 0.1);
+        overflow: hidden;
+      }
+
+      /* TOPNAV */
+      .topnav {
+        background: #f6f6f6;
+        height: 84px;
+        display: flex;
+        align-items: center;
+        padding: 0 28px;
+        border-bottom: 1px solid #ebebeb;
+      }
+      .nav-group {
+        display: flex;
+        align-items: center;
+        background: #ffffff;
+        border-radius: 14px;
+        padding: 0 16px;
+        height: 52px;
+        gap: 10px;
+      }
+      .logo-box {
+        width: 30px;
+        height: 30px;
+        background: #1365fe;
+        border-radius: 7px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .logo-box svg {
+        width: 16px;
+        height: 16px;
+      }
+      .logo-text {
+        font-size: 14px;
+        font-weight: 700;
+        color: #111827;
+        white-space: nowrap;
+      }
+      .logo-text span {
+        color: #1365fe;
+      }
+
+      /* HERO SECTION */
+      .hero {
+        padding: 48px 48px 32px;
+        text-align: center;
+      }
+      .hero-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: #ebf1ff;
+        color: #1365fe;
+        font-size: 11px;
+        font-weight: 600;
+        padding: 4px 12px;
+        border-radius: 20px;
+        margin-bottom: 16px;
+        letter-spacing: 0.3px;
+      }
+      .hero-badge-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        background: #1365fe;
+        animation: pulse 2s infinite;
+      }
+      @keyframes pulse {
+        0%, 100% { opacity: 1; }
+        50% { opacity: 0.4; }
+      }
+      .hero h1 {
+        font-size: 28px;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1.3;
+        margin-bottom: 10px;
+      }
+      .hero h1 span {
+        color: #1365fe;
+      }
+      .hero p {
+        font-size: 14px;
+        color: #9ca3af;
+        line-height: 1.7;
+      }
+
+      /* MENU GRID */
+      .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 14px;
+        padding: 0 48px 48px;
+      }
+      .menu-card {
+        background: #ffffff;
+        border-radius: 16px;
+        padding: 28px 22px;
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 12px;
+        text-decoration: none;
+        color: inherit;
+        border: 2px solid transparent;
+        transition: all 0.2s;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+      }
+      .menu-card::before {
+        content: '';
+        position: absolute;
+        top: 0; left: 0; right: 0;
+        height: 3px;
+        background: var(--mc, #1365fe);
+        border-radius: 16px 16px 0 0;
+      }
+      .menu-card:hover {
+        border-color: #dbe8fe;
+        box-shadow: 0 8px 32px rgba(19, 101, 254, 0.1);
+        transform: translateY(-2px);
+      }
+      .menu-card.disabled {
+        cursor: default;
+        opacity: 0.65;
+        pointer-events: none;
+      }
+      .menu-icon {
+        width: 46px;
+        height: 46px;
+        border-radius: 12px;
+        background: var(--mi, #ebf1ff);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-shrink: 0;
+      }
+      .menu-icon svg {
+        width: 22px;
+        height: 22px;
+        color: var(--mic, #1365fe);
+      }
+      .menu-label {
+        font-size: 11px;
+        font-weight: 600;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+      }
+      .menu-title {
+        font-size: 17px;
+        font-weight: 800;
+        color: #111827;
+        line-height: 1.2;
+      }
+      .menu-desc {
+        font-size: 12px;
+        color: #6b7280;
+        line-height: 1.6;
+      }
+      .menu-arrow {
+        margin-top: auto;
+        display: flex;
+        align-items: center;
+        gap: 4px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #1365fe;
+      }
+      .menu-arrow svg {
+        width: 14px;
+        height: 14px;
+        transition: transform 0.15s;
+      }
+      .menu-card:hover .menu-arrow svg {
+        transform: translateX(3px);
+      }
+      .badge-wip {
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+        background: #f3f4f6;
+        color: #9ca3af;
+        font-size: 10px;
+        font-weight: 600;
+        padding: 3px 9px;
+        border-radius: 20px;
+        margin-top: 2px;
+      }
+
+      /* FOOTER */
+      .footer {
+        padding: 18px 48px;
+        border-top: 1px solid #ebebeb;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+      .footer-txt {
+        font-size: 11px;
+        color: #c5cad8;
+      }
+      .footer-txt strong {
+        color: #9ca3af;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="appWrapper">
+      <!-- TOPNAV -->
+      <nav class="topnav">
+        <div class="nav-group">
+          <div class="logo-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5">
+              <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+              <path d="M2 17l10 5 10-5"/>
+              <path d="M2 12l10 5 10-5"/>
+            </svg>
+          </div>
+          <span class="logo-text">Dong-A <span>University</span></span>
+        </div>
+      </nav>
+
+      <!-- HERO -->
+      <div class="hero">
+        <div class="hero-badge">
+          <span class="hero-badge-dot"></span>
+          Faculty Management System
+        </div>
+        <h1>Integrated Faculty<br /><span>Analytics Dashboard</span></h1>
+        <p>동아대학교 교원 현황 데이터를 한눈에 확인하고 분석하세요.</p>
+      </div>
+
+      <!-- MENU CARDS -->
+      <div class="menu-grid">
+        <!-- Overview -->
+        <a
+          class="menu-card"
+          href="1_Overview_dashboard.html"
+          style="--mc: #1365fe; --mi: #ebf1ff; --mic: #1365fe;"
+        >
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <rect x="3" y="3" width="7" height="7" rx="1"/>
+              <rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/>
+              <rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+          </div>
+          <div class="menu-label">Module 01</div>
+          <div class="menu-title">Overview</div>
+          <div class="menu-desc">전체 교원 현황 및 연도별 변화를 종합적으로 파악합니다.</div>
+          <div class="menu-arrow">
+            바로가기
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+
+        <!-- Staffing Plan (준비 중) -->
+        <div
+          class="menu-card disabled"
+          style="--mc: #c5cad8; --mi: #f3f4f6; --mic: #9ca3af;"
+        >
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/>
+            </svg>
+          </div>
+          <div class="menu-label">Module 02</div>
+          <div class="menu-title">Staffing Plan</div>
+          <div class="menu-desc">단과대학별 교원 배치 계획과 정원 관리를 지원합니다.</div>
+          <span class="badge-wip">
+            <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="12" cy="12" r="10"/>
+              <line x1="12" y1="8" x2="12" y2="12"/>
+              <line x1="12" y1="16" x2="12.01" y2="16"/>
+            </svg>
+            준비 중
+          </span>
+        </div>
+
+        <!-- Recruitment -->
+        <a
+          class="menu-card"
+          href="3_Recruitment_dashboard.html"
+          style="--mc: #16a34a; --mi: #dcfce7; --mic: #16a34a;"
+        >
+          <div class="menu-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M16 21v-2a4 4 0 00-4-4H6a4 4 0 00-4 4v2"/>
+              <circle cx="9" cy="7" r="4"/>
+              <line x1="19" y1="8" x2="19" y2="14"/>
+              <line x1="22" y1="11" x2="16" y2="11"/>
+            </svg>
+          </div>
+          <div class="menu-label">Module 03</div>
+          <div class="menu-title">Recruitment</div>
+          <div class="menu-desc">신규 교원 채용 현황 및 채용 파이프라인을 추적합니다.</div>
+          <div class="menu-arrow" style="color: #16a34a;">
+            바로가기
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
+              <path d="M5 12h14M12 5l7 7-7 7"/>
+            </svg>
+          </div>
+        </a>
+      </div>
+
+      <!-- FOOTER -->
+      <div class="footer">
+        <span class="footer-txt">
+          <strong>Dong-A University</strong> · Integrated Faculty Analytics Dashboard
+        </span>
+        <span class="footer-txt">GitHub Pages</span>
+      </div>
+    </div>
+  </body>
+</html>

@@ -1308,7 +1308,7 @@
                 <div class="nav-tabs">
                   <button
                     class="nav-tab active"
-                    onclick="showPage('Overview', this)"
+                    onclick="location.href='index.html'"
                   >
                     <svg
                       width="14"
@@ -1326,8 +1326,9 @@
                     Overview
                   </button>
                   <button
-                    class="nav-tab"
-                    onclick="showPage('Staffing Plan', this)"
+                    class="nav-tab disabled"
+                    disabled
+                    onclick="location.href='2_Staffingplan_dashboard.html'"
                   >
                     <svg
                       width="14"
@@ -1344,10 +1345,11 @@
                       />
                     </svg>
                     Staffing Plan
+                    <span class="nav-badge">준비 중</span>
                   </button>
                   <button
                     class="nav-tab"
-                    onclick="location.href='★ recruitment_dashboard.html'"
+                    onclick="location.href='3_Recruitment_dashboard.html'"
                   >
                     <svg
                       width="14"
@@ -2234,7 +2236,7 @@
           // LOAD
           async function loadData() {
             try {
-              const res = await fetch('dashboard_data.json?t=' + Date.now());
+              const res = await fetch('data/dashboard_data.json?t=' + Date.now());
               if (!res.ok) throw new Error('HTTP ' + res.status);
               DB = await res.json();
               initDashboard();
@@ -2327,7 +2329,7 @@
             if (rosterCache[currentYear]) return rosterCache[currentYear];
             try {
               const res = await fetch(
-                `dashboard_roster_${currentYear}.json?t=${Date.now()}`,
+                `data/dashboard_roster_${currentYear}.json?t=${Date.now()}`,
               );
               if (!res.ok) throw new Error();
               const d = await res.json();
@@ -2345,7 +2347,7 @@
               return rawRecordsCache[currentYear];
             try {
               const res = await fetch(
-                `dashboard_roster_${currentYear}.json?t=${Date.now()}`,
+                `data/dashboard_roster_${currentYear}.json?t=${Date.now()}`,
               );
               if (!res.ok) return null;
               const d = await res.json();
