@@ -1284,7 +1284,7 @@
             </div>
             <!-- /nav-group -->
             <div class="nav-right">
-              <button class="export-btn" onclick="window.print()">
+              <button class="export-btn" onclick="showExportMenu(this)">
                 <svg
                   viewBox="0 0 24 24"
                   fill="none"
@@ -1785,7 +1785,7 @@
                         <canvas id="ch-donut"></canvas>
                         <div class="donut-center">
                           <div class="donut-center-num" id="donut-tot">--</div>
-                          <div class="donut-center-lbl">총 건수</div>
+                          <div class="donut-center-lbl">명</div>
                         </div>
                       </div>
                     </div>
@@ -2297,9 +2297,8 @@
           <div class="db-head">
             <div>학년도</div>
             <div class="db-head-legend">
-              <span class="db-legend-dot db-legend-dot-to"></span>모집인원
-              <span style="margin: 0 4px">vs</span>
               <span class="db-legend-dot db-legend-dot-hire"></span>충원인원
+              <span class="db-legend-dot db-legend-dot-to"></span>모집인원
             </div>
             <div>임용률(%)</div>
           </div>`;
@@ -2361,6 +2360,21 @@
         if (setChartEmpty('ch-stacked', stackedEmpty)) return;
         const roundedPlugin = {
           id: 'stackRound',
+          beforeDatasetsDraw(chart) {
+            const { ctx: c, canvas } = chart;
+            const meta0 = chart.getDatasetMeta(0);
+            ys.forEach((s, i) => {
+              const bar0 = meta0.data[i];
+              if (!bar0) return;
+              if (!(F.year !== 'all' && YEARS[i] === +F.year)) return;
+              const cy = bar0.y;
+              const rowH = bar0.height + 14;
+              c.save();
+              c.fillStyle = 'rgba(249,115,22,0.06)';
+              c.fillRect(0, cy - rowH / 2, canvas.width, rowH);
+              c.restore();
+            });
+          },
           afterDraw(chart) {
             const { ctx: c } = chart;
             const meta0 = chart.getDatasetMeta(0);
@@ -2611,7 +2625,7 @@
                   borderWidth: 2.5,
                   fill: true,
                   pointRadius: 4,
-                  pointHoverRadius: 5,
+                  pointHoverRadius: 0,
                   pointBackgroundColor: '#0068E5',
                   pointBorderColor: '#fff',
                   pointBorderWidth: 1.5,
@@ -3041,7 +3055,7 @@
             const c = mx[gi][ai];
             const pct = ((c / total) * 100).toFixed(1);
             const bg = heatColor(c, maxV);
-            html += `<td class="heatmap-cell" style="background:${bg};color:#000000" title="${gb.label}호봉 × ${ab.label}세: ${c}명">
+            html += `<td class="heatmap-cell" style="background:${bg};color:#000000">
               ${c ? `<div class="cell-cnt">${c}명</div><div class="cell-pct">(${pct}%)</div>` : ''}
             </td>`;
           });
@@ -3285,6 +3299,94 @@ ${labels
         let p = 0;
         const step = () => { p = Math.min(p + 0.06, 1); wrap.style.opacity = String(p); if (p < 1) requestAnimationFrame(step); };
         requestAnimationFrame(step);
+      }
+
+      /* ══════════════════════════════════════════
+       EXPORT
+    ══════════════════════════════════════════ */
+      function getFilterLabel() {
+        const parts = [];
+        if (F.year !== 'all') parts.push(F.year + '학년도');
+        if (F.sem !== 'all') parts.push(F.sem + '학기');
+        if (F.track !== 'all') parts.push(F.track);
+        if (F.type !== 'all') parts.push(F.type);
+        return parts.length ? parts.join(' · ') : '전체';
+      }
+
+      function openRecruitTab() {
+        const data = applyF(rawData);
+        if (!data.length) { alert('표시할 데이터가 없습니다.'); return; }
+        let headers = Object.keys(data[0]).filter(h => h !== '연령구간_상세');
+        const _mv = (arr, item, after) => { const a = arr.filter(h => h !== item); const idx = a.indexOf(after); if (idx >= 0) a.splice(idx + 1, 0, item); return a; };
+        headers = _mv(headers, '연령구간', '연령');
+        headers = _mv(headers, '호봉구간', '호봉');
+        const fl = getFilterLabel();
+        const headerLabel = {
+          '대학': '대학(원)/학부',
+          '학과부': '학과/부',
+          '전공교실': '전공/교실',
+          '서류합격': '서류심사 합격인원',
+          '전공합격': '전공심사 합격인원',
+          '학과합격': '학과심사 합격인원',
+          '면접합격': '면접심사 합격인원',
+          '연령': '연령(당시)',
+          '연령구간': '연령구간(당시)',
+          '서류심사': '서류심사 순위',
+          '전공심사': '전공심사 순위',
+          '학과심사': '학과심사 순위',
+          '면접심사': '면접심사 순위',
+          '환산년_년': '직급(환산년수_년)',
+          '환산년_월': '직급(환산년수_개월)',
+        };
+        const _g1 = headers.indexOf('계열구분') + 1;
+        const _g2 = headers.indexOf('미충원인원') - headers.indexOf('계열구분');
+        const _g3 = headers.length - headers.indexOf('미충원인원') - 1;
+        const html = `<!DOCTYPE html><html lang="ko"><head><meta charset="UTF-8"><title>채용 현황 (${fl})</title><link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"><style>*{box-sizing:border-box;margin:0;padding:0}body{font-family:'Pretendard',sans-serif;background:#f8faff;color:#111827;padding:24px;height:100vh;display:flex;flex-direction:column;overflow:hidden}.top-area{flex-shrink:0}.sub{font-size:12px;color:#9ca3af;margin-bottom:12px}h2{font-size:18px;font-weight:800;margin-bottom:4px}.search-wrap{flex-shrink:0;background:#f8faff;padding:10px 0;display:flex;align-items:center;gap:10px;margin-bottom:8px}.search-box{position:relative;width:320px}.search-box input{width:100%;padding:8px 34px 8px 34px;border:1px solid #e5eaf5;border-radius:8px;font-family:'Pretendard',sans-serif;font-size:13px;color:#111827;outline:none;background:#fff;transition:border-color 0.15s}.search-box input:focus{border-color:#1365fe}.s-icon{position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#9ca3af;font-size:13px;pointer-events:none}#clearBtn{position:absolute;right:8px;top:50%;transform:translateY(-50%);border:none;background:#e5e7eb;cursor:pointer;color:#374151;font-size:11px;display:none;align-items:center;justify-content:center;width:18px;height:18px;border-radius:50%;padding:0;line-height:1}#clearBtn:hover{background:#d1d5db}#resCount{font-size:12px;color:#9ca3af}.table-wrap{flex:1;overflow:auto;border-radius:12px;border:1px solid #e5eaf5}table{width:100%;border-collapse:separate;border-spacing:0;background:#fff;font-size:12px}th{background:#ffffff;padding:10px 12px;text-align:center;color:#374151;font-weight:700;border-bottom:2px solid #e2e8f0;white-space:nowrap;position:sticky;top:0;z-index:2;cursor:pointer;user-select:none;overflow:hidden}th:hover{background:#f1f5f9;color:#1365fe}th.sort-asc::after{content:' ▲';color:#1365fe}th.sort-desc::after{content:' ▼';color:#1365fe}td{padding:11px 12px;border-bottom:1px solid #e2e8f0;color:#374151;white-space:nowrap;text-align:center;overflow:hidden;text-overflow:ellipsis;max-width:0}tr:hover td{background:#eff6ff}.badge{display:inline-block;background:#EBF1FF;color:#1365FE;padding:3px 10px;border-radius:10px;font-size:11px;font-weight:600;margin-left:8px}.rz{position:absolute;right:0;top:0;bottom:0;width:6px;cursor:col-resize;z-index:3;background:transparent;transition:background 0.15s}.rz:hover,.rz.active{background:rgba(19,101,254,0.3)}.grp-th{background:#ffffff;color:#374151;font-weight:700;cursor:default;border-bottom:1px solid #e2e8f0;border-right:2px solid #d1d5db;z-index:3}.grp-th:hover{background:#f1f5f9;color:#1365fe}</style></head><body><div class="top-area"><h2>채용 현황 <span class="badge">${data.length}건</span></h2><p class="sub">필터: ${fl}</p></div><div class="search-wrap"><div class="search-box"><span class="s-icon">🔍</span><input id="searchInput" type="text" placeholder="검색..." oninput="onSearch(this.value)"><button id="clearBtn" onclick="clearSearch()">✕</button></div><span id="resCount"></span></div><div class="table-wrap"><table id="rosterTable"><thead><tr><th class="grp-th" colspan="${_g1}">모집전공 개요</th><th class="grp-th" colspan="${_g2}">단계별 정보</th><th class="grp-th" colspan="${_g3}">임용자 정보</th></tr><tr>${headers.map((h, i) => `<th class="col-th" data-col="${i}" onclick="sortTable(${i})"${(h==='미충원인원'||h==='계열구분')?' style="box-shadow:inset -2px 0 0 #d1d5db"':''}>${headerLabel[h] ?? h}</th>`).join('')}</tr></thead><tbody id="rosterBody">${data.map((row) => `<tr>${headers.map((h) => { const v=row[h]; const lbl=headerLabel[h]??h; const sep=(h==='미충원인원'||h==='계열구분')?' style="border-right:2px solid #d1d5db"':''; return `<td${sep}>${v!=null&&v!==''?(lbl.includes('인원')?v+'명':lbl.includes('순위')?v+'순위':lbl==='연령(당시)'?v+'세':lbl==='직급(환산년수_년)'?v+'년':lbl==='직급(환산년수_개월)'?v+'개월':lbl==='호봉'?v+'호봉':v):v??''}</td>`; }).join('')}</tr>`).join('')}</tbody></table></div><script>let _sc=-1,_sd=0,_orig=null,_q='';function getFiltered(){if(!_q)return _orig.map(r=>r.cloneNode(true));return _orig.filter(r=>[...r.cells].some(c=>c.textContent.includes(_q))).map(r=>r.cloneNode(true))}function applySort(rows){if(_sd===0||_sc<0)return rows;return[...rows].sort((a,b)=>{const av=a.cells[_sc].textContent.trim(),bv=b.cells[_sc].textContent.trim(),an=parseFloat(av.replace(/[^0-9.-]/g,'')),bn=parseFloat(bv.replace(/[^0-9.-]/g,''));if(!isNaN(an)&&!isNaN(bn))return(an-bn)*(_sd===1?1:-1);return av.localeCompare(bv,'ko')*(_sd===1?1:-1)})}function renderRows(rows){const tb=document.getElementById('rosterBody');while(tb.firstChild)tb.removeChild(tb.firstChild);rows.forEach(r=>tb.appendChild(r));document.getElementById('resCount').textContent=_q?rows.length+'건 표시':''}function onSearch(val){_q=val.trim();document.getElementById('clearBtn').style.display=_q?'flex':'none';renderRows(applySort(getFiltered()))}function clearSearch(){document.getElementById('searchInput').value='';onSearch('')}function sortTable(ci){const ths=document.querySelectorAll('th.col-th');if(_sc===ci){_sd=(_sd+1)%3}else{_sc=ci;_sd=1}ths.forEach(th=>th.classList.remove('sort-asc','sort-desc'));if(_sd!==0)ths[ci].classList.add(_sd===1?'sort-asc':'sort-desc');renderRows(applySort(getFiltered()))}_orig=Array.from(document.getElementById('rosterBody').querySelectorAll('tr')).map(r=>r.cloneNode(true));let _totalW=0;function initColResize(){const table=document.getElementById('rosterTable');const ths=[...table.querySelectorAll('th.col-th')];ths.forEach(th=>{th.style.width=th.offsetWidth+'px';th.style.minWidth='40px';});_totalW=ths.reduce((s,th)=>s+th.offsetWidth,0);table.style.width=_totalW+'px';table.style.tableLayout='fixed';const _gh=(document.querySelector('th.grp-th')||{offsetHeight:37}).offsetHeight;ths.forEach(th=>th.style.top=_gh+'px');ths.forEach(th=>{const rz=document.createElement('div');rz.className='rz';th.appendChild(rz);rz.addEventListener('click',e=>e.stopPropagation());rz.addEventListener('mousedown',e=>{e.stopPropagation();e.preventDefault();const startX=e.pageX,startW=th.offsetWidth;rz.classList.add('active');document.body.style.cursor='col-resize';document.body.style.userSelect='none';let _prevW=startW;const onMove=ev=>{const w=Math.max(40,startW+ev.pageX-startX);_totalW+=w-_prevW;_prevW=w;th.style.width=w+'px';table.style.width=_totalW+'px';};const onUp=()=>{rz.classList.remove('active');document.body.style.cursor='';document.body.style.userSelect='';document.removeEventListener('mousemove',onMove);document.removeEventListener('mouseup',onUp);};document.addEventListener('mousemove',onMove);document.addEventListener('mouseup',onUp);});});}initColResize();<\/script></body></html>`;
+        window.open(URL.createObjectURL(new Blob([html], { type: 'text/html;charset=utf-8' })), '_blank');
+      }
+
+      function downloadRecruitExcel() {
+        const data = applyF(rawData);
+        if (!data.length) { alert('다운로드할 데이터가 없습니다.'); return; }
+        const headers = Object.keys(data[0]);
+        const fl = getFilterLabel();
+        const bom = '﻿',
+          csv = bom + [
+            headers.join(','),
+            ...data.map((row) =>
+              headers.map((h) => {
+                const v = String(row[h] ?? '');
+                return v.includes(',') || v.includes('"') ? `"${v.replace(/"/g, '""')}"` : v;
+              }).join(',')
+            ),
+          ].join('\n');
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
+        a.download = `채용현황_${fl}.csv`;
+        a.click();
+      }
+
+      function showExportMenu(btn) {
+        let menu = document.getElementById('exportMenu');
+        if (menu) { menu.remove(); return; }
+        menu = document.createElement('div');
+        menu.id = 'exportMenu';
+        menu.style.cssText = 'position:fixed;z-index:999;background:#fff;border:1px solid #e5eaf5;border-radius:10px;box-shadow:0 4px 16px rgba(0,0,0,.08);padding:6px;min-width:160px;';
+        const rect = btn.getBoundingClientRect();
+        menu.style.top = rect.bottom + 6 + 'px';
+        menu.style.right = window.innerWidth - rect.right + 'px';
+        menu.innerHTML = `
+    <div onclick="openRecruitTab();document.getElementById('exportMenu').remove()" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:#374151;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background=''">
+      📋 새 탭으로 보기
+    </div>
+    <div onclick="downloadRecruitExcel();document.getElementById('exportMenu').remove()" style="padding:8px 12px;border-radius:7px;cursor:pointer;font-size:13px;color:#374151;display:flex;align-items:center;gap:8px" onmouseover="this.style.background='#f5f7ff'" onmouseout="this.style.background=''">
+      ⬇ 엑셀 다운로드
+    </div>
+  `;
+        document.body.appendChild(menu);
+        setTimeout(() => document.addEventListener('click', function h(e) {
+          if (!menu.contains(e.target) && e.target !== btn) { menu.remove(); document.removeEventListener('click', h); }
+        }), 0);
       }
 
       /* ══════════════════════════════════════════
