@@ -5,6 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>동아대학교 교원관리 시스템</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
@@ -3350,20 +3351,16 @@ ${labels
         if (!data.length) { alert('다운로드할 데이터가 없습니다.'); return; }
         const headers = Object.keys(data[0]);
         const fl = getFilterLabel();
-        const bom = '﻿',
-          csv = bom + [
-            headers.join(','),
-            ...data.map((row) =>
-              headers.map((h) => {
-                const v = String(row[h] ?? '');
-                return v.includes(',') || v.includes('"') ? `"${v.replace(/"/g, '""')}"` : v;
-              }).join(',')
-            ),
-          ].join('\n');
-        const a = document.createElement('a');
-        a.href = URL.createObjectURL(new Blob([csv], { type: 'text/csv;charset=utf-8' }));
-        a.download = `채용현황_${fl}.csv`;
-        a.click();
+        const rows = data.map((row) =>
+          headers.map((h) => {
+            const v = row[h];
+            return typeof v === 'string' ? v.replace(/\r\n|\r|\n/g, ' ') : v;
+          })
+        );
+        const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
+        const wb = XLSX.utils.book_new();
+        XLSX.utils.book_append_sheet(wb, ws, '채용현황');
+        XLSX.writeFile(wb, `채용현황_${fl}.xlsx`);
       }
 
       function showExportMenu(btn) {

@@ -2,15 +2,15 @@
 title Dashboard Upload
 
 set GIT="C:\Program Files\Git\cmd\git.exe"
-set REPO_PATH=%USERPROFILE%\Dashbaord-Test
+set REPO_PATH=%~dp0
 
-if not exist "%REPO_PATH%" (
-    echo ERROR: Dashbaord-Test folder not found.
+cd /d "%REPO_PATH%"
+
+if not exist "%REPO_PATH%.git" (
+    echo ERROR: %REPO_PATH% is not a git repository.
     pause
     exit /b
 )
-
-cd /d "%REPO_PATH%"
 
 echo Step 1: Adding files...
 %GIT% add .
@@ -28,6 +28,13 @@ if errorlevel 1 (
 
 echo Step 4: Pushing to GitHub...
 %GIT% push --force origin main
+if errorlevel 1 (
+    echo.
+    echo FAILED: git push did not succeed. Nothing new was published.
+    echo.
+    pause
+    exit /b
+)
 
 echo.
 echo Done!
