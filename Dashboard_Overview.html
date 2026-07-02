@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>동아대학교 교원관리 시스템</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/exceljs/4.4.0/exceljs.min.js"></script>
     <link
       rel="stylesheet"
       href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard/dist/web/static/pretendard.css"
@@ -2564,10 +2564,31 @@
                 return typeof v === 'string' ? v.replace(/\r\n|\r|\n/g, ' ') : v;
               }),
             );
-            const ws = XLSX.utils.aoa_to_sheet([headers, ...rows]);
-            const wb = XLSX.utils.book_new();
-            XLSX.utils.book_append_sheet(wb, ws, '교원명부');
-            XLSX.writeFile(wb, `교원명부_${currentYear}학년도_${fl}.xlsx`);
+            const wb = new ExcelJS.Workbook();
+            const ws = wb.addWorksheet('교원명부');
+            ws.addRow(headers);
+            rows.forEach((r) => ws.addRow(r));
+            ws.eachRow((row, rowNumber) => {
+              const isHeader = rowNumber === 1;
+              row.eachCell((cell) => {
+                cell.font = isHeader
+                  ? { name: 'Pretendard', size: 10, bold: true, color: { argb: 'FFFFFFFF' } }
+                  : { name: 'Pretendard', size: 10 };
+                if (isHeader) {
+                  cell.fill = { type: 'pattern', pattern: 'solid', fgColor: { argb: 'FF1365FE' } };
+                  cell.alignment = { horizontal: 'center', vertical: 'middle' };
+                  cell.border = { bottom: { style: 'medium', color: { argb: 'FF1365FE' } } };
+                }
+              });
+              if (isHeader) row.height = 22;
+            });
+            const buf = await wb.xlsx.writeBuffer();
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(
+              new Blob([buf], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' }),
+            );
+            a.download = `교원명부_${currentYear}학년도_${fl}.xlsx`;
+            a.click();
           }
 
           // FILTERS
